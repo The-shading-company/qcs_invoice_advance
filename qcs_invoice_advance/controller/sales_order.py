@@ -23,6 +23,7 @@ def create_partial_invoice(sales_order, percentage):
             "rate": tab[i].get("rate"),
             "amount": tab[i].get("amount"),
             "sales_order": sales_order,
+            "so_detail": tab[i].get("name"),
         })
     doc.update({
         "customer": so.customer,
