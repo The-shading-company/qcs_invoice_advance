@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include qcs_invoice_advance *.css
+recursive-include qcs_invoice_advance *.csv
+recursive-include qcs_invoice_advance *.html
+recursive-include qcs_invoice_advance *.ico
+recursive-include qcs_invoice_advance *.js
+recursive-include qcs_invoice_advance *.json
+recursive-include qcs_invoice_advance *.md
+recursive-include qcs_invoice_advance *.png
+recursive-include qcs_invoice_advance *.py
+recursive-include qcs_invoice_advance *.svg
+recursive-include qcs_invoice_advance *.txt
+recursive-exclude qcs_invoice_advance *.pyc
