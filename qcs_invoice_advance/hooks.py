@@ -120,7 +120,9 @@ fixtures = [
                     'Sales Invoice Item-original_qty',
                     'Sales Order-partial_invoice',
                     'Sales Invoice-original_total',
-                    'Sales Invoice-order_percentage',             
+                    'Sales Invoice-order_percentage',
+                    'Sales Invoice Item-custom_ref_no',
+                    'Sales Order Item-custom_ref_no'           
                 ]
             ]
         ]

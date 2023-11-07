@@ -20,6 +20,7 @@ def create_partial_invoice(sales_order, percentage):
 		# so.items[i].invoice_qty = tab[i].get("invoice_qty")+rounded_qty
 		
 		item.append({
+			"custom_ref_no": tab[i].get("custom_ref_no"),
 			"item_code": tab[i].get("item_code"),
 			"qty": balance,
 			"original_qty": tab[i].get("qty"),
