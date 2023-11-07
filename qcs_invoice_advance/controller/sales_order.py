@@ -24,7 +24,8 @@ def create_partial_invoice(sales_order, percentage):
 			"qty": balance,
 			"original_qty": tab[i].get("qty"),
 			"rate": tab[i].get("rate"),
-			"amount": tab[i].get("amount"),
+			"amount": tab[i].get("rate")*balance,
+			"original_amount": tab[i].get("amount"),
 			"sales_order": sales_order,
 			"so_detail": tab[i].get("name"),
 		})
@@ -32,6 +33,7 @@ def create_partial_invoice(sales_order, percentage):
 		"customer": so.customer,
 		"company": so.company,
 		"due_date": so.delivery_date,
+		"order_percentage": percentage,
 		"items": item,
 		"original_total": so.total,
 		"taxes_and_charges": so.taxes_and_charges,
