@@ -16,11 +16,11 @@ frappe.ui.form.on('Sales Order', {
                     ],
                     primary_action: function() {
                         var data = d.get_values();
-                        if (data.per <= 0 || data.per > 100) {
-                            frappe.msgprint(__('Invalid percentage'));
+                        let total_per = data.per + frm.doc.partial_invoice
+                        if (total_per <= 0 || total_per > 100) {
+                            frappe.msgprint(__('Invalid percentage. Check Partial Invoice %'));
                             return;
                         }
-
                         frappe.call({
                             method: 'qcs_invoice_advance.controller.sales_order.create_partial_invoice',
                             args: {
@@ -28,10 +28,9 @@ frappe.ui.form.on('Sales Order', {
                                 percentage: data.per
                             },
                             callback: function(r) {
-                                if (!r.exc) {
-                                    frappe.set_route('Form', 'Sales Invoice', r.message);
-                                    d.hide();
-                                }
+                                frappe.set_route('Form', 'Sales Invoice', r.message);
+                                d.hide();
+                            
                             }
                         });
                     },
