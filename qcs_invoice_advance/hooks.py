@@ -117,7 +117,7 @@ fixtures = [
                 "name", "in", [
                     'Sales Invoice-original_total',
                     'Sales Invoice Item-original_qty',
-                    'Sales Order-partial_invoice'                  
+                    'Sales Order-partial_invoice',                 
                 ]
             ]
         ]

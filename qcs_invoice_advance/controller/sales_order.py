@@ -42,3 +42,4 @@ def create_partial_invoice(sales_order, percentage):
 	so.save(ignore_permissions=True)
 	frappe.msgprint("Partial Sales Invoice created successfully.")
 	return doc.name
+
