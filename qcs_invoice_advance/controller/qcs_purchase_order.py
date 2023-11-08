@@ -37,7 +37,7 @@ form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
 class CustomPurchaseOrder(BuyingController):
 	def __init__(self, *args, **kwargs):
-		super(PurchaseOrder, self).__init__(*args, **kwargs)
+		super(CustomPurchaseOrder, self).__init__(*args, **kwargs)
 		self.status_updater = [
 			{
 				"source_dt": "Purchase Order Item",
@@ -58,7 +58,7 @@ class CustomPurchaseOrder(BuyingController):
 		self.set_onload("can_update_items", self.can_update_items())
 
 	def validate(self):
-		super(PurchaseOrder, self).validate()
+		super(CustomPurchaseOrder, self).validate()
 
 		self.set_status()
 
@@ -91,7 +91,7 @@ class CustomPurchaseOrder(BuyingController):
 
 	def validate_with_previous_doc(self):
     if self.is_subcontracted:
-		  super(PurchaseOrder, self).validate_with_previous_doc(
+		  super(CustomPurchaseOrder, self).validate_with_previous_doc(
 			  {
 				  "Supplier Quotation": {
 					  "ref_dn_field": "supplier_quotation",
@@ -119,7 +119,7 @@ class CustomPurchaseOrder(BuyingController):
 			  }
 		  )
     else:
-      super(PurchaseOrder, self).validate_with_previous_doc(
+      super(CustomPurchaseOrder, self).validate_with_previous_doc(
 			  {
 				  "Supplier Quotation": {
 					  "ref_dn_field": "supplier_quotation",
@@ -368,7 +368,7 @@ class CustomPurchaseOrder(BuyingController):
 		clear_doctype_notifications(self)
 
 	def on_submit(self):
-		super(PurchaseOrder, self).on_submit()
+		super(CustomPurchaseOrder, self).on_submit()
 
 		if self.is_against_so():
 			self.update_status_updater()
@@ -389,7 +389,7 @@ class CustomPurchaseOrder(BuyingController):
 
 	def on_cancel(self):
 		self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry")
-		super(PurchaseOrder, self).on_cancel()
+		super(CustomPurchaseOrder, self).on_cancel()
 
 		if self.is_against_so():
 			self.update_status_updater()
