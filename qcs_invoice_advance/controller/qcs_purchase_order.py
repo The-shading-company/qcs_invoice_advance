@@ -35,7 +35,7 @@ from erpnext.subcontracting.doctype.subcontracting_bom.subcontracting_bom import
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
 
-class PurchaseOrder(BuyingController):
+class CustomPurchaseOrder(BuyingController):
 	def __init__(self, *args, **kwargs):
 		super(PurchaseOrder, self).__init__(*args, **kwargs)
 		self.status_updater = [
