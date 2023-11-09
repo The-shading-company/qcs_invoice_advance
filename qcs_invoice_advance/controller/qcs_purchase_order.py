@@ -53,6 +53,7 @@ class CustomPurchaseOrder(BuyingController):
 		]
 
 	def onload(self):
+		frappe.errprint("test")
 		supplier_tds = frappe.db.get_value("Supplier", self.supplier, "tax_withholding_category")
 		self.set_onload("supplier_tds", supplier_tds)
 		self.set_onload("can_update_items", self.can_update_items())
