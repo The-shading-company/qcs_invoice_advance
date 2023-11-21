@@ -28,13 +28,17 @@ from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item.item import get_item_defaults, get_last_purchase_details
 from erpnext.stock.stock_balance import get_ordered_qty, update_bin_qty
 from erpnext.stock.utils import get_bin
+<<<<<<< HEAD
 from erpnext.subcontracting.doctype.subcontracting_bom.subcontracting_bom import (
     get_subcontracting_boms_for_finished_goods,
 )
+=======
+>>>>>>> 1752e4a (item - bom create)
 
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
 
+<<<<<<< HEAD
 class CustomPurchaseOrder(BuyingController):
     def __init__(self, *args, **kwargs):
         super(CustomPurchaseOrder, self).__init__(*args, **kwargs)
@@ -59,6 +63,31 @@ class CustomPurchaseOrder(BuyingController):
 
     def validate(self):
         super(CustomPurchaseOrder, self).validate()
+=======
+class ClassPurchaseOrder(BuyingController):
+	def __init__(self, *args, **kwargs):
+		super(ClassPurchaseOrder, self).__init__(*args, **kwargs)
+		self.status_updater = [
+			{
+				"source_dt": "Purchase Order Item",
+				"target_dt": "Material Request Item",
+				"join_field": "material_request_item",
+				"target_field": "ordered_qty",
+				"target_parent_dt": "Material Request",
+				"target_parent_field": "per_ordered",
+				"target_ref_field": "stock_qty",
+				"source_field": "stock_qty",
+				"percent_join_field": "material_request",
+			}
+		]
+
+	def onload(self):
+		supplier_tds = frappe.db.get_value("Supplier", self.supplier, "tax_withholding_category")
+		self.set_onload("supplier_tds", supplier_tds)
+
+	def validate(self):
+		super(ClassPurchaseOrder, self).validate()
+>>>>>>> 1752e4a (item - bom create)
 
         self.set_status()
 
@@ -89,6 +118,7 @@ class CustomPurchaseOrder(BuyingController):
         )
         self.reset_default_field_value("set_warehouse", "items", "warehouse")
 
+<<<<<<< HEAD
     def validate_with_previous_doc(self):
         if self.is_subcontracted:
             super(CustomPurchaseOrder, self).validate_with_previous_doc(
@@ -152,6 +182,71 @@ class CustomPurchaseOrder(BuyingController):
             self.validate_rate_with_reference_doc(
                 [["Supplier Quotation", "supplier_quotation", "supplier_quotation_item"]]
             )
+=======
+	def validate_with_previous_doc(self):
+		if (self.is_subcontracted):
+			super(ClassPurchaseOrder, self).validate_with_previous_doc(
+				{
+					"Supplier Quotation": {
+						"ref_dn_field": "supplier_quotation",
+						"compare_fields": [["supplier", "="], ["company", "="], ["currency", "="]],
+					},
+					"Supplier Quotation Item": {
+						"ref_dn_field": "supplier_quotation_item",
+						"compare_fields": [
+							["project", "="],
+							["item_code", "="],
+							["uom", "="],
+							["conversion_factor", "="],
+						],
+						"is_child_table": True,
+					},
+					"Material Request": {
+						"ref_dn_field": "material_request",
+						"compare_fields": [["company", "="]],
+					},
+					"Material Request Item": {
+						"ref_dn_field": "material_request_item",
+						"compare_fields": [["project", "="]],
+						"is_child_table": True,
+					},
+				}
+			)
+      
+		else:
+			super(ClassPurchaseOrder, self).validate_with_previous_doc(
+				{
+					"Supplier Quotation": {
+						"ref_dn_field": "supplier_quotation",
+						"compare_fields": [["supplier", "="], ["company", "="], ["currency", "="]],
+					},
+					"Supplier Quotation Item": {
+						"ref_dn_field": "supplier_quotation_item",
+						"compare_fields": [
+							["project", "="],
+							["item_code", "="],
+							["uom", "="],
+							["conversion_factor", "="],
+						],
+						"is_child_table": True,
+					},
+					"Material Request": {
+						"ref_dn_field": "material_request",
+						"compare_fields": [["company", "="]],
+					},
+					"Material Request Item": {
+						"ref_dn_field": "material_request_item",
+						"compare_fields": [["project", "="], ["item_code", "="]],
+						"is_child_table": True,
+					},
+				}
+			)
+			
+		if cint(frappe.db.get_single_value("Buying Settings", "maintain_same_rate")):
+			self.validate_rate_with_reference_doc(
+				[["Supplier Quotation", "supplier_quotation", "supplier_quotation_item"]]
+			)
+>>>>>>> 1752e4a (item - bom create)
 
     def set_tax_withholding(self):
         if not self.apply_tds:
@@ -367,8 +462,13 @@ class CustomPurchaseOrder(BuyingController):
         self.notify_update()
         clear_doctype_notifications(self)
 
+<<<<<<< HEAD
     def on_submit(self):
         super(CustomPurchaseOrder, self).on_submit()
+=======
+	def on_submit(self):
+		super(ClassPurchaseOrder, self).on_submit()
+>>>>>>> 1752e4a (item - bom create)
 
         if self.is_against_so():
             self.update_status_updater()
@@ -387,9 +487,15 @@ class CustomPurchaseOrder(BuyingController):
 
         update_linked_doc(self.doctype, self.name, self.inter_company_order_reference)
 
+<<<<<<< HEAD
     def on_cancel(self):
         self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry")
         super(CustomPurchaseOrder, self).on_cancel()
+=======
+	def on_cancel(self):
+		self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry")
+		super(ClassPurchaseOrder, self).on_cancel()
+>>>>>>> 1752e4a (item - bom create)
 
         if self.is_against_so():
             self.update_status_updater()
@@ -484,6 +590,7 @@ class CustomPurchaseOrder(BuyingController):
         else:
             self.db_set("per_received", 0, update_modified=False)
 
+<<<<<<< HEAD
     def set_service_items_for_finished_goods(self):
         if not self.is_subcontracted or self.is_old_subcontracting_flow:
             return
@@ -514,6 +621,8 @@ class CustomPurchaseOrder(BuyingController):
 
         return result
 
+=======
+>>>>>>> 1752e4a (item - bom create)
 
 def item_last_purchase_rate(name, conversion_rate, item_code, conversion_factor=1.0):
     """get last purchase rate for an item"""
@@ -773,4 +882,8 @@ def is_subcontracting_order_created(po_name) -> bool:
         "Subcontracting Order", {"purchase_order": po_name, "status": ["not in", ["Draft", "Cancelled"]]}
     )
 
+<<<<<<< HEAD
     return True if count else False
+=======
+	return True if count else False
+>>>>>>> 1752e4a (item - bom create)

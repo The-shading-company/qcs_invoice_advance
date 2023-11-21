@@ -96,20 +96,19 @@ doctype_js = {"Sales Order": "public/js/sales_order.js",
 # Override standard doctype classes
 
 override_doctype_class = {
-	"Purchase Order": "qcs_invoice_advance.controller.qcs_purchase_order.CustomPurchaseOrder"
+	"Purchase Order": "qcs_invoice_advance.controller.qcs_purchase_order.ClassPurchaseOrder",
 }
 
 # Document Events
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-#	"*": {
-#		"on_update": "method",
-#		"on_cancel": "method",
-#		"on_trash": "method"
-#	}
-# }
+doc_events = {
+	"Item": {
+		"validate": "qcs_invoice_advance.controller.item.create_bom",
+	}
+}
+
 
 fixtures = [
     {

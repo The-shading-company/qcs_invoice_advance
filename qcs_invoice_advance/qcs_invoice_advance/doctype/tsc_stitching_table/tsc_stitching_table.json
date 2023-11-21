@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-21 13:07:24.491011",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "canopy_type",
+  "canopy_size",
+  "canopy_qty",
+  "no_flap_stitching_cost"
+ ],
+ "fields": [
+  {
+   "fieldname": "canopy_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Canopy Type",
+   "options": "AWN\nUMB"
+  },
+  {
+   "fieldname": "canopy_size",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Canopy Size"
+  },
+  {
+   "fieldname": "canopy_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Canopy Qty"
+  },
+  {
+   "fieldname": "no_flap_stitching_cost",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "No Flap Stitching Cost"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-11-21 13:07:43.916844",
+ "modified_by": "Administrator",
+ "module": "QCS Invoice Advance",
+ "name": "TSC Stitching table",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
