@@ -69,3 +69,4 @@ def create_bom(self, event):
                         doc.save(ignore_permissions=True)
                         frappe.msgprint("BOM Created Successfully")
  
+ 
