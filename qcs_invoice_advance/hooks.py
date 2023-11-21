@@ -95,9 +95,9 @@ doctype_js = {"Sales Order": "public/js/sales_order.js",
 # ---------------
 # Override standard doctype classes
 
-override_doctype_class = {
-	"Purchase Order": "qcs_invoice_advance.controller.qcs_purchase_order.ClassPurchaseOrder",
-}
+# override_doctype_class = {
+# 	"Purchase Order": "qcs_invoice_advance.controller.qcs_purchase_order.ClassPurchaseOrder",
+# }
 
 # Document Events
 # ---------------
@@ -105,7 +105,9 @@ override_doctype_class = {
 
 doc_events = {
 	"Item": {
-		"validate": "qcs_invoice_advance.controller.item.create_bom",
+		"after_insert": "qcs_invoice_advance.controller.item.create_bom",
+        "validate": "qcs_invoice_advance.controller.item.update_bom",
+        "on_trash": "qcs_invoice_advance.controller.item.delete_bom",
 	}
 }
 
