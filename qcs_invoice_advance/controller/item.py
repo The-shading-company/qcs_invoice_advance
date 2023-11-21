@@ -126,3 +126,6 @@ def delete_bom(self, event):
             if (bom_doc.docstatus == 1):
                 bom_doc.cancel()
                 frappe.delete_doc("BOM", bom_doc.name, ignore_permissions=True)
+                
+                
+                
