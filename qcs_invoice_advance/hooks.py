@@ -95,9 +95,9 @@ doctype_js = {"Sales Order": "public/js/sales_order.js",
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"Purchase Order": "qcs_invoice_advance.controller.qcs_purchase_order.ClassPurchaseOrder",
-# }
+override_doctype_class = {
+	"Purchase Order": "qcs_invoice_advance.controller.qcs_purchase_order.ClassPurchaseOrder",
+}
 
 # Document Events
 # ---------------
