@@ -1,7 +1,7 @@
 import frappe
 
 def create_bom(self, event):
-    if (self.variant_of):
+    if (self.variant_of == "CAN"):
                 
         fab_abb = []
         awn_abb = []
