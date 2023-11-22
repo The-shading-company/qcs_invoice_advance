@@ -105,9 +105,12 @@ override_doctype_class = {
 
 doc_events = {
 	"Item": {
-		"validate": "qcs_invoice_advance.controller.item.create_bom",
+		"after_insert": "qcs_invoice_advance.controller.item.create_bom",
+        "validate": "qcs_invoice_advance.controller.item.update_bom",
+        "on_trash": "qcs_invoice_advance.controller.item.delete_bom",
 	}
 }
+
 
 
 fixtures = [
