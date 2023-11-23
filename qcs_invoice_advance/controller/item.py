@@ -6,6 +6,7 @@ def create_bom(self, event):
         fab_abb = []
         awn_abb = []
         size = []
+        flag = 0
         
         tab = self.attributes
         for i in range(0, len(tab)):
@@ -34,10 +35,10 @@ def create_bom(self, event):
             s_doc = frappe.get_doc("TSC Stitching Cost", i)
             s_tab = s_doc.cost_table_tab
             for j in range(0, len(s_tab)):
-                frappe.errprint(s_tab[j].get("canopy_type"))
-                frappe.errprint(awn_abb[0])
-                frappe.errprint(s_tab[j].get("canopy_size"))
-                frappe.errprint(size[0])
+                frappe.errprint("ct:" + s_tab[j].get("canopy_type"))
+                frappe.errprint("awn:" + awn_abb[0])
+                frappe.errprint("cs:" + s_tab[j].get("canopy_size"))
+                frappe.errprint("s:" + size[0])
                                 
                 if (s_tab[j].get("canopy_type") == awn_abb[0] and s_tab[j].get("canopy_size") == size[0]):
                     if (frappe.get_all("BOM", filters={"item": self.name})):
@@ -50,6 +51,7 @@ def create_bom(self, event):
                                 bom_doc.operating_cost_per_bom_quantity = s_tab[j].get("no_flap_stitching_cost")
                                 bom_doc.save(ignore_permissions=True)
                                 bom_doc.submit()
+                                flag = 1
                                 frappe.msgprint("BOM Updated Successfully")
                                 
                     else:
@@ -69,9 +71,10 @@ def create_bom(self, event):
                         })
                         doc.insert(ignore_permissions=True)
                         doc.submit()
+                        flag = 1
                         frappe.msgprint("BOM Created Successfully")
-                else:
-                    frappe.msgprint("TSC Costing Table missing values, BOM wasnt created")
+            if flag == 0:
+                frappe.msgprint("TSC Costing Table missing values, BOM wasnt created")
  
  
  
