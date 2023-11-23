@@ -65,6 +65,8 @@ def create_bom(self, event):
                         doc.insert(ignore_permissions=True)
                         doc.submit()
                         frappe.msgprint("BOM Created Successfully")
+                else:
+                    frappe.msgprint("TSC Costing Table missing values, BOM wasnt created")
  
  
  
