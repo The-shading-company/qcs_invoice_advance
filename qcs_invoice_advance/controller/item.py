@@ -28,7 +28,7 @@ def create_bom(self, event):
                         awn_abb.append(att_tab[j].get("abbr"))
                         
             if (tab[i].get("attribute") == "Size"):
-                size.append(tab[i].get("attribute_value"))
+                size.append(tab[i].get("abbr"))
 
         stich = frappe.get_all("TSC Stitching Cost")
         for i in stich:
@@ -106,7 +106,7 @@ def update_bom(self, event):
                         awn_abb.append(att_tab[j].get("abbr"))
                         
             if (tab[i].get("attribute") == "Size"):
-                size.append(tab[i].get("attribute_value"))
+                size.append(tab[i].get("abbr"))
       
         stich = frappe.get_all("TSC Stitching Cost")
         for i in stich:
@@ -123,8 +123,6 @@ def update_bom(self, event):
                             bom_doc.operating_cost_per_bom_quantity = s_tab[j].get("no_flap_stitching_cost")
                             bom_doc.save(ignore_permissions=True)
                             frappe.msgprint("BOM Updated Successfully")
-                else:
-                    frappe.msgprint("TSC Costing missing values, BOM not created")
                             
                             
 def delete_bom(self, event):
