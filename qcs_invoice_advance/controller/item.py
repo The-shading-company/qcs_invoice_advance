@@ -34,6 +34,9 @@ def create_bom(self, event):
             s_doc = frappe.get_doc("TSC Stitching Cost", i)
             s_tab = s_doc.cost_table_tab
             for j in range(0, len(s_tab)):
+                frappe.errprint(awn_abb[0])
+                frappe.errprint(s_tab[j])
+                frappe.errprint(size[0])
                 if (s_tab[j].get("canopy_type") == awn_abb[0] and s_tab[j].get("canopy_size") == size[0]):
                     if (frappe.get_all("BOM", filters={"item": self.name})):
                         bom = frappe.get_all("BOM", filters={"item": self.name})
