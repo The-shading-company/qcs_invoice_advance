@@ -18,7 +18,7 @@ def create_bom(self, event):
                     if (att_tab[j].get("attribute_value") == value):
                         fab_abb.append(att_tab[j].get("abbr"))
                         
-            if (tab[i].get("attribute") == "Awning"):
+            if (tab[i].get("attribute") == "Canopy Type"):
                 value = tab[i].get("attribute_value")
                 i_att = frappe.get_doc("Item Attribute", tab[i].get("attribute"))
                 att_tab = i_att.item_attribute_values
