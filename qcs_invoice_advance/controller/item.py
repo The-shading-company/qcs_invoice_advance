@@ -37,6 +37,10 @@ def create_bom(self, event):
             for j in range(0, len(s_tab)):
                                 
                 if (s_tab[j].get("canopy_type") == awn_abb[0] and s_tab[j].get("canopy_size") == size[0]):
+                    frappe.errprint(s_tab[j].get("canopy_type"))
+                    frappe.errprint(awn_abb[0])
+                    frappe.errprint(s_tab[j].get("canopy_size"))
+                    frappe.errprint(size[0])
                     if (frappe.get_all("BOM", filters={"item": self.name})):
                         bom = frappe.get_all("BOM", filters={"item": self.name})
                         for k in bom:
