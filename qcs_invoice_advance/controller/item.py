@@ -33,7 +33,7 @@ def create_bom(self, event):
                 att_tab = i_att.item_attribute_values
                 for j in range(0, len(att_tab)):
                     if (att_tab[j].get("attribute_value") == value):
-                        size.append(tab[i].get("abbr"))
+                        size.append(att_tab[j].get("abbr"))
         frappe.errprint("size:-")
         frappe.errprint(size)
         stich = frappe.get_all("TSC Stitching Cost")
