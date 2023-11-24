@@ -34,26 +34,16 @@ def create_bom(self, event):
                 for j in range(0, len(att_tab)):
                     if (att_tab[j].get("attribute_value") == value):
                         size.append(att_tab[j].get("abbr"))
-        frappe.errprint("size:-")
-        frappe.errprint(size)
+
         stich = frappe.get_all("TSC Stitching Cost")
         for i in stich:
             s_doc = frappe.get_doc("TSC Stitching Cost", i)
             s_tab = s_doc.cost_table_tab
             for j in range(0, len(s_tab)):
-                frappe.errprint(s_tab[j].get("canopy_type"))
-                frappe.errprint("=")
-                frappe.errprint(awn_abb[0])
-                frappe.errprint("|")
-                frappe.errprint(s_tab[j].get("canopy_size"))
-                frappe.errprint("=")
-                frappe.errprint(size[0])
+
                                 
                 if (s_tab[j].get("canopy_type") == awn_abb[0] and s_tab[j].get("canopy_size") == size[0]):
-                    frappe.errprint(s_tab[j].get("canopy_type"))
-                    frappe.errprint(awn_abb[0])
-                    frappe.errprint(s_tab[j].get("canopy_size"))
-                    frappe.errprint(size[0])
+
                     if (frappe.get_all("BOM", filters={"item": self.name})):
                         bom = frappe.get_all("BOM", filters={"item": self.name})
                         for k in bom:
@@ -152,9 +142,9 @@ def delete_bom(self, event):
 
 
 def add_sale_price(self, event):
-    frappe.errprint("pricing")
+
     itemprice = frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Retail"})
-    #frappe.errprint(itemprice[0])
+
     if frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Retail"}):
         for i in itemprice:
             ip_doc = frappe.get_doc("Item Price", i)
