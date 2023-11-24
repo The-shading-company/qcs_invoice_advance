@@ -36,11 +36,11 @@ def create_bom(self, event):
             s_tab = s_doc.cost_table_tab
             for j in range(0, len(s_tab)):
                 frappe.errprint(s_tab[j].get("canopy_type"))
-                frappe.errprint("-")
+                frappe.errprint("=")
                 frappe.errprint(awn_abb[0])
-                frappe.errprint("-")
+                frappe.errprint("|")
                 frappe.errprint(s_tab[j].get("canopy_size"))
-                frappe.errprint("-")
+                frappe.errprint("=")
                 frappe.errprint(size[0])
                                 
                 if (s_tab[j].get("canopy_type") == awn_abb[0] and s_tab[j].get("canopy_size") == size[0]):
