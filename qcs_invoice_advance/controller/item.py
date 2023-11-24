@@ -149,6 +149,49 @@ def delete_bom(self, event):
             if (bom_doc.docstatus == 1):
                 bom_doc.cancel()
                 frappe.delete_doc("BOM", bom_doc.name, ignore_permissions=True)
-                
-                
+
+
+def add_sale_price(self, event):
+    frappe.errprint("pricing")
+    itemprice = frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Retail"})
+    #frappe.errprint(itemprice[0])
+    if frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Retail"}):
+        for i in itemprice:
+            ip_doc = frappe.get_doc("Item Price", i)
+            ip_doc.price_list_rate = self.total_cost * 2.1
+            ip_doc.save(ignore_permissions=True)
+    else:
+        frappe.errprint("retail-else")
+        ip_doc = frappe.new_doc("Item Price")
+        ip_doc.item_code = self.item
+        ip_doc.price_list = "Retail"
+        ip_doc.price_list_rate = self.total_cost * 2.1
+        ip_doc.save(ignore_permissions=True)
+
+    itemprice = frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Contract"})
+    
+    if frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Contract"}):
+        for i in itemprice:
+            ip_doc = frappe.get_doc("Item Price", i)
+            ip_doc.price_list_rate = self.total_cost * 1.9
+            ip_doc.save(ignore_permissions=True)
+    else:
+        ip_doc = frappe.new_doc("Item Price")
+        ip_doc.item_code = self.item
+        ip_doc.price_list = "Contract"
+        ip_doc.price_list_rate = self.total_cost * 1.9
+        ip_doc.save(ignore_permissions=True)
+
+    itemprice = frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Dealer"})
+    if frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Dealer"}):
+        for i in itemprice:
+            ip_doc = frappe.get_doc("Item Price", i)
+            ip_doc.price_list_rate = self.total_cost * 1.75
+            ip_doc.save(ignore_permissions=True)
+    else:
+        ip_doc = frappe.new_doc("Item Price")
+        ip_doc.item_code = self.item
+        ip_doc.price_list = "Dealer"
+        ip_doc.price_list_rate = self.total_cost * 1.75
+        ip_doc.save(ignore_permissions=True)
                 
