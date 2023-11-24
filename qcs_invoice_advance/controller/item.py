@@ -28,7 +28,12 @@ def create_bom(self, event):
                         awn_abb.append(att_tab[j].get("abbr"))
                         
             if (tab[i].get("attribute") == "Size"):
-                size.append(tab[i].get("abbr"))
+                value = tab[i].get("attribute_value")
+                i_att = frappe.get_doc("Item Attribute", tab[i].get("attribute"))
+                att_tab = i_att.item_attribute_values
+                for j in range(0, len(att_tab)):
+                    if (att_tab[j].get("attribute_value") == value):
+                        size.append(tab[i].get("abbr"))
 
         stich = frappe.get_all("TSC Stitching Cost")
         for i in stich:
