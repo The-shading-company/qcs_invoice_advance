@@ -33,6 +33,7 @@ def create_partial_invoice(sales_order, percentage):
 	doc.update({
 		"customer": so.customer,
 		"company": so.company,
+		"posting_date": so.delivery_date,
 		"due_date": so.delivery_date,
 		"order_percentage": percentage,
 		"items": item,
