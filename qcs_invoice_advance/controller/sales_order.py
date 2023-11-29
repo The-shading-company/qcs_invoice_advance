@@ -39,7 +39,8 @@ def create_partial_invoice(sales_order, percentage):
 		"items": item,
 		"original_total": so.total,
 		"taxes_and_charges": so.taxes_and_charges,
-		"vat_emirate": so.vat_emirate
+		"vat_emirate": so.vat_emirate,
+		"project": so.project
 	})
 	doc.save(ignore_permissions=True)
 	so.partial_invoice = so.partial_invoice + percentage
