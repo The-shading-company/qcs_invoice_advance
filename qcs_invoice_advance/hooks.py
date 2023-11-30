@@ -113,7 +113,10 @@ doc_events = {
          	"on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
          	"on_update_after_submit": "qcs_invoice_advance.controller.item.add_sale_price",
 
-   	}
+   	},
+	"Sales Invoice": {
+		"validate": "qcs_invoice_advance.controller.item.tsc_custom_accounts"
+	}
 }
 
 
