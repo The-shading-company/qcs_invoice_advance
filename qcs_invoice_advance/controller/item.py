@@ -190,16 +190,16 @@ def tsc_custom_accounts(self, event):
     if self.doctype == "Sales Invoice":
         for item in self.items:
             cogs = frappe.get_all("Account", filters={"custom_customer_type":frappe.get_value("Customer", self.customer, "customer_type"), "custom_item_group":item.item_group, "root_type":"Expense" })
-            if cogs[0].name:
+            if len(cogs) > 0:
                 item.expense_account = cogs[0].name
             rev = frappe.get_all("Account", filters={"custom_customer_type":frappe.get_value("Customer", self.customer, "customer_type"), "custom_item_group":item.item_group, "root_type":"Income" })
-            if rev[0].name:
+            if len(rev) > 0:
                 item.income_account = rev[0].name
 
     if self.doctype == "Delivery Note":
         for item in self.items:
             cogs = frappe.get_all("Account", filters={"custom_customer_type":frappe.get_value("Customer", self.customer, "customer_type"), "custom_item_group":item.item_group, "root_type":"Expense" })
-            if cogs[0].name:
+            if len(cogs) > 0:
                 item.expense_account = cogs[0].name
 
                 
