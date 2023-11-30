@@ -189,11 +189,11 @@ def add_sale_price(self, event):
 def tsc_custom_accounts(self, event):
     if self.doctype == "Sales Invoice":
         for item in self.items:
-            if frappe.get_all("Accounts", filters={"custom_customer_type":frappe.get_value("Customer", self.customer, "customer_group"), "custom_item_group":item.item_group }):
-                cogs = frappe.get_all("Accounts", filters={"custom_customer_type":frappe.get_value("Customer", self.customer, "customer_group"), "custom_item_group":item.item_group, "root_type":"Expense" })
+            if frappe.get_all("Accounts", filters={"custom_customer_type":frappe.get_value("Customer", self.customer, "customer_type"), "custom_item_group":item.item_group }):
+                cogs = frappe.get_all("Accounts", filters={"custom_customer_type":frappe.get_value("Customer", self.customer, "customer_type"), "custom_item_group":item.item_group, "root_type":"Expense" })
                 item.expense_account = cogs[0]
-            if frappe.get_all("Accounts", filters={"custom_customer_type":frappe.get_value("Customer", self.customer, "customer_group"), "custom_item_group":item.item_group }):
-                rev = frappe.get_all("Accounts", filters={"custom_customer_type":frappe.get_value("Customer", self.customer, "customer_group"), "custom_item_group":item.item_group, "root_type":"Expense" })
+            if frappe.get_all("Accounts", filters={"custom_customer_type":frappe.get_value("Customer", self.customer, "customer_type"), "custom_item_group":item.item_group }):
+                rev = frappe.get_all("Accounts", filters={"custom_customer_type":frappe.get_value("Customer", self.customer, "customer_type"), "custom_item_group":item.item_group, "root_type":"Expense" })
                 item.income_account = rev[0]
 
     if self.doctype == "Delivery Note":
