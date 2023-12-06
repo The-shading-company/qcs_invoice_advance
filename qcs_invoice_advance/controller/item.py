@@ -206,9 +206,9 @@ def tsc_custom_accounts(self, event):
 def add_margins(self, event):
 	for item in self.items:
 		bom = frappe.get_all("BOM", filters={"item": item.item_code, "is_active": 1, "is_default": 1})
-		frappe.errprint(bom)
 		if len(bom) > 0:
-			item.custom_tsc_cost = bom[0].total_cost
+			bom_index = frappe.get_doc("BOM", bom[0].name)
+			item.custom_tsc_cost = bom_index.total_cost
 		else:
 			item.custom_tsc_cost = item.valuation_rate
 		if item.custom_tsc_cost:
