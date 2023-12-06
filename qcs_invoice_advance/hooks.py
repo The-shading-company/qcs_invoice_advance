@@ -118,7 +118,7 @@ doc_events = {
 		"validate": "qcs_invoice_advance.controller.item.tsc_custom_accounts"
 	},
 	"Quotation": {
-		"validate": "qcs_invoice_advance.controller.item.add_margin"
+		"validate": "qcs_invoice_advance.controller.item.add_margins"
 	}
 }
 
