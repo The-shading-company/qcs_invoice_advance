@@ -204,16 +204,25 @@ def tsc_custom_accounts(self, event):
 
 
 def add_margins(self, event):
+	total_cost = 0
+	total_margin = 0
 	for item in self.items:
 		bom = frappe.get_all("BOM", filters={"item": item.item_code, "is_active": 1, "is_default": 1})
 		if len(bom) > 0:
 			bom_index = frappe.get_doc("BOM", bom[0].name)
 			item.custom_tsc_cost = bom_index.total_cost
+			total_cost += item.custom_tsc_cost
 		else:
 			item.custom_tsc_cost = item.valuation_rate
+			total_cost += item.custom_tsc_cost
 		if item.custom_tsc_cost:
 			item.custom_tsc_margin = item.rate - item.custom_tsc_cost
-			item.custom_tsc_margin_per = ( item.custom_tsc_margin / item.rate ) * 100
+			total_margin += item.custom_tsc_margin
+			item.custom_tsc_margin_per = (item.custom_tsc_margin * 100) / item.custom_tsc_cost
+	self.custom_total_cost = total_cost
+	self.custom_total_margin = doc.net_total - total_cost
+	self.custom_margin_percent = (self.custom_total_margin * 100) / self.custom_total_cost 
+
 			
 		
 	
