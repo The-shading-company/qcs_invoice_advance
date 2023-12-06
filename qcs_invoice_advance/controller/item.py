@@ -220,7 +220,7 @@ def add_margins(self, event):
 			total_margin += item.custom_tsc_margin
 			item.custom_tsc_margin_per = (item.custom_tsc_margin * 100) / item.custom_tsc_cost
 	self.custom_total_cost = total_cost
-	self.custom_total_margin = doc.net_total - total_cost
+	self.custom_total_margin = self.net_total - total_cost
 	self.custom_margin_percent = (self.custom_total_margin * 100) / self.custom_total_cost 
 
 			
