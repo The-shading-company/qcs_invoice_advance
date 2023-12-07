@@ -1,4 +1,5 @@
 import frappe
+from frappe.model.mapper import get_mapped_doc
 
 def create_bom(self, event):
     if (self.variant_of == "CAN"):
