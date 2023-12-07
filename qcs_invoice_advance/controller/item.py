@@ -266,6 +266,7 @@ def make_quotation(source_name, target_doc=None):
 		{
 			"TSC Service Call": {
 				"doctype": "Quotation",
+				"field_map": {"customer": "party_name"},
 			},
 			"TSC Service Call Info": {
 				"doctype": "Quotation Item",
