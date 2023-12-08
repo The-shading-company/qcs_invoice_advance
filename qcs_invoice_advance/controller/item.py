@@ -341,22 +341,20 @@ def make_quotation_site_visit(source_name, target_doc=None):
 			quotation.opportunity = source.name
 
 	doclist = get_mapped_doc(
-		"TSC Service Call",
+		"TSC Site Visit",
 		source_name,
 		{
-			"TSC Service Call": {
-				"doctype": "Quotation",
-				"field_map": {"customer": "party_name"},
-			},
-			"TSC Service Call Info": {
-				"doctype": "Quotation Item",
-				"field_map": {
-					"parent": "prevdoc_docname",
-					"parenttype": "prevdoc_doctype",
-					"uom": "stock_uom",
+			if sv.customer_type == "Company":
+				"TSC Site Visit": {
+					"doctype": "Quotation",
+					"field_map": {"organization_name": "party_name"},
 				},
-				"add_if_empty": True,
-			},
+			if sv.customer_type == "Individual":
+				"TSC Site Visit": {
+					"doctype": "Quotation",
+					"field_map": {"customer_name": "party_name"},
+				},
+
 		},
 		target_doc,
 		set_missing_values,
