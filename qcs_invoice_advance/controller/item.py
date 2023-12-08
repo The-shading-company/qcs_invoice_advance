@@ -292,7 +292,7 @@ def make_quotation_site_visit(source_name, target_doc=None):
 	cust = frappe.new_doc("Customer")
 	if sv.customer_type == "Company":
 		cust.customer_name = sv.organization_name
-	if sv.customer_type == "Individual"
+	if sv.customer_type == "Individual":
 		cust.customer_name = sv.customer_name
 	cust.customer_group = sv.customer_group
 	cust.customer_type = sv.customer_type
