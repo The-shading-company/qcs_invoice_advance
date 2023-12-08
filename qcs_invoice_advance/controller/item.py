@@ -286,4 +286,83 @@ def make_quotation(source_name, target_doc=None):
 
 
 
+@frappe.whitelist()
+def make_quotation_site_visit(source_name, target_doc=None):
+	sv = frappe.get_doc("TSC Site Visit", source_name)
+	cust = frappe.new_doc("Customer")
+	if sv.customer_type == "Company":
+		cust.customer_name = sv.organization_name
+	if sv.customer_type == "Individual"
+		cust.customer_name = sv.customer_name
+	cust.customer_group = sv.customer_group
+	cust.customer_type = sv.customer_type
+	cust.territory = sv.territory
+	cust.save(ignore_permissions=True)
+	if sv.customer_name:
+		cont = frappe.new_doc("Contact")
+		cont.first_name = sv.customer_name
+		cont.append("phone_nos",{
+			"phone": sv.mobile_no,
+			"is_primary_mobile_no": 1
+		})
+		cont.append("links",{
+			"link_doctype": "Customer",
+			"link_name": cust.name
+		})
+		cont.save(ignore_permissions=True)
+		
+		
+	def set_missing_values(source, target):
+		from erpnext.controllers.accounts_controller import get_default_taxes_and_charges
+
+		quotation = frappe.get_doc(target)
+
+		company_currency = frappe.get_cached_value("Company", quotation.company, "default_currency")
+
+		if company_currency == quotation.currency:
+			exchange_rate = 1
+		else:
+			exchange_rate = get_exchange_rate(
+				quotation.currency, company_currency, quotation.transaction_date, args="for_selling"
+			)
+
+		quotation.conversion_rate = exchange_rate
+
+		# get default taxes
+		taxes = get_default_taxes_and_charges(
+			"Sales Taxes and Charges Template", company=quotation.company
+		)
+		if taxes.get("taxes"):
+			quotation.update(taxes)
+
+		quotation.run_method("set_missing_values")
+		quotation.run_method("calculate_taxes_and_totals")
+		if not source.get("items", []):
+			quotation.opportunity = source.name
+
+	doclist = get_mapped_doc(
+		"TSC Service Call",
+		source_name,
+		{
+			"TSC Service Call": {
+				"doctype": "Quotation",
+				"field_map": {"customer": "party_name"},
+			},
+			"TSC Service Call Info": {
+				"doctype": "Quotation Item",
+				"field_map": {
+					"parent": "prevdoc_docname",
+					"parenttype": "prevdoc_doctype",
+					"uom": "stock_uom",
+				},
+				"add_if_empty": True,
+			},
+		},
+		target_doc,
+		set_missing_values,
+	)
+
+	return doclist
+
+
 
