@@ -340,25 +340,36 @@ def make_quotation_site_visit(source_name, target_doc=None):
 		if not source.get("items", []):
 			quotation.opportunity = source.name
 
-	doclist = get_mapped_doc(
-		"TSC Site Visit",
-		source_name,
-		{
-			if sv.customer_type == "Company":
+	if sv.customer_type == "Company":
+		doclist = get_mapped_doc(
+			"TSC Site Visit",
+			source_name,
+			{
+				
 				"TSC Site Visit": {
 					"doctype": "Quotation",
 					"field_map": {"organization_name": "party_name"},
 				},
-			if sv.customer_type == "Individual":
+			
+			},
+			target_doc,
+			set_missing_values,
+		)
+	if sv.customer_type == "Individual":
+		doclist = get_mapped_doc(
+			"TSC Site Visit",
+			source_name,
+			{
+				
 				"TSC Site Visit": {
 					"doctype": "Quotation",
 					"field_map": {"customer_name": "party_name"},
 				},
-
-		},
-		target_doc,
-		set_missing_values,
-	)
+			
+			},
+			target_doc,
+			set_missing_values,
+		)
 
 	return doclist
 
