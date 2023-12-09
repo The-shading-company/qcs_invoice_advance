@@ -271,8 +271,6 @@ def make_quotation(source_name, target_doc=None):
 			"TSC Service Call Info": {
 				"doctype": "Quotation Item",
 				"field_map": {
-					"parent": "prevdoc_docname",
-					"parenttype": "prevdoc_doctype",
 					"uom": "stock_uom",
 				},
 				"add_if_empty": True,
