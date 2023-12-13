@@ -335,8 +335,8 @@ def make_quotation_site_visit(source_name, target_doc=None):
 
 		quotation.run_method("set_missing_values")
 		quotation.run_method("calculate_taxes_and_totals")
-		if not source.get("items", []):
-			quotation.opportunity = source.name
+		#if not source.get("items", []):
+		#	quotation.opportunity = source.name
 
 	if sv.customer_type == "Company":
 		doclist = get_mapped_doc(
