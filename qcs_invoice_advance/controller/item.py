@@ -222,7 +222,12 @@ def add_margins(self, event):
 			item.custom_tsc_margin_per = (item.custom_tsc_margin * 100) / item.custom_tsc_cost
 	self.custom_total_cost = total_cost
 	self.custom_total_margin = self.net_total - total_cost
-	self.custom_margin_percent = (self.custom_total_margin * 100) / self.custom_total_cost 
+	self.custom_margin_percent = (self.custom_total_margin * 100) / self.custom_total_cost
+	if self.custom_tsc_site_visit:
+		sv = frappe.get_doc("TSC Site Visit", source_name)
+		sv.quotation = self.name
+		sv.save(ignore_permissions=True)
+		
 
 			
 		
