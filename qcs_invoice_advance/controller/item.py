@@ -223,11 +223,13 @@ def add_margins(self, event):
 	self.custom_total_cost = total_cost
 	self.custom_total_margin = self.net_total - total_cost
 	self.custom_margin_percent = (self.custom_total_margin * 100) / self.custom_total_cost
+
+
+def add_quote_link(self, event):
 	if self.custom_tsc_site_visit:
 		sv = frappe.get_doc("TSC Site Visit", self.custom_tsc_site_visit)
 		sv.quotation = self.name
 		sv.save(ignore_permissions=True)
-		
 
 			
 		
@@ -262,8 +264,8 @@ def make_quotation(source_name, target_doc=None):
 
 		quotation.run_method("set_missing_values")
 		quotation.run_method("calculate_taxes_and_totals")
-		if not source.get("items", []):
-			quotation.opportunity = source.name
+		#if not source.get("items", []):
+		#	quotation.opportunity = source.name
 
 	doclist = get_mapped_doc(
 		"TSC Service Call",
