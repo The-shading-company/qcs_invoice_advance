@@ -335,6 +335,7 @@ def make_quotation_site_visit(source_name, target_doc=None):
 
 		quotation.run_method("set_missing_values")
 		quotation.run_method("calculate_taxes_and_totals")
+		quotation.custom_tsc_site_visit = source.name
 		#if not source.get("items", []):
 		#	quotation.opportunity = source.name
 
