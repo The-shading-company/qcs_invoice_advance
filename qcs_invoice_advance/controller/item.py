@@ -142,6 +142,18 @@ def delete_bom(self, event):
                 frappe.delete_doc("BOM", bom_doc.name, ignore_permissions=True)
 
 
+def add_image(self, event):
+	if (self.variant_of == "CAN"):
+		for item in self.attributes:
+			if item.attribute == "Fabric Color":
+				att_list = frappe.get_all("Item Attribute Value", filters={"attribute_value":item.item_attribute_value})
+				if len(att_list) > 0:
+					att_raw = frappe.get_value("Item Attribute Value", filters={"attribute_value":item.item_attribute_value}, "custom_item_code")
+					self.image = frappe.get_value("Item", att_raw, "image")
+					
+
+
+
 def add_sale_price(self, event):
 
     itemprice = frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Retail"})
