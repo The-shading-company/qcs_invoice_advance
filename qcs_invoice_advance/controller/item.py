@@ -292,27 +292,30 @@ def make_quotation(source_name, target_doc=None):
 @frappe.whitelist()
 def make_quotation_site_visit(source_name, target_doc=None):
 	sv = frappe.get_doc("TSC Site Visit", source_name)
+	
 	cust = frappe.new_doc("Customer")
 	if sv.customer_type == "Company":
 		cust.customer_name = sv.organization_name
 	if sv.customer_type == "Individual":
 		cust.customer_name = sv.customer_name
-	cust.customer_group = sv.customer_group
-	cust.customer_type = sv.customer_type
-	cust.territory = sv.territory
-	cust.save(ignore_permissions=True)
-	if sv.customer_name:
-		cont = frappe.new_doc("Contact")
-		cont.first_name = sv.customer_name
-		cont.append("phone_nos",{
-			"phone": sv.mobile_no,
-			"is_primary_mobile_no": 1
-		})
-		cont.append("links",{
-			"link_doctype": "Customer",
-			"link_name": cust.name
-		})
-		cont.save(ignore_permissions=True)
+
+	if not frappe.get_doc("Customer", cust.customer_name):
+		cust.customer_group = sv.customer_group
+		cust.customer_type = sv.customer_type
+		cust.territory = sv.territory
+		cust.save(ignore_permissions=True)
+		if sv.customer_name:
+			cont = frappe.new_doc("Contact")
+			cont.first_name = sv.customer_name
+			cont.append("phone_nos",{
+				"phone": sv.mobile_no,
+				"is_primary_mobile_no": 1
+			})
+			cont.append("links",{
+				"link_doctype": "Customer",
+				"link_name": cust.name
+			})
+			cont.save(ignore_permissions=True)
 		
 		
 	def set_missing_values(source, target):
