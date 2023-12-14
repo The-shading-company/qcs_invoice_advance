@@ -148,7 +148,7 @@ def add_image(self, event):
 			if item.attribute == "Fabric Color":
 				att_list = frappe.get_all("Item Attribute Value", filters={"attribute_value":item.attribute_value})
 				if len(att_list) > 0:
-					att_raw = frappe.db.get_value("Item Attribute Value", {"attribute_value":item.item_attribute_value}, "custom_item_code")
+					att_raw = frappe.db.get_value("Item Attribute Value", {"attribute_value":item.attribute_value}, "custom_item_code")
 					self.image = frappe.get_value("Item", att_raw, "image")
 					
 
