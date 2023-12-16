@@ -427,10 +427,10 @@ def create_payment_link(dt, dn, amt, purpose):
 	pl.document_type = "Quotation"
 	pl.document_name = docu.name
 	pl.status = "Open"
-	pl.payment_url = rdata["paymentlink"]
+	pl.payment_url = rdata["paymentLink"]
 	pl.save(ignore_permissions=True)
 
-	return rdata.paymentlink
+	return rdata.paymentLink
 	
 	
 	
