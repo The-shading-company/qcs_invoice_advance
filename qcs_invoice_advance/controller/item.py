@@ -430,7 +430,7 @@ def create_payment_link(dt, dn, amt, purpose):
 	pl.payment_url = rdata["paymentLink"]
 	pl.save(ignore_permissions=True)
 
-	return rdata.paymentLink
+	return rdata["paymentLink"]
 	
 	
 	
