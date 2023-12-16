@@ -1,5 +1,7 @@
 import frappe
 from frappe.model.mapper import get_mapped_doc
+import requests
+import json
 
 def create_bom(self, event):
     if (self.variant_of == "CAN"):
@@ -394,5 +396,31 @@ def make_quotation_site_visit(source_name, target_doc=None):
 
 	return doclist
 
+
+@frappe.whitelist()
+def create_payment_link(dt, dn, amt, purpose):
+	docu = frappe.get_doc(dt, dn)
+	url = "https://simplify-rak-gbermhh3pa-uc.a.run.app/create"
+
+	payload = json.dumps({
+	  "key": "kl8EvdFF4EPPIo5JHJto74lz-EOt5rabkmnE",
+	  "reference": dn,
+	  "note": "test",
+	  "dueDate": docu.transaction_date,
+	  "memo": "Delivery To",
+	  "name": docu.customer_name,
+	  "description": purpose,
+	  "amount": amt,
+	  "quantity": "1",
+	  "currency": "AED"
+	})
+	headers = {
+	  'Content-Type': 'application/json'
+	}
+	
+	response = requests.request("POST", url, headers=headers, data=payload)
+	
+	frappe.errprint(response.text)
+	
 
 
