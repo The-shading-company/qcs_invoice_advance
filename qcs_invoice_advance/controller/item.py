@@ -406,7 +406,7 @@ def create_payment_link(dt, dn, amt, purpose):
 	  "key": "kl8EvdFF4EPPIo5JHJto74lz-EOt5rabkmnE",
 	  "reference": dn,
 	  "note": "test",
-	  "dueDate": docu.transaction_date,
+	  "dueDate": str(docu.transaction_date),
 	  "memo": "Delivery To",
 	  "name": docu.customer_name,
 	  "description": purpose,
