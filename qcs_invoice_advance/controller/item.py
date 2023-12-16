@@ -409,6 +409,7 @@ def create_payment_link(dt, dn, amt, purpose):
 	  "dueDate": str(docu.transaction_date),
 	  "memo": "Delivery To",
 	  "name": docu.customer_name,
+	  "email": docu.contact_email if docu.contact_email else "",
 	  "description": purpose,
 	  "amount": amt,
 	  "quantity": "1",
@@ -419,8 +420,18 @@ def create_payment_link(dt, dn, amt, purpose):
 	}
 	
 	response = requests.request("POST", url, headers=headers, data=payload)
+
+	pl = frappe.new_doc("TSC Payment Link")
+	pl.requested_date = docu.transaction_date
+	pl.document_type = "Quotation"
+	pl.document_name = docu.name
+	pl.status = "Open"
+	pl.payment_url = response.text.paymentlink
+	pl.save(ignore_permissions=True)
+
+	return response.text.paymentlink
 	
-	frappe.errprint(response.text)
+	
 	
 
 
