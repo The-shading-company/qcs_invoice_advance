@@ -421,13 +421,13 @@ def create_payment_link(dt, dn, amt, purpose):
 	
 	response = requests.request("POST", url, headers=headers, data=payload)
 	rdata = json.loads(response.text)
-
+	frappe.errprint(rdata)
 	pl = frappe.new_doc("TSC Payment Link")
 	pl.requested_date = docu.transaction_date
 	pl.document_type = "Quotation"
 	pl.document_name = docu.name
 	pl.status = "Open"
-	pl.payment_url = rdata.paymentlink
+	pl.payment_url = rdata["paymentlink"]
 	pl.save(ignore_permissions=True)
 
 	return rdata.paymentlink
