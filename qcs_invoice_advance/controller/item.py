@@ -424,7 +424,7 @@ def create_payment_link(dt, dn, amt, purpose):
 	frappe.errprint(rdata)
 	pl = frappe.new_doc("TSC Payment Link")
 	pl.requested_date = docu.transaction_date
-	pl.document_type = "Quotation"
+	pl.document_type = dt
 	pl.document_name = docu.name
 	pl.status = "Open"
 	pl.payment_url = rdata["paymentLink"]
