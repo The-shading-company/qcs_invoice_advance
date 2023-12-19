@@ -2,6 +2,7 @@ import frappe
 from frappe.model.mapper import get_mapped_doc
 import requests
 import json
+from frappe import _
 
 def create_bom(self, event):
     if (self.variant_of == "CAN"):
@@ -249,7 +250,7 @@ def add_quote_link(self, event):
 def check_discounts(self, event):
 	if self.selling_price_list == "Retail":
 		if self.net_total >= self.total * 0.01:
-			frappe.throw(__("Total Discount more than 10%"))
+			frappe.throw(_("Total Discount more than 10%"))
 	
 	
 
