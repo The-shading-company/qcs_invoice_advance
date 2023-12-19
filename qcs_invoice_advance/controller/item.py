@@ -315,7 +315,7 @@ def make_quotation_site_visit(source_name, target_doc=None):
 	if sv.customer_type == "Individual":
 		cust.customer_name = sv.customer_name
 
-	if not frappe.get_doc("Customer", cust.customer_name):
+	if not frappe.db.exists("Customer", cust.customer_name):
 		cust.customer_group = sv.customer_group
 		cust.customer_type = sv.customer_type
 		cust.territory = sv.territory
