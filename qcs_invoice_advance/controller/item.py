@@ -245,8 +245,12 @@ def add_quote_link(self, event):
 		sv.quotation = self.name
 		sv.save(ignore_permissions=True)
 
-			
-		
+
+def check_discounts(self, event):
+	if self.selling_price_list == "Retail":
+		if self.net_total >= self.total * 0.01
+			frappe.throw(_("Total Discount more than 10%"))
+	
 	
 
                 
