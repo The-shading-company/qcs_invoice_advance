@@ -248,7 +248,7 @@ def add_quote_link(self, event):
 
 
 def check_discounts(self, event):
-	if self.net_total > 0:
+	if self.net_total != self.total:
 		if self.selling_price_list == "Retail":
 			if self.net_total >= self.total * 0.10:
 				frappe.throw(_("Total Discount more than 10%"))
