@@ -341,6 +341,18 @@ def make_quotation_site_visit(source_name, target_doc=None):
 				"link_name": cust.name
 			})
 			cont.save(ignore_permissions=True)
+			address = frappe.new_doc("Address")
+			address.address_title = sv.customer_name
+			address.address_type = "Billing"
+			address.address_line1 = sv.address
+			address.country = "United Arab Emirates"
+			address.is_primary_address = 1
+			address.append("links",{
+				"link_doctype": "Customer",
+				"link_name": cust.name
+			})
+			address.save(ignore_permissions=True)
+			
 		
 		
 	def set_missing_values(source, target):
