@@ -347,6 +347,7 @@ def make_quotation_site_visit(source_name, target_doc=None):
 			address.address_line1 = sv.address
 			address.country = "United Arab Emirates"
 			address.is_primary_address = 1
+			address.city = sv.territory
 			address.append("links",{
 				"link_doctype": "Customer",
 				"link_name": cust.name
