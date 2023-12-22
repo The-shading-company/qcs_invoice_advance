@@ -340,6 +340,7 @@ def make_quotation_site_visit(source_name, target_doc=None):
 				"link_doctype": "Customer",
 				"link_name": cust.name
 			})
+			cont.is_primary_contact = 1
 			cont.save(ignore_permissions=True)
 		if sv.address:
 			address = frappe.new_doc("Address")
