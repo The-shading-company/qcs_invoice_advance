@@ -341,6 +341,7 @@ def make_quotation_site_visit(source_name, target_doc=None):
 				"link_name": cust.name
 			})
 			cont.save(ignore_permissions=True)
+		if sv.address:
 			address = frappe.new_doc("Address")
 			address.address_title = sv.customer_name
 			address.address_type = "Billing"
