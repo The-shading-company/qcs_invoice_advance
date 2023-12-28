@@ -60,6 +60,7 @@ def create_bom(self, event):
                                 bom_doc.submit()
                                 flag = 1
                                 frappe.msgprint("BOM Updated Successfully")
+                                #addition from code space
                                 
                     else:
                         self.save(ignore_permissions=True)
