@@ -85,6 +85,57 @@ def create_bom(self, event):
                 frappe.msgprint("TSC Costing Table missing values, BOM wasnt created")
  
  
+def create_shade_sail_price(self, event):
+	sh_type = ""
+	sw = 0
+	sl = 0
+	sp = 0
+	sc = 0
+	sb = 0
+	if self.variant_of == "SHA-T":
+		for i in self.attributes:
+			if i.attribute == "Shade Shape":
+				sh_type = i.attribute_value
+			if i.attribute == "Shade Width":
+				sw = flt(i.attribute_value)
+			if i.attribute == "Shade Length":
+				sl = flt(i.attribute_value)
+			if i.attribute == "Posts":
+				sp = flt(i.attribute_value)
+			if i.attribute == "Concrete":
+				sc = flt(i.attribute_value)
+			if i.attribute == "Wall Bracket":
+				sb = flt(i.attribute_value)
+	if sh_type == "Square":
+		f_width = flt(sw) / 3
+		f_qty = f_width * flt(sl)
+		f_cost = 25 * f_qty
+		s_size = (f_width * 2) + (flt(sl) * 2)
+		cable_cost = s_size * 6
+		bracket_cost = flt(sb) * 22 * 2
+		post_cost = flt(sp) * 380 * 2
+		post_pc_cost = flt(sp) * 245 * 2
+		post_braket_cost = flt(sp) * bracket_cost * 2
+		dshackle_cost = flt(sp) * 5 * 2
+		wire_clamp_cost = 2 x 2 x 2
+		eyelet_cost = flt(sp) * 18 * 2
+		post_cap_cost = flt(sp) * 21 * 2
+		stitching_cost = flt(sw) * flt(sl) * 12.5 * 2
+		installation_cost = 230 * 1.65
+		concrete_cost = flt(sc) * 607 * 1.75
+		total_price = f_cost + cable_cost + bracket_cost + post_cost + post_pc_cost + post_braket_cost + dshackle_cost + wire_clamp_cost + eyelet_cost + post_cap_cost + stitching_cost + installation_cost + concrete_cost
+		if total_price > 0:
+			frappe.msgprint("Retail Price List Added")
+		if not frappe.db.exists('Item Price', {"item_code": self.name, "price_list": "Retail"}):
+			ip_doc = frappe.new_doc("Item Price")
+			ip_doc.item_code = self.name
+			ip_doc.price_list = "Retail"
+			ip_doc.price_list_rate = total_price
+			ip_doc.save(ignore_permissions=True)
+
+
+			
+
  
 def update_bom(self, event):
     
