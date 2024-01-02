@@ -2,6 +2,7 @@ import frappe
 from frappe.model.mapper import get_mapped_doc
 import requests
 import json
+import math
 from frappe import _
 from frappe.utils import flt
 
@@ -108,7 +109,7 @@ def create_shade_sail_price(self, event):
 			if i.attribute == "Wall Bracket":
 				sb = flt(i.attribute_value)
 	if sh_type == "Square":
-		f_width = flt(sw) / 3
+		f_width = math.ceil(flt(sw) / 3)
 		f_qty = f_width * flt(sl)
 		f_cost = 25 * f_qty
 		s_size = (f_width * 2) + (flt(sl) * 2)
