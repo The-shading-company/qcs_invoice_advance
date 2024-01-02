@@ -117,7 +117,7 @@ def create_shade_sail_price(self, event):
 		post_pc_cost = flt(sp) * 245 * 2
 		post_braket_cost = flt(sp) * bracket_cost * 2
 		dshackle_cost = flt(sp) * 5 * 2
-		wire_clamp_cost = 2 x 2 x 2
+		wire_clamp_cost = 2 * 2 * 2
 		eyelet_cost = flt(sp) * 18 * 2
 		post_cap_cost = flt(sp) * 21 * 2
 		stitching_cost = flt(sw) * flt(sl) * 12.5 * 2
