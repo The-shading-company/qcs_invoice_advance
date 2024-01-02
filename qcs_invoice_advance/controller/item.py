@@ -3,6 +3,7 @@ from frappe.model.mapper import get_mapped_doc
 import requests
 import json
 from frappe import _
+from frappe.utils import flt
 
 def create_bom(self, event):
     if (self.variant_of == "CAN"):
