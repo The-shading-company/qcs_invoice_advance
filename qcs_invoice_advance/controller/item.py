@@ -272,7 +272,7 @@ def tsc_custom_accounts(self, event):
             if len(cogs) > 0:
                 item.expense_account = cogs[0].name
 
-
+#valuation rate includes product bundle cost as well
 def add_margins(self, event):
 	total_cost = 0
 	total_margin = 0
