@@ -577,7 +577,7 @@ def create_sub_po(dt, dn, parent_item, can_item):
 		{
 			"Sales Order": {
 				"doctype": "Purchase Order",
-				"field_map": {"is_subcontracted": 1},
+				"field_map": {"Supplier":"Edge And Curve Furniture Upholstery","is_subcontracted": 1},
 			},
 			"Sales Order Item": {
 				"doctype": "Purchase Order Item",
