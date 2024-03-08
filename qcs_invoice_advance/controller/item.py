@@ -539,7 +539,63 @@ def create_payment_link(dt, dn, amt, purpose):
 
 	return rdata["paymentLink"]
 	
-	
-	
+
+
+@frappe.whitelist()
+def create_sub_po(dt, dn, parent_item, can_item):
+	def set_missing_values(source, target):
+		from erpnext.controllers.accounts_controller import get_default_taxes_and_charges
+
+		purchase_order = frappe.get_doc(target)
+
+		company_currency = frappe.get_cached_value("Company", purchase_order.company, "default_currency")
+
+		if company_currency == purchase_order.currency:
+			exchange_rate = 1
+		else:
+			exchange_rate = get_exchange_rate(
+				purchase_order.currency, company_currency, purchase_order.posting_date, args="for_buying"
+			)
+
+		purchase_order.conversion_rate = exchange_rate
+
+		# get default taxes
+		taxes = get_default_taxes_and_charges(
+			"Purchase Taxes and Charges Template", company=quotation.company
+		)
+		if taxes.get("taxes"):
+			purchase_order.update(taxes)
+
+		purchase_order.run_method("set_missing_values")
+		purchase_order.run_method("calculate_taxes_and_totals")
+		#if not source.get("items", []):
+		#	quotation.opportunity = source.name
+
+	doclist = get_mapped_doc(
+		"Sales Order",
+		source_name,
+		{
+			"Sales Order": {
+				"doctype": "Purchase Order",
+				"field_map": {"is_subcontracted": 1},
+			},
+			"Sales Order Item": {
+				"doctype": "Purchase Order Item",
+				"field_map": {
+					"uom": "stock_uom",
+					"fg_item": "item_code",
+					"fg_item_qty": "qty",
+					"item_code": "Stitching",
+					"qty": 1,
+					"description": "test"
+				},
+				"add_if_empty": True,
+			},
+		},
+		target_doc,
+		set_missing_values,
+	)
+
+	return doclist
 
 
