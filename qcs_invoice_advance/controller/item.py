@@ -542,7 +542,7 @@ def create_payment_link(dt, dn, amt, purpose):
 
 
 @frappe.whitelist()
-def create_sub_po(dt, dn, parent_item, can_item, qty, uom):
+def create_sub_po(dt, dn, parent_item, can_item, qty, uom, line_id):
 	c_type = ""
 	c_size = ""
 	c_cost = 0
@@ -558,6 +558,7 @@ def create_sub_po(dt, dn, parent_item, can_item, qty, uom):
 	po = frappe.new_doc("Purchase Order")
 	po.company = so.company
 	po.is_subcontracted = 1
+	po.transaction_date = so.transaction_date
 	po.supplier = "Edge And Curve Furniture Upholstery"
 	po.schedule_date = so.delivery_date
 	po.append("items",{
@@ -568,8 +569,9 @@ def create_sub_po(dt, dn, parent_item, can_item, qty, uom):
 		"description": "test",
 		"uom": uom,
 		"rate": c_cost,
-		"schedule_date": so.delivery_date
-		
+		"schedule_date": so.delivery_date,
+		"sales_order": so.name,
+		"sales_order_item": line_id
 	})
 	po.run_method("set_missing_values")
 	po.run_method("calculate_taxes_and_totals")
