@@ -542,7 +542,7 @@ def create_payment_link(dt, dn, amt, purpose):
 
 
 @frappe.whitelist()
-def create_sub_po(dt, dn, parent_item, can_item):
+def create_sub_po(dt, dn, parent_item, can_item, target_doc=None):
 	def set_missing_values(source, target):
 		from erpnext.controllers.accounts_controller import get_default_taxes_and_charges
 
