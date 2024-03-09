@@ -543,6 +543,17 @@ def create_payment_link(dt, dn, amt, purpose):
 
 @frappe.whitelist()
 def create_sub_po(dt, dn, parent_item, can_item, qty, uom):
+	c_type = ""
+	c_size = ""
+	c_cost = 0
+	p_item = frappe.get_doc("Item", parent_item)
+	for v in p_item.attributes:
+		if v.attribute == "Canopy Type":
+			c_type = v.attribute_value
+		if v.attribute == "Size":
+			c_size = v.attribute_value
+	if c_type != "" and c_size != "":
+		c_cost = frappe.db.get_value("TSC Stitching table", {"canopy_type":c_type, "canopy_size":c_size}, "no_flap_stitching_cost")
 	so = frappe.get_doc("Sales Order", dn)
 	po = frappe.new_doc("Purchase Order")
 	po.company = so.company
@@ -556,7 +567,8 @@ def create_sub_po(dt, dn, parent_item, can_item, qty, uom):
 		"qty": qty,
 		"description": "test",
 		"uom": uom,
-		"rate": 100
+		"rate": c_cost,
+		"schedule_date": so.delivery_date
 		
 	})
 	po.run_method("set_missing_values")
