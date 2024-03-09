@@ -548,6 +548,7 @@ def create_sub_po(dt, dn, parent_item, can_item, qty, uom):
 	po.company = so.company
 	po.is_subcontracted = 1
 	po.supplier = "Edge And Curve Furniture Upholstery"
+	po.schedule_date = so.delivery_date
 	po.append("items",{
 		"fg_item": can_item,
 		"fg_item_qty": "qty",
