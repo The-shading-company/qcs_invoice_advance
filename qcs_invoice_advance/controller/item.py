@@ -563,7 +563,7 @@ def create_sub_po(dt, dn, parent_item, can_item, qty, uom, line_id):
 	po.schedule_date = so.delivery_date
 	po.append("items",{
 		"fg_item": can_item,
-		"fg_item_qty": "qty",
+		"fg_item_qty": qty,
 		"item_code": "Stitching",
 		"qty": qty,
 		"description": "test",
