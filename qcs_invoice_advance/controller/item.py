@@ -573,7 +573,7 @@ def create_sub_po(dt, dn, parent_item, can_item):
 
 	doclist = get_mapped_doc(
 		"Sales Order",
-		source_name,
+		dn,
 		{
 			"Sales Order": {
 				"doctype": "Purchase Order",
