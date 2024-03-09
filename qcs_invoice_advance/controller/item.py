@@ -561,7 +561,7 @@ def create_sub_po(dt, dn, parent_item, can_item, target_doc=None):
 
 		# get default taxes
 		taxes = get_default_taxes_and_charges(
-			"Purchase Taxes and Charges Template", company=quotation.company
+			"Purchase Taxes and Charges Template", company=purchase_order.company
 		)
 		if taxes.get("taxes"):
 			purchase_order.update(taxes)
