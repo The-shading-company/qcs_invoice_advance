@@ -545,15 +545,28 @@ def create_payment_link(dt, dn, amt, purpose):
 def create_sub_po(dt, dn, parent_item, can_item, qty, uom, line_id, supplier):
 	c_type = ""
 	c_size = ""
+	c_model = ""
 	c_cost = 0
+	c_cut_size = 0
+	c_motor = ""
 	p_item = frappe.get_doc("Item", parent_item)
 	for v in p_item.attributes:
 		if v.attribute == "Canopy Type":
 			c_type = v.attribute_value
 		if v.attribute == "Size":
 			c_size = v.attribute_value
+		if v.attribute == "Model"
+			c_model = v.attribute_value
+		if v.attribute == "Motor":
+			c_motor = v.attribute_value
 	if c_type != "" and c_size != "":
 		c_cost = frappe.db.get_value("TSC Stitching table", {"canopy_type":c_type, "canopy_size":c_size}, "no_flap_stitching_cost")
+	if c_model != "" and c_motor == "Somfy":
+		c_cut_size = frappe.db.get_value("Item Attribute Value", {"parent":"Model", "attribute_value":c_model}, "custom_motor_cut")
+	if c_model != "" and c_motor != "Somfy":
+		c_cut_size = frappe.db.get_value("Item Attribute Value", {"parent":"Model", "attribute_value":c_model}, "custom_manual_cut")
+	
+	
 	so = frappe.get_doc("Sales Order", dn)
 	po = frappe.new_doc("Purchase Order")
 	po.company = so.company
@@ -566,14 +579,14 @@ def create_sub_po(dt, dn, parent_item, can_item, qty, uom, line_id, supplier):
 		"fg_item_qty": qty,
 		"item_code": "Stitching",
 		"qty": qty,
-		"description": "test",
+		"description": "Stitching for awning " + c_model + ".",
 		"uom": uom,
 		"rate": c_cost,
 		"schedule_date": so.delivery_date,
 		"sales_order": so.name,
 		"sales_order_item": line_id
 	})
-	po.taxes_and_charges = "UAE VAT 5%"
+	po.taxes_and_charges = "UAE VAT 5% - TSUTCL"
 	po.run_method("set_missing_values")
 	po.run_method("calculate_taxes_and_totals")
 	po.save()
