@@ -574,12 +574,15 @@ def create_sub_po(dt, dn, parent_item, can_item, qty, uom, line_id, supplier):
 	po.transaction_date = so.transaction_date
 	po.supplier = supplier
 	po.schedule_date = so.delivery_date
+	part1, part2 = c_size.split('x')
+	value1 = int(float(part1) * 100)
+	value2 = int(float(part2) * 100)
 	po.append("items",{
 		"fg_item": can_item,
 		"fg_item_qty": qty,
 		"item_code": "Stitching",
 		"qty": qty,
-		"description": "Stitching for awning " + c_model + ".",
+		"description": "Stitching for awning " + c_model + ". Cut Size: " + str(value1 - c_cut_size) + " x " + str(value2 - 30),
 		"uom": uom,
 		"rate": c_cost,
 		"schedule_date": so.delivery_date,
