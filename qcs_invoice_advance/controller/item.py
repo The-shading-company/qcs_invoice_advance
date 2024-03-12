@@ -555,7 +555,7 @@ def create_sub_po(dt, dn, parent_item, can_item, qty, uom, line_id, supplier):
 			c_type = v.attribute_value
 		if v.attribute == "Size":
 			c_size = v.attribute_value
-		if v.attribute == "Model"
+		if v.attribute == "Model":
 			c_model = v.attribute_value
 		if v.attribute == "Motor":
 			c_motor = v.attribute_value
