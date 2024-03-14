@@ -211,6 +211,7 @@ def add_image(self, event):
 
 
 #render jinja template in item desc
+# added frame color and fabric color
 def set_dynamic_item_description(doc, method):
 	if doc.custom_jinja_desc:
         # Prepare your context for the Jinja template. This might include other fields or data as needed.
