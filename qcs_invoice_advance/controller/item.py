@@ -215,7 +215,7 @@ def set_dynamic_item_description(doc, method):
 	if doc.custom_jinja_desc:
         # Prepare your context for the Jinja template. This might include other fields or data as needed.
 	        context = {
-	            'doc': doc,
+	            'doc': doc, 'variants': doc.variants if hasattr(doc, 'variants') else []
 	            # Include any additional variables or tables you need in your Jinja template.
 	            # E.g., 'variants': doc.variants if hasattr(doc, 'variants') else []
 	        }
