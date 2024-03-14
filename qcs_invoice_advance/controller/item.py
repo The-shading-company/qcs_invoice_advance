@@ -207,7 +207,23 @@ def add_image(self, event):
 				if len(att_list) > 0:
 					att_raw = frappe.db.get_value("Item Attribute Value", {"attribute_value":item.attribute_value}, "custom_item_code")
 					self.image = frappe.get_value("Item", att_raw, "image")
-					
+
+
+
+def set_dynamic_item_description(doc, method):
+	if doc.custom_jinja_desc:
+        # Prepare your context for the Jinja template. This might include other fields or data as needed.
+	        context = {
+	            'doc': doc,
+	            # Include any additional variables or tables you need in your Jinja template.
+	            # E.g., 'variants': doc.variants if hasattr(doc, 'variants') else []
+	        }
+	        
+	        # Render the description using the custom Jinja template and the context
+	        rendered_description = render_template(doc.custom_jinja_desc, context)
+	        
+	        # Set the rendered description to the item's description field
+	        doc.description = rendered_description
 
 
 
