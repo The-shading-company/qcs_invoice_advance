@@ -232,6 +232,8 @@ def set_dynamic_item_description(doc, method):
 		for v in doc.attributes:
 			if v.attribute == "Fabric Color":
 				c_color = v.attribute_value
+			if v.attribute == "Frame Color":
+				c_color = v.attribute_value
 			if v.attribute == "Size":
 				c_size = v.attribute_value
 		part1, part2 = c_size.split('x')
