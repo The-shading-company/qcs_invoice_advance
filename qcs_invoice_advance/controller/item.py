@@ -5,6 +5,7 @@ import json
 import math
 from frappe import _
 from frappe.utils import flt
+from frappe.utils.jinja import render_template
 
 def create_bom(self, event):
     if (self.variant_of == "CAN"):
