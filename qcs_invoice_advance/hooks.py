@@ -109,7 +109,7 @@ doc_events = {
         	"on_update": "qcs_invoice_advance.controller.item.update_bom",
         	"on_trash": "qcs_invoice_advance.controller.item.delete_bom",
 		"before_save": "qcs_invoice_advance.controller.set_dynamic_item_description"
-		#"validate": "qcs_invoice_advance.controller.item.add_image"
+		 #"validate": "qcs_invoice_advance.controller.item.add_image"
 	},
 	"BOM": {
          	"on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
