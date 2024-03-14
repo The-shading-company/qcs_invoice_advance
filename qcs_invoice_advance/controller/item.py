@@ -237,10 +237,10 @@ def set_dynamic_item_description(doc, method):
 				c_color = v.attribute_value
 			if v.attribute == "Size":
 				c_size = v.attribute_value
-		part1, part2 = c_size.split('x')
-		value1 = int(float(part1) * 100)
-		value2 = int(float(part2) * 100)
-		doc.custom_tsc_size = str(value1) + " x " + str(value2)
+				part1, part2 = c_size.split('x')
+				value1 = int(float(part1) * 100)
+				value2 = int(float(part2) * 100)
+				doc.custom_tsc_size = str(value1) + " x " + str(value2)
 		if not doc.custom_tsc_color:
 			doc.custom_tsc_color = c_color
 
