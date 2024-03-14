@@ -229,7 +229,6 @@ def set_dynamic_item_description(doc, method):
 	if doc.variant_of:
 		c_size = ""
 		c_color = ""
-		p_item = frappe.get_doc("Item", parent_item)
 		for v in doc.attributes:
 			if v.attribute == "Fabric Color":
 				c_color = v.attribute_value
