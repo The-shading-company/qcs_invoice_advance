@@ -210,7 +210,7 @@ def add_image(self, event):
 					self.image = frappe.get_value("Item", att_raw, "image")
 
 
-
+#render jinja template in item desc
 def set_dynamic_item_description(doc, method):
 	if doc.custom_jinja_desc:
         # Prepare your context for the Jinja template. This might include other fields or data as needed.
