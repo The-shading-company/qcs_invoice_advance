@@ -665,7 +665,7 @@ def get_items_with_latest_bom():
     
     return list(latest_boms.keys())
 
-
+@frappe.whitelist()
 def run_retail_update():
 	# Execute the function
 	enqueue(update_item_price_based_on_bom, queue='long', timeout=6000, is_async=True, job_name='update_item_price_based_on_bom')
