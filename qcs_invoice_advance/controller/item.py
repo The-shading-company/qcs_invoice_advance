@@ -646,10 +646,8 @@ def update_item_price_based_on_bom():
         if bom_name:
             bom = frappe.get_doc("BOM", bom_name)
             bom.update_cost()  # Update the BOM cost
+	    bom.update(ignore_permissions=True)
 
-            # Now update the Item Price based on the BOM's total cost
-            new_price_rate = bom.total_cost * 2.1
-            frappe.db.set_value("Item Price", item_price.name, "price_list_rate", new_price_rate)
 
     frappe.db.commit()  # Commit changes to the database
 
