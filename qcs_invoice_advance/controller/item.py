@@ -663,6 +663,7 @@ def get_items_with_latest_bom():
     
     return list(latest_boms.keys())
 
+#updated run_retail_price
 @frappe.whitelist()
 def run_retail_update():
 	# Execute the function
