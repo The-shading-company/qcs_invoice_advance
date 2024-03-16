@@ -645,6 +645,7 @@ def update_item_price_based_on_bom():
 	    if bom_name:
 		    bom = frappe.get_doc("BOM", bom_name)
 		    bom.update_cost()
+		    bom.save()
 		    
 
 
