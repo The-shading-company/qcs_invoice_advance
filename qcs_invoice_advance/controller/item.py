@@ -6,6 +6,7 @@ import math
 from frappe import _
 from frappe.utils import flt
 from frappe.utils.jinja import render_template
+from frappe.utils.background_jobs import enqueue
 
 def create_bom(self, event):
     if (self.variant_of == "CAN"):
@@ -630,3 +631,44 @@ def create_sub_po(dt, dn, parent_item, can_item, qty, uom, line_id, supplier):
 	return po
 
 
+
+
+def update_item_price_based_on_bom():
+    # Fetch all Item Prices where the item has a BOM and belongs to the "Retail" Price List
+    item_prices = frappe.get_all("Item Price", filters={
+        'price_list': 'Retail',
+        'item_code': ['in', get_items_with_latest_bom()]
+    }, fields=["name", "item_code"])
+
+    for item_price in item_prices:
+        # Fetch the latest BOM for the item based on creation date
+        bom_name = frappe.get_value("BOM", {"item": item_price.item_code, "is_default": 1, "docstatus": 1}, "name", order_by="creation desc")
+        if bom_name:
+            bom = frappe.get_doc("BOM", bom_name)
+            bom.update_cost()  # Update the BOM cost
+
+            # Now update the Item Price based on the BOM's total cost
+            new_price_rate = bom.total_cost * 2.1
+            frappe.db.set_value("Item Price", item_price.name, "price_list_rate", new_price_rate)
+
+    frappe.db.commit()  # Commit changes to the database
+
+def get_items_with_latest_bom():
+    """Helper function to get item codes that have an associated latest BOM."""
+    # Fetch all BOMs that are not cancelled and order them by item and creation date
+    boms = frappe.get_all("BOM", fields=["item", "name", "creation"], filters={'docstatus': 1}, order_by="item, creation desc")
+    
+    latest_boms = {}
+    for bom in boms:
+        if bom['item'] not in latest_boms:
+            latest_boms[bom['item']] = bom['name']  # Assumes the first BOM for each item is the latest due to sorting
+    
+    return list(latest_boms.keys())
+
+
+def run_retail_update():
+	# Execute the function
+	enqueue(update_item_price_based_on_bom, queue='long', timeout=6000, is_async=True, job_name='update_item_price_based_on_bom')
+	return "Started"
+
+	
