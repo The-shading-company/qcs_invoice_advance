@@ -641,8 +641,7 @@ def update_item_price_based_on_bom():
     }, fields=["name", "item_code"])
 
     for item_price in item_prices:
-        # Fetch the latest BOM for the item based on creation date
-        bom_name = frappe.get_value("BOM", {"item": item_price.item_code, "is_default": 1, "docstatus": 1}, "name", order_by="creation desc")
+	bom_name = frappe.get_value("BOM", {"item": item_price.item_code, "is_default": 1, "docstatus": 1}, "name", order_by="creation desc")
         if bom_name:
 		bom = frappe.get_doc("BOM", bom_name)
 		bom.update_cost()
