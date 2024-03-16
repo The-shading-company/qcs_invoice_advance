@@ -149,7 +149,7 @@ fixtures = [
 
 # Scheduled Tasks
 # ---------------
-
+# daily run
 scheduler_events = {
 #	"all": [
 #		"qcs_invoice_advance.tasks.all"
