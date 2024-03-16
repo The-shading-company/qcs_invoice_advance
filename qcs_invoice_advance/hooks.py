@@ -150,13 +150,13 @@ fixtures = [
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
+scheduler_events = {
 #	"all": [
 #		"qcs_invoice_advance.tasks.all"
 #	],
-#	"daily": [
-#		"qcs_invoice_advance.tasks.daily"
-#	],
+	"daily": [
+		"qcs_invoice_advance.controller.item.run_retail_update"
+	],
 #	"hourly": [
 #		"qcs_invoice_advance.tasks.hourly"
 #	],
@@ -165,8 +165,8 @@ fixtures = [
 #	],
 #	"monthly": [
 #		"qcs_invoice_advance.tasks.monthly"
-#	],
-# }
+	],
+ }
 
 # Testing
 # -------
