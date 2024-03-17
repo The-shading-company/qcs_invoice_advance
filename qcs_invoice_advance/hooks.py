@@ -165,8 +165,7 @@ scheduler_events = {
 #	],
 #	"monthly": [
 #		"qcs_invoice_advance.tasks.monthly"
-	],
- }
+}
 
 # Testing
 # -------
