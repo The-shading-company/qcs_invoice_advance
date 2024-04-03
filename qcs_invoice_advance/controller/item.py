@@ -208,7 +208,18 @@ def add_image(self, event):
 				att_list = frappe.get_all("Item Attribute Value", filters={"attribute_value":item.attribute_value})
 				if len(att_list) > 0:
 					att_raw = frappe.db.get_value("Item Attribute Value", {"attribute_value":item.attribute_value}, "custom_item_code")
-					self.image = frappe.get_value("Item", att_raw, "image")
+					org_l = frappe.get_all("File", filters={"file_url":frappe.get_value("Item", att_raw, "image")})
+					if len(org_l) > 0:
+						org_f = frappe.get_doc("File", org_l[0].name)
+						fm = frappe.new_doc("File")
+						fm.file_name = org_f.file_name
+						fm.file_type = org_f.file_type
+						fm.file_url = org_f.file_url
+						fm.attached_to_doctype = "Item"
+						fm.attached_to_name = self.name
+						fm.attached_to_field = "image"
+						fm.save()
+					
 
 
 #render jinja template in item desc
