@@ -484,6 +484,8 @@ def make_quotation_site_visit(source_name, target_doc=None):
 				"link_name": cust.name
 			})
 			address.save(ignore_permissions=True)
+	else:
+		frappe.throw(titel='Error', msg='Same Customer Name exists, please differentiate!')
 			
 		
 		
