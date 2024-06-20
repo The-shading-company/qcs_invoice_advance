@@ -30,8 +30,8 @@ app_license = "MIT"
 
 # include js in doctype views
 doctype_js = {"Sales Order": "public/js/sales_order.js",
-              "Sales Invoice": "public/js/sales_invoice.js",
-              "Product Bundle": "public/js/product_bundle.js"}
+			  "Sales Invoice": "public/js/sales_invoice.js",
+			  "Product Bundle": "public/js/product_bundle.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -107,13 +107,15 @@ override_doctype_class = {
 doc_events = {
 	"Item": {
 		"after_insert": ["qcs_invoice_advance.controller.item.create_bom", "qcs_invoice_advance.controller.item.add_image", "qcs_invoice_advance.controller.item.create_shade_sail_price"],
-        	"on_update": "qcs_invoice_advance.controller.item.update_bom",
-        	"on_trash": "qcs_invoice_advance.controller.item.delete_bom",
-		#"validate": "qcs_invoice_advance.controller.item.add_image"
+			"on_update": "qcs_invoice_advance.controller.item.update_bom",
+			"on_trash": "qcs_invoice_advance.controller.item.delete_bom",
+		"before_save": "qcs_invoice_advance.controller.item.set_dynamic_item_description"
+		 #"validate": "qcs_invoice_advance.controller.item.add_image"
 	},
 	"BOM": {
-         	"on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
-         	"on_update_after_submit": "qcs_invoice_advance.controller.item.add_sale_price",
+		 	"on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
+		 	"on_update_after_submit": "qcs_invoice_advance.controller.item.add_sale_price",
+			"on_update": "qcs_invoice_advance.controller.item.add_sale_price"
 
    	},
 	"Sales Invoice": {
@@ -131,40 +133,41 @@ doc_events = {
 	},
 	"Product Bundle":{
 		"validate": "qcs_invoice_advance.controller.product_bundle.cal_cost"
+		# "validate": "qcs_invoice_advance.controller.item.add_margins",
 	}
 }
 
 
 
 fixtures = [
-    {
-        "dt": "Custom Field", "filters": [
-            [
-                "name", "in", [
-                    'Sales Invoice-original_total',
-                    'Sales Invoice Item-original_qty',
-                    'Sales Order-partial_invoice',
-                    'Sales Invoice-original_total',
-                    'Sales Invoice-order_percentage',
-                    'Sales Invoice Item-custom_ref_no',
-                    'Sales Order Item-custom_ref_no'           
-                ]
-            ]
-        ]
-    },
-    
+	{
+		"dt": "Custom Field", "filters": [
+			[
+				"name", "in", [
+					'Sales Invoice-original_total',
+					'Sales Invoice Item-original_qty',
+					'Sales Order-partial_invoice',
+					'Sales Invoice-original_total',
+					'Sales Invoice-order_percentage',
+					'Sales Invoice Item-custom_ref_no',
+					'Sales Order Item-custom_ref_no'           
+				]
+			]
+		]
+	},
+	
 ]
 
 # Scheduled Tasks
 # ---------------
-
-# scheduler_events = {
+# daily run
+scheduler_events = {
 #	"all": [
 #		"qcs_invoice_advance.tasks.all"
 #	],
-#	"daily": [
-#		"qcs_invoice_advance.tasks.daily"
-#	],
+	"daily": [
+		"qcs_invoice_advance.controller.item.run_retail_update"
+	],
 #	"hourly": [
 #		"qcs_invoice_advance.tasks.hourly"
 #	],
@@ -173,8 +176,7 @@ fixtures = [
 #	],
 #	"monthly": [
 #		"qcs_invoice_advance.tasks.monthly"
-#	],
-# }
+}
 
 # Testing
 # -------

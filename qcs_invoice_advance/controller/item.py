@@ -5,6 +5,8 @@ import json
 import math
 from frappe import _
 from frappe.utils import flt
+from frappe.utils.jinja import render_template
+from frappe.utils.background_jobs import enqueue
 
 def create_bom(self, event):
 	if (self.variant_of == "CAN"):
@@ -206,9 +208,56 @@ def add_image(self, event):
 				att_list = frappe.get_all("Item Attribute Value", filters={"attribute_value":item.attribute_value})
 				if len(att_list) > 0:
 					att_raw = frappe.db.get_value("Item Attribute Value", {"attribute_value":item.attribute_value}, "custom_item_code")
-					self.image = frappe.get_value("Item", att_raw, "image")
+					org_l = frappe.get_all("File", filters={"file_url":frappe.get_value("Item", att_raw, "image")})
+					if len(org_l) > 0:
+						org_f = frappe.get_doc("File", org_l[0].name)
+						fm = frappe.new_doc("File")
+						fm.file_name = org_f.file_name
+						fm.file_type = org_f.file_type
+						fm.file_url = org_f.file_url
+						fm.attached_to_doctype = "Item"
+						fm.attached_to_name = self.name
+						fm.attached_to_field = "image"
+						fm.save()
 					
 
+
+#render jinja template in item desc
+# added frame color and fabric color
+def set_dynamic_item_description(doc, method):
+	if doc.custom_jinja_desc:
+		# Prepare your context for the Jinja template. This might include other fields or data as needed.
+			context = {
+				'doc': doc, 'variants': doc.variants if hasattr(doc, 'variants') else []
+				# Include any additional variables or tables you need in your Jinja template.
+				# E.g., 'variants': doc.variants if hasattr(doc, 'variants') else []
+			}
+			
+			# Render the description using the custom Jinja template and the context
+			rendered_description = render_template(doc.custom_jinja_desc, context)
+			
+			# Set the rendered description to the item's description field
+			doc.description = rendered_description
+
+	if doc.variant_of:
+		c_size = ""
+		c_color = ""
+		for v in doc.attributes:
+			if v.attribute == "Fabric Color":
+				c_color = v.attribute_value
+			if v.attribute == "Frame Color":
+				c_color = v.attribute_value
+			if v.attribute == "Size":
+				c_size = v.attribute_value
+				if 'x' in c_size:
+					part1, part2 = c_size.split('x')
+					value1 = int(float(part1) * 100)
+					value2 = int(float(part2) * 100)
+					doc.custom_tsc_size = str(value1) + " x " + str(value2)
+				else:
+					doc.custom_tsc_size = c_size
+		if not doc.custom_tsc_color:
+			doc.custom_tsc_color = c_color
 
 
 def add_sale_price(self, event):
@@ -272,26 +321,30 @@ def tsc_custom_accounts(self, event):
 			if len(cogs) > 0:
 				item.expense_account = cogs[0].name
 
-
+#valuation rate includes product bundle cost as well
 def add_margins(self, event):
 	total_cost = 0
 	total_margin = 0
+	frappe.errprint("add margins")
 	for item in self.items:
 		bom = frappe.get_all("BOM", filters={"item": item.item_code, "is_active": 1, "is_default": 1})
 		if len(bom) > 0:
 			bom_index = frappe.get_doc("BOM", bom[0].name)
+			frappe.errprint(bom_index)
 			item.custom_tsc_cost = bom_index.total_cost
 			total_cost += item.custom_tsc_cost
 		else:
 			item.custom_tsc_cost = item.valuation_rate
 			total_cost += item.custom_tsc_cost
-		if item.custom_tsc_cost:
+		if item.custom_tsc_cost > 0:
 			item.custom_tsc_margin = item.rate - item.custom_tsc_cost
 			total_margin += item.custom_tsc_margin
-			item.custom_tsc_margin_per = (item.custom_tsc_margin * 100) / item.custom_tsc_cost
+			if item.custom_tsc_margin > 0:
+				item.custom_tsc_margin_per = (item.custom_tsc_margin * 100) / item.custom_tsc_cost
 	self.custom_total_cost = total_cost
-	self.custom_total_margin = self.net_total - total_cost
-	self.custom_margin_percent = (self.custom_total_margin * 100) / self.custom_total_cost
+	if self.custom_total_cost > 0 and total_cost > 0:
+		self.custom_total_margin = self.net_total - total_cost
+		self.custom_margin_percent = (self.custom_total_margin * 100) / self.custom_total_cost
 
 
 def add_quote_link(self, event):
@@ -382,6 +435,28 @@ def make_quotation(source_name, target_doc=None):
 	return doclist
 
 
+@frappe.whitelist()
+def make_warranty_claim(source_name, target_doc=None):
+
+	doclist = get_mapped_doc(
+		"TSC Service Call",
+		source_name,
+		{
+			"TSC Service Call": {
+				"doctype": "Warranty Claim",
+				"field_map": {"customer": "customer", "issue_log_date": "complaint_date", "address": "service_address", "mob_no": "contact_mobile", "issue_details": "complaint"},
+			},
+			
+		},
+		target_doc,
+		
+	)
+
+	return doclist
+
+
+
+
 
 @frappe.whitelist()
 def make_quotation_site_visit(source_name, target_doc=None):
@@ -424,6 +499,8 @@ def make_quotation_site_visit(source_name, target_doc=None):
 				"link_name": cust.name
 			})
 			address.save(ignore_permissions=True)
+	else:
+		frappe.throw(title='Error', msg='Same Customer Name exists, please differentiate!')
 			
 		
 		
@@ -509,30 +586,29 @@ def make_warranty_claim(source_name, target_doc=None):
 	return doclist
 
 def update_tsc_payemnt_link(self, event):
-    if (self.custom_tsc_payment_link):
-        frappe.errprint("nnbbb")
-        payment_link = frappe.get_doc("TSC Payment Link", self.custom_tsc_payment_link)
-        payment_link.document_name = self.name
-        payment_link.save(ignore_permissions=True)
+	if (self.custom_tsc_payment_link):
+		frappe.errprint("nnbbb")
+		payment_link = frappe.get_doc("TSC Payment Link", self.custom_tsc_payment_link)
+		payment_link.document_name = self.name
+		payment_link.save(ignore_permissions=True)
 
 @frappe.whitelist()
 def get_contact_query(customer):
-    # return customer
-    customer1 = customer
-    if not customer1:
-        return []
+	# return customer
+	customer1 = customer
+	if not customer1:
+		return []
 
-    return frappe.db.sql("""
-        SELECT 
-            contact.name
-        FROM 
-            `tabContact` contact
-        JOIN 
-            `tabDynamic Link` links ON links.parent = contact.name
-        WHERE 
-            links.link_doctype = 'Customer' AND links.link_name = %s
-    """, (customer1))
-
+	return frappe.db.sql("""
+		SELECT 
+			contact.name
+		FROM 
+			`tabContact` contact
+		JOIN 
+			`tabDynamic Link` links ON links.parent = contact.name
+		WHERE 
+			links.link_doctype = 'Customer' AND links.link_name = %s
+	""", (customer1))
 
 
 @frappe.whitelist()
@@ -570,7 +646,100 @@ def create_payment_link(dt, dn, amt, purpose):
  
 	return rdata["paymentLink"]
 	
-	
-	
 
 
+@frappe.whitelist()
+def create_sub_po(dt, dn, parent_item, can_item, qty, uom, line_id, supplier):
+	c_type = ""
+	c_size = ""
+	c_model = ""
+	c_cost = 0
+	c_cut_size = 0
+	c_motor = ""
+	p_item = frappe.get_doc("Item", parent_item)
+	for v in p_item.attributes:
+		if v.attribute == "Canopy Type":
+			c_type = v.attribute_value
+		if v.attribute == "Size":
+			c_size = v.attribute_value
+		if v.attribute == "Model":
+			c_model = v.attribute_value
+		if v.attribute == "Motor":
+			c_motor = v.attribute_value
+	if c_type != "" and c_size != "":
+		c_cost = frappe.db.get_value("TSC Stitching table", {"canopy_type":c_type, "canopy_size":c_size}, "no_flap_stitching_cost")
+	if c_model != "" and c_motor == "Somfy":
+		c_cut_size = frappe.db.get_value("Item Attribute Value", {"parent":"Model", "attribute_value":c_model}, "custom_motor_cut")
+	if c_model != "" and c_motor != "Somfy":
+		c_cut_size = frappe.db.get_value("Item Attribute Value", {"parent":"Model", "attribute_value":c_model}, "custom_manual_cut")
+	
+	
+	so = frappe.get_doc("Sales Order", dn)
+	po = frappe.new_doc("Purchase Order")
+	po.company = so.company
+	po.is_subcontracted = 1
+	po.transaction_date = so.transaction_date
+	po.supplier = supplier
+	po.schedule_date = so.delivery_date
+	part1, part2 = c_size.split('x')
+	value1 = int(float(part1) * 100)
+	value2 = int(float(part2) * 100)
+	po.append("items",{
+		"fg_item": can_item,
+		"fg_item_qty": qty,
+		"item_code": "Stitching",
+		"qty": qty,
+		"description": "Stitching for awning " + c_model + ". Cut Size: " + str(value1 - c_cut_size) + " x " + str(value2 - 30),
+		"uom": uom,
+		"rate": c_cost,
+		"schedule_date": so.delivery_date,
+		"sales_order": so.name,
+		"sales_order_item": line_id
+	})
+	po.taxes_and_charges = "UAE VAT 5% - TSUTCL"
+	po.run_method("set_missing_values")
+	po.run_method("calculate_taxes_and_totals")
+	po.save()
+	return po
+
+
+
+
+def update_item_price_based_on_bom():
+	# Fetch all Item Prices where the item has a BOM and belongs to the "Retail" Price List
+	item_prices = frappe.get_all("Item Price", filters={
+		'price_list': 'Retail',
+		'item_code': ['in', get_items_with_latest_bom()]
+	}, fields=["name", "item_code"])
+
+	for item_price in item_prices:
+		bom_name = frappe.get_value("BOM", {"item": item_price.item_code, "is_default": 1, "docstatus": 1}, "name", order_by="creation desc")
+		if bom_name:
+			bom = frappe.get_doc("BOM", bom_name)
+			bom.update_cost()
+			bom.save()
+			
+
+
+	frappe.db.commit()  # Commit changes to the database
+
+def get_items_with_latest_bom():
+	"""Helper function to get item codes that have an associated latest BOM."""
+	# Fetch all BOMs that are not cancelled and order them by item and creation date
+	boms = frappe.get_all("BOM", fields=["item", "name", "creation"], filters={'docstatus': 1}, order_by="item, creation desc")
+	
+	latest_boms = {}
+	for bom in boms:
+		if bom['item'] not in latest_boms:
+			latest_boms[bom['item']] = bom['name']  # Assumes the first BOM for each item is the latest due to sorting
+	
+	return list(latest_boms.keys())
+
+#updated run_retail_price
+@frappe.whitelist()
+def run_retail_update():
+	# Execute the function
+	enqueue(update_item_price_based_on_bom, queue='long', timeout=6000, is_async=True, job_name='update_item_price_based_on_bom')
+	return "Started"
+
+	
