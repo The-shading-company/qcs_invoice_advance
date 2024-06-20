@@ -1,0 +1,390 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "SC-.#####",
+ "creation": "2023-12-05 10:54:40.370262",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_eej9",
+  "customer",
+  "contact",
+  "status",
+  "mob_no",
+  "address",
+  "issue_address",
+  "column_break_rxks",
+  "issue_log_date",
+  "issue_type",
+  "sales_invoice",
+  "fm_sales_order",
+  "reason_for_closing",
+  "status_time_log",
+  "details_section",
+  "issue_details",
+  "column_break_cudy",
+  "site_visit_location",
+  "images_section",
+  "preimage_1",
+  "column_break_gyit",
+  "preimage2",
+  "column_break_tylm",
+  "preimage_3",
+  "map_tab",
+  "map_link",
+  "amended_from",
+  "site_images_tab",
+  "site_images_section",
+  "image_1",
+  "image_3",
+  "column_break_zvso",
+  "image_2",
+  "image_4",
+  "section_break_hdfb",
+  "site_visit_notes",
+  "report_section",
+  "report_text",
+  "resolution_tab",
+  "can_repair_be_done_at_site",
+  "column_break_jhtp",
+  "quote",
+  "sales_order",
+  "warranty_claim",
+  "repair_materials_and_services_section",
+  "price_list",
+  "table_sxqn",
+  "total"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_eej9",
+   "fieldtype": "Section Break",
+   "label": "Issue Basics"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "contact",
+   "fieldtype": "Link",
+   "label": "Contact",
+   "options": "Contact"
+  },
+  {
+   "default": "Arranging Site Visit",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Arranging Site Visit\nSite Visit Undertaken\nTo be Quoted\nQuoting\nApproved\nWaiting for Customer\nOn Hold\nClosed"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fetch_from": "contact.mobile_no",
+   "fetch_if_empty": 1,
+   "fieldname": "mob_no",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Mobile",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fetch_from": "customer.customer_primary_address",
+   "fieldname": "address",
+   "fieldtype": "Data",
+   "label": "Address"
+  },
+  {
+   "fetch_from": "customer.primary_address",
+   "fieldname": "issue_address",
+   "fieldtype": "Small Text",
+   "label": "Issue Address"
+  },
+  {
+   "fieldname": "column_break_rxks",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "issue_log_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Issue Log Date",
+   "reqd": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "issue_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Issue Type",
+   "options": "TSC Issue Type",
+   "reqd": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "sales_invoice",
+   "fieldtype": "Link",
+   "label": "Sales Invoice",
+   "options": "Sales Invoice"
+  },
+  {
+   "description": "Select if invoice was on Filemaker previously",
+   "fieldname": "fm_sales_order",
+   "fieldtype": "Link",
+   "label": "FM Sales order",
+   "options": "TSC Filemaker Invoices"
+  },
+  {
+   "depends_on": "eval:doc.status==\"Closed\"",
+   "fieldname": "reason_for_closing",
+   "fieldtype": "Data",
+   "label": "Reason for closing",
+   "mandatory_depends_on": "eval:doc.status==\"Closed\""
+  },
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "issue_details",
+   "fieldtype": "Text Editor",
+   "label": "Issue Details"
+  },
+  {
+   "fieldname": "column_break_cudy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "site_visit_location",
+   "fieldtype": "Text Editor",
+   "label": "Site Visit Location"
+  },
+  {
+   "fieldname": "images_section",
+   "fieldtype": "Section Break",
+   "label": "Images"
+  },
+  {
+   "fieldname": "preimage_1",
+   "fieldtype": "Attach Image",
+   "label": "PreImage 1"
+  },
+  {
+   "fieldname": "column_break_gyit",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "preimage2",
+   "fieldtype": "Attach Image",
+   "label": "PreImage2"
+  },
+  {
+   "fieldname": "column_break_tylm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "preimage_3",
+   "fieldtype": "Attach Image",
+   "label": "PreImage 3"
+  },
+  {
+   "fieldname": "map_tab",
+   "fieldtype": "Tab Break",
+   "label": "Map",
+   "width": "200"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "map_link",
+   "fieldtype": "Data",
+   "label": "Map Link",
+   "length": 400,
+   "width": "220"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "TSC Service Call",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "site_images_tab",
+   "fieldtype": "Tab Break",
+   "label": "Site Visit"
+  },
+  {
+   "fieldname": "site_images_section",
+   "fieldtype": "Section Break",
+   "label": "Site Images"
+  },
+  {
+   "fieldname": "image_1",
+   "fieldtype": "Attach Image",
+   "label": "Image 1"
+  },
+  {
+   "fieldname": "image_3",
+   "fieldtype": "Attach Image",
+   "label": "Image 3"
+  },
+  {
+   "fieldname": "column_break_zvso",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "image_2",
+   "fieldtype": "Attach Image",
+   "label": "Image 2"
+  },
+  {
+   "fieldname": "image_4",
+   "fieldtype": "Attach Image",
+   "label": "Image 4"
+  },
+  {
+   "fieldname": "section_break_hdfb",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "site_visit_notes",
+   "fieldtype": "Text Editor",
+   "label": "Site Visit Notes"
+  },
+  {
+   "description": "Report is to be sent to the customer if required.",
+   "fieldname": "report_section",
+   "fieldtype": "Section Break",
+   "label": "Report"
+  },
+  {
+   "fieldname": "report_text",
+   "fieldtype": "Text Editor",
+   "label": "Report Text"
+  },
+  {
+   "fieldname": "resolution_tab",
+   "fieldtype": "Tab Break",
+   "label": "Resolution"
+  },
+  {
+   "default": "0",
+   "description": "Check for Yes",
+   "fieldname": "can_repair_be_done_at_site",
+   "fieldtype": "Check",
+   "label": "Can Repair be done at site?"
+  },
+  {
+   "fieldname": "column_break_jhtp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "quote",
+   "fieldtype": "Link",
+   "label": "Quote",
+   "options": "Quotation"
+  },
+  {
+   "description": "If Free repair then warranty claim must be filled in and approved.",
+   "fieldname": "warranty_claim",
+   "fieldtype": "Link",
+   "label": "Warranty Claim",
+   "options": "Warranty Claim"
+  },
+  {
+   "fieldname": "repair_materials_and_services_section",
+   "fieldtype": "Section Break",
+   "label": "Repair Materials and Services"
+  },
+  {
+   "default": "Retail",
+   "description": "Select the Pricelist",
+   "fieldname": "price_list",
+   "fieldtype": "Link",
+   "label": "Price List",
+   "options": "Price List"
+  },
+  {
+   "fieldname": "table_sxqn",
+   "fieldtype": "Table",
+   "label": "Repairs",
+   "options": "TSC Service Call Info"
+  },
+  {
+   "description": "Click Save to generate price",
+   "fieldname": "total",
+   "fieldtype": "Currency",
+   "label": "Total"
+  },
+  {
+   "fieldname": "sales_order",
+   "fieldtype": "Data",
+   "label": "Sales Order"
+  },
+  {
+   "fieldname": "status_time_log",
+   "fieldtype": "Table",
+   "label": "Status Time Log",
+   "options": "TSC Service Call Time Log"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-06-20 11:39:56.713329",
+ "modified_by": "Administrator",
+ "module": "QCS Invoice Advance",
+ "name": "TSC Service Call",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "customer,status,address",
+ "show_name_in_global_search": 1,
+ "show_preview_popup": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

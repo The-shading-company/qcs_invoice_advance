@@ -30,7 +30,8 @@ app_license = "MIT"
 
 # include js in doctype views
 doctype_js = {"Sales Order": "public/js/sales_order.js",
-              "Sales Invoice": "public/js/sales_invoice.js"}
+              "Sales Invoice": "public/js/sales_invoice.js",
+              "Product Bundle": "public/js/product_bundle.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -119,8 +120,17 @@ doc_events = {
 		"validate": "qcs_invoice_advance.controller.item.tsc_custom_accounts"
 	},
 	"Quotation": {
-		#"validate": "qcs_invoice_advance.controller.item.add_margins",
-		"after_insert": "qcs_invoice_advance.controller.item.add_quote_link"
+		"validate": "qcs_invoice_advance.controller.item.update_tsc_payemnt_link",
+		"after_insert": ["qcs_invoice_advance.controller.item.add_quote_link", "qcs_invoice_advance.controller.item.update_service_call"]
+	},
+	"Sales Order":{
+		"after_insert": ["qcs_invoice_advance.controller.item.update_service_call_sales_order", "qcs_invoice_advance.controller.sales_order.update_payment_link"]
+	},
+	"Stock Entry":{
+		"validate": "qcs_invoice_advance.controller.work_order.check_transferred_qty"
+	},
+	"Product Bundle":{
+		"validate": "qcs_invoice_advance.controller.product_bundle.cal_cost"
 	}
 }
 
