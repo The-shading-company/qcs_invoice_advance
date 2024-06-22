@@ -122,7 +122,7 @@ doc_events = {
 		"validate": "qcs_invoice_advance.controller.item.tsc_custom_accounts"
 	},
 	"Quotation": {
-		"validate": "qcs_invoice_advance.controller.item.update_tsc_payemnt_link",
+		"validate": ["qcs_invoice_advance.controller.item.update_tsc_payemnt_link",  "qcs_invoice_advance.controller.item.add_margins"],
 		"after_insert": ["qcs_invoice_advance.controller.item.add_quote_link", "qcs_invoice_advance.controller.item.update_service_call"]
 	},
 	"Sales Order":{
@@ -133,7 +133,6 @@ doc_events = {
 	},
 	"Product Bundle":{
 		"validate": "qcs_invoice_advance.controller.product_bundle.cal_cost"
-		# "validate": "qcs_invoice_advance.controller.item.add_margins",
 	}
 }
 
