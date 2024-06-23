@@ -369,6 +369,12 @@ def update_service_call_sales_order(self, event):
 		frappe.errprint(self.name)
 		doc.sales_order = self.name
 		doc.save(ignore_permissions=True)
+  
+def update_purchase_to_sales(self, event):
+	if self.custom_sales_order:
+		doc = frappe.get_doc("Sales Order", self.custom_sales_order)
+		doc.custom_purchase_order = self.name
+		doc.save(ignore_permissions=True)
 
 
 def check_discounts(self, event):
@@ -637,11 +643,19 @@ def create_payment_link(dt, dn, amt, purpose):
 	
 	response = requests.request("POST", url, headers=headers, data=payload)
 	rdata = json.loads(response.text)
-	frappe.errprint(rdata)
 	pl = frappe.new_doc("TSC Payment Link")
 	pl.requested_date = docu.transaction_date
 	pl.document_type = dt
 	pl.document_name = docu.name
+	
+	if dt == "Quotation":
+		doc = frappe.get_all("Sales Order", filters={"custom_quotation": docu.name}, fields=["name"])
+		if doc:
+			so_list = []
+			for i in doc:
+				so_list.append(i.get("name"))
+				pl.sales_order = so_list[0]
+    
 	pl.status = "Open"
 	pl.payment_url = rdata["paymentLink"]
 	pl.save(ignore_permissions=True)

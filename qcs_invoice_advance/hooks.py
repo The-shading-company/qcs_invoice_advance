@@ -125,6 +125,9 @@ doc_events = {
 		"validate": ["qcs_invoice_advance.controller.item.update_tsc_payemnt_link",  "qcs_invoice_advance.controller.item.add_margins"],
 		"after_insert": ["qcs_invoice_advance.controller.item.add_quote_link", "qcs_invoice_advance.controller.item.update_service_call"]
 	},
+	"Purchase Order":{
+		"after_insert": "qcs_invoice_advance.controller.item.update_purchase_to_sales"
+	},
 	"Sales Order":{
 		"after_insert": ["qcs_invoice_advance.controller.item.update_service_call_sales_order", "qcs_invoice_advance.controller.sales_order.update_payment_link"]
 	},
@@ -149,7 +152,14 @@ fixtures = [
 					'Sales Invoice-original_total',
 					'Sales Invoice-order_percentage',
 					'Sales Invoice Item-custom_ref_no',
-					'Sales Order Item-custom_ref_no'           
+					'Sales Order Item-custom_ref_no',
+					'Quotation-custom_tsc_service_call',
+					'Quotation-custom_tsc_payment_link',
+					'Sales Order-custom_tsc_service_call',
+					'Sales Order-custom_quotation',
+					'Sales Order-custom_purchase_order',
+					'Material Request-custom_sales_order',
+					'Purchase Order-custom_sales_order',
 				]
 			]
 		]
