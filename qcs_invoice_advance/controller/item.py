@@ -655,7 +655,7 @@ def create_payment_link(dt, dn, amt, purpose):
 			for i in doc:
 				so_list.append(i.get("name"))
 				pl.sales_order = so_list[0]
-    
+	
 	pl.status = "Open"
 	pl.payment_url = rdata["paymentLink"]
 	pl.save(ignore_permissions=True)
@@ -758,4 +758,25 @@ def run_retail_update():
 	enqueue(update_item_price_based_on_bom, queue='long', timeout=6000, is_async=True, job_name='update_item_price_based_on_bom')
 	return "Started"
 
+
+@frappe.whitelist()
+def item_price_list(item_code, price_list):
+	item_doc = frappe.get_doc("Item", item_code)
+	if (float(item_doc.custom_average_cost) > 0):
+		item_group_doc = frappe.get_doc("Item Group", item_doc.item_group)
+		if (price_list == "Contract"):
+			cost = float(item_doc.custom_average_cost) * item_group_doc.custom_contract_price
+			return cost
+		if (price_list == "Dealer"):
+			cost = float(item_doc.custom_average_cost) * item_group_doc.custom_dealer_price
+			return cost
+		if (price_list == "Retail"):
+			cost = float(item_doc.custom_average_cost) * item_group_doc.custom_retail_price
+			return cost
+	else:
+		if item_doc.valuation_rate:
+			cost = float(item_doc.valuation_rate)
+			return cost
+		else:
+			return 0
 	

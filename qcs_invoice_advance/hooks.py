@@ -31,7 +31,9 @@ app_license = "MIT"
 # include js in doctype views
 doctype_js = {"Sales Order": "public/js/sales_order.js",
 			  "Sales Invoice": "public/js/sales_invoice.js",
-			  "Product Bundle": "public/js/product_bundle.js"}
+			  "Product Bundle": "public/js/product_bundle.js",
+     		  "Item Price": "public/js/item_price_list.js",
+         	  "Material Request": "public/js/material_request.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -136,7 +138,7 @@ doc_events = {
 	},
 	"Product Bundle":{
 		"validate": "qcs_invoice_advance.controller.product_bundle.cal_cost"
-	}
+	},
 }
 
 
@@ -160,6 +162,9 @@ fixtures = [
 					'Sales Order-custom_purchase_order',
 					'Material Request-custom_sales_order',
 					'Purchase Order-custom_sales_order',
+					'Item Group-custom_retail_price',
+					'Item Group-custom_contract_price',
+					'Item Group-custom_dealer_price',
 				]
 			]
 		]
