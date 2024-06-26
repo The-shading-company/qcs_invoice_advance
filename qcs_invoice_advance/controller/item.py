@@ -452,7 +452,7 @@ def make_warranty_claim(source_name, target_doc=None):
 		{
 			"TSC Service Call": {
 				"doctype": "Warranty Claim",
-				"field_map": {"customer": "customer", "issue_log_date": "complaint_date", "address": "service_address", "mob_no": "contact_mobile", "issue_details": "complaint"},
+				"field_map": {"customer": "customer", "issue_log_date": "complaint_date", "address": "service_address", "mob_no": "contact_mobile", "issue_details": "complaint", "sales_order": "custom_sales_order"},
 			},
 			
 		},
