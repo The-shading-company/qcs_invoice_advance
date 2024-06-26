@@ -139,6 +139,9 @@ doc_events = {
 	"Product Bundle":{
 		"validate": "qcs_invoice_advance.controller.product_bundle.cal_cost"
 	},
+	"Warranty Claim":{
+		"validate": "qcs_invoice_advance.controller.item.warrenty_claim_sales_order"
+	}
 }
 
 
@@ -165,6 +168,8 @@ fixtures = [
 					'Item Group-custom_retail_price',
 					'Item Group-custom_contract_price',
 					'Item Group-custom_dealer_price',
+					'Warranty Claim-custom_sales_order',
+					'Warranty Claim-custom_sales_order_name'
 				]
 			]
 		]

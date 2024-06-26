@@ -443,24 +443,24 @@ def make_quotation(source_name, target_doc=None):
 	return doclist
 
 
-@frappe.whitelist()
-def make_warranty_claim(source_name, target_doc=None):
-
-	doclist = get_mapped_doc(
-		"TSC Service Call",
-		source_name,
-		{
-			"TSC Service Call": {
-				"doctype": "Warranty Claim",
-				"field_map": {"customer": "customer", "issue_log_date": "complaint_date", "address": "service_address", "mob_no": "contact_mobile", "issue_details": "complaint", "sales_order": "custom_sales_order"},
-			},
+# @frappe.whitelist()
+# def make_warranty_claim(source_name, target_doc=None):
+# 	frappe.errprint("nnnnn")
+# 	doclist = get_mapped_doc(
+# 		"TSC Service Call",
+# 		source_name,
+# 		{
+# 			"TSC Service Call": {
+# 				"doctype": "Warranty Claim",
+# 				"field_map": {"customer": "customer", "issue_log_date": "complaint_date", "address": "service_address", "mob_no": "contact_mobile", "issue_details": "complaint"},
+# 			},
 			
-		},
-		target_doc,
+# 		},
+# 		target_doc,
 		
-	)
+# 	)
 
-	return doclist
+# 	return doclist
 
 
 
@@ -585,13 +585,25 @@ def make_warranty_claim(source_name, target_doc=None):
 				
 				"TSC Service Call": {
 					"doctype": "Warranty Claim",
-					"field_map": {"customer": "customer", "issue_details":"complaint", "name":"custom_service_call"},
+					"field_map": {"customer": "customer", "issue_details":"complaint", "name":"custom_service_call", "sales_order": "custom_sales_order_name"},
 				},
 			
 			},
 			target_doc,
 		)
 	return doclist
+
+
+def warrenty_claim_sales_order(self, event):
+    if (self.custom_sales_order_name):
+        if (self.custom_sales_order):
+            pass
+        else:
+            frappe.errprint("iiiii")
+            frappe.errprint(self.custom_sales_order_name)
+            sales_order = frappe.get_doc("Sales Order", self.custom_sales_order_name)
+            if (sales_order):
+            	self.custom_sales_order = sales_order.name
 
 def update_tsc_payemnt_link(self, event):
 	if (self.custom_tsc_payment_link):

@@ -85,7 +85,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Arranging Site Visit\nSite Visit Undertaken\nTo be Quoted\nQuoting\nApproved\nWaiting for Customer\nOn Hold\nClosed"
+   "options": "Arranging Site Visit\nEmergency Site Visit\nReq Site Visit\nSite Visit Undertaken\nUndertaken To be Quoted\nQuoting\nApproved\nWaiting for Quote Approval\nWaiting for Customer\nInvoiced\nSecond Visit Arranging\nWaiting for SF Approval\nVisit Completed / MGT Review\nRejected\nWaiting for WARRANTY Approval\nWaiting for Parts (Manufacturer)\nOn Hold\nClosed"
   },
   {
    "allow_in_quick_entry": 1,
@@ -349,7 +349,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-20 11:39:56.713329",
+ "modified": "2024-06-26 20:32:25.613334",
  "modified_by": "Administrator",
  "module": "QCS Invoice Advance",
  "name": "TSC Service Call",
