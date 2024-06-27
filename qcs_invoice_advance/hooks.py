@@ -169,7 +169,10 @@ fixtures = [
 					'Item Group-custom_contract_price',
 					'Item Group-custom_dealer_price',
 					'Warranty Claim-custom_sales_order',
-					'Warranty Claim-custom_sales_order_name'
+					'Warranty Claim-custom_sales_order_name',
+					'Product Bundle Item-custom_cost',
+					'Product Bundle Item-custom_avg_rate',
+					'Product Bundle Item-custom_in_stock'
 				]
 			]
 		]
