@@ -37,7 +37,7 @@ def get_columns(filters):
 		{
 			"label": "Address",
 			"fieldname": "add",
-			"fieldtype": "Data",
+			"fieldtype": "Small Text",
 			"width": 200,
 		},
 	]
@@ -124,7 +124,7 @@ def get_data(filters):
 				"customer": customer.name,
 				"customer_name": customer.customer_name,
 				"phone": customer.mobile_no,
-				"address": customer.customer_primary_address
+				"add": customer.customer_primary_address
 			})
 			if customer_name_dict[normalized_customer_name] is not None:
 				duplicates.append(customer_name_dict[normalized_customer_name])
@@ -134,7 +134,7 @@ def get_data(filters):
 				"customer": customer.name,
 				"customer_name": customer.customer_name,
 				"phone": customer.mobile_no,
-				"address": customer.customer_primary_address
+				"add": customer.customer_primary_address
 			}
 		
 		# Check for duplicates based on phone number if phone number is available
@@ -144,7 +144,7 @@ def get_data(filters):
 					"customer": customer.name,
 					"customer_name": customer.customer_name,
 					"phone": customer.mobile_no,
-					"address": customer.customer_primary_address
+					"add": customer.customer_primary_address
 				})
 				if customer_phone_dict[normalized_phone_no] is not None:
 					duplicates.append(customer_phone_dict[normalized_phone_no])
@@ -154,7 +154,7 @@ def get_data(filters):
 					"customer": customer.name,
 					"customer_name": customer.customer_name,
 					"phone": customer.mobile_no,
-					"address": customer.customer_primary_address
+					"add": customer.customer_primary_address
 			}
 
 	frappe.errprint(duplicates)
