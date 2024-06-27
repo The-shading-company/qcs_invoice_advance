@@ -7,12 +7,12 @@ frappe.ui.form.on('Product Bundle Item', {
     // },
     qty(frm, cdt, cdn) {
         var row = locals[cdt][cdn];
-        let custom_cost1 = row.custom_avg_rate * row.qty;
+        let custom_cost1 = row.custom_average_rate * row.qty;
         frappe.model.set_value(cdt, cdn, 'custom_cost', custom_cost1);
     },
-    custom_avg_rate(frm, cdt, cdn) {
+    custom_average_rate(frm, cdt, cdn) {
         var row = locals[cdt][cdn];
-        let custom_cost1 = row.custom_avg_rate * row.qty;
+        let custom_cost1 = row.custom_average_rate * row.qty;
         frappe.model.set_value(cdt, cdn, 'custom_cost', custom_cost1);
     },
  });

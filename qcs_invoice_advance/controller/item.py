@@ -331,11 +331,11 @@ def add_margins(self, event):
 		if len(bom) > 0:
 			bom_index = frappe.get_doc("BOM", bom[0].name)
 			frappe.errprint(bom_index)
-			item.custom_tsc_cost = bom_index.total_cost * item.qty
+			item.custom_tsc_cost = bom_index.total_cost
 			total_cost += item.custom_tsc_cost
 			frappe.errprint(item.custom_tsc_cost)
 		else:
-			item.custom_tsc_cost = item.valuation_rate * item.qty
+			item.custom_tsc_cost = item.valuation_rate
 			total_cost += item.custom_tsc_cost
 			frappe.errprint(item.custom_tsc_cost)
 		if item.custom_tsc_cost > 0:
