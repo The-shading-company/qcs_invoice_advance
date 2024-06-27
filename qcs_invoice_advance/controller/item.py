@@ -672,6 +672,10 @@ def create_payment_link(dt, dn, amt, purpose):
 	pl.payment_url = rdata["paymentLink"]
 	pl.save(ignore_permissions=True)
  
+	quo_doc = frappe.get_doc("Quotation", docu.name)
+	quo_doc.custom_tsc_payment_link = pl.name
+	quo_doc.save(ignore_permissions=True)
+ 
 	return rdata["paymentLink"]
 	
 
