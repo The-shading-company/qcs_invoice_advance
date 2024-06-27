@@ -57,12 +57,13 @@ def create_partial_invoice(sales_order, percentage):
 
 
 def update_payment_link(self, event):
-	doc = frappe.get_all("TSC Payment Link", filters={"document_type":"Quotation", "document_name": self.custom_quotation}, fields=["name"])
-	if doc:
-		for i in doc:
-			payment_doc = frappe.get_doc("TSC Payment Link", i.get("name"))
-			payment_doc.sales_order = self.name
-			payment_doc.save(ignore_permissions=True)
+	if (self.custom_quotation):
+		doc = frappe.get_all("TSC Payment Link", filters={"document_type":"Quotation", "document_name": self.custom_quotation}, fields=["name"])
+		if doc:
+			for i in doc:
+				payment_doc = frappe.get_doc("TSC Payment Link", i.get("name"))
+				payment_doc.sales_order = self.name
+				payment_doc.save(ignore_permissions=True)
    
    
    
