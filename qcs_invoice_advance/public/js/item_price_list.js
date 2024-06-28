@@ -9,7 +9,11 @@ frappe.ui.form.on('Item Price', {
             },
             callback: function(r) {
                 if(r.message) {
+                    console.log(r.message)
                     frm.set_value('price_list_rate', r.message);
+                }
+                else{
+                    frm.set_value('price_list_rate', 0);
                 }
             }
         })
