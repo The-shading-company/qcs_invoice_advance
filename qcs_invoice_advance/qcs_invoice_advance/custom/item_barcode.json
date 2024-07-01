@@ -1,0 +1,32 @@
+{
+ "custom_fields": [],
+ "custom_perms": [],
+ "doctype": "Item Barcode",
+ "links": [],
+ "property_setters": [
+  {
+   "_assign": null,
+   "_comments": null,
+   "_liked_by": null,
+   "_user_tags": null,
+   "creation": "2024-01-13 13:04:46.863734",
+   "default_value": null,
+   "doc_type": "Item Barcode",
+   "docstatus": 0,
+   "doctype_or_field": "DocField",
+   "field_name": "barcode",
+   "idx": 0,
+   "is_system_generated": 1,
+   "modified": "2024-01-13 13:04:46.863734",
+   "modified_by": "stephen.foot@theshadingcompany.ae",
+   "module": null,
+   "name": "Item Barcode-barcode-hidden",
+   "owner": "stephen.foot@theshadingcompany.ae",
+   "property": "hidden",
+   "property_type": "Check",
+   "row_name": null,
+   "value": "0"
+  }
+ ],
+ "sync_on_migrate": 1
+}

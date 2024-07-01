@@ -33,7 +33,8 @@ doctype_js = {"Sales Order": "public/js/sales_order.js",
 			  "Sales Invoice": "public/js/sales_invoice.js",
 			  "Product Bundle": "public/js/product_bundle.js",
      		  "Item Price": "public/js/item_price_list.js",
-         	  "Material Request": "public/js/material_request.js"}
+         	  "Material Request": "public/js/material_request.js",
+              "Item Group": "public/js/item_group.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -141,7 +142,7 @@ doc_events = {
 	},
 	"Warranty Claim":{
 		"validate": "qcs_invoice_advance.controller.item.warrenty_claim_sales_order"
-	}
+	},
 }
 
 
@@ -173,8 +174,10 @@ fixtures = [
 					'Product Bundle-custom_item_total_cost',
 					'Product Bundle Item-custom_item_cost',
 					'Product Bundle Item-custom_average_rate',
+					'Product Bundle Item-custom_item_validation_rate',
 					'Product Bundle Item-custom_in_stock',
-					'Quotation Item-custom_tsc_cost_with_qty'
+					'Quotation Item-custom_tsc_cost_with_qty',
+					'Item-custom_avoid_auto_update_price_list_based_on_item_group',
 				]
 			]
 		]

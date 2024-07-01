@@ -603,15 +603,15 @@ def make_warranty_claim(source_name, target_doc=None):
 
 
 def warrenty_claim_sales_order(self, event):
-    if (self.custom_sales_order_name):
-        if (self.custom_sales_order):
-            pass
-        else:
-            frappe.errprint("iiiii")
-            frappe.errprint(self.custom_sales_order_name)
-            sales_order = frappe.get_doc("Sales Order", self.custom_sales_order_name)
-            if (sales_order):
-            	self.custom_sales_order = sales_order.name
+	if (self.custom_sales_order_name):
+		if (self.custom_sales_order):
+			pass
+		else:
+			frappe.errprint("iiiii")
+			frappe.errprint(self.custom_sales_order_name)
+			sales_order = frappe.get_doc("Sales Order", self.custom_sales_order_name)
+			if (sales_order):
+				self.custom_sales_order = sales_order.name
 
 def update_tsc_payemnt_link(self, event):
 	if (self.custom_tsc_payment_link):
@@ -786,28 +786,109 @@ def run_retail_update():
 @frappe.whitelist()
 def item_price_list(item_code, price_list):
 	item_doc = frappe.get_doc("Item", item_code)
-	if (item_doc.custom_average_cost):
-		if (float(item_doc.custom_average_cost) > 0):
-			item_group_doc = frappe.get_doc("Item Group", item_doc.item_group)
-			if (price_list == "Contract"):
-				cost = float(item_doc.custom_average_cost) * item_group_doc.custom_contract_price
-				return cost
-			if (price_list == "Dealer"):
-				cost = float(item_doc.custom_average_cost) * item_group_doc.custom_dealer_price
-				return cost
-			if (price_list == "Retail"):
-				cost = float(item_doc.custom_average_cost) * item_group_doc.custom_retail_price
-				return cost
+	if (item_doc.custom_avoid_auto_update_price_list_based_on_item_group == 0):
+		if (item_doc.custom_average_cost):
+			if (float(item_doc.custom_average_cost) > 0):
+				item_group_doc = frappe.get_doc("Item Group", item_doc.item_group)
+				if (price_list == "Contract"):
+					if (item_group_doc.custom_contract_price > 0):
+						cost = float(item_doc.custom_average_cost) * item_group_doc.custom_contract_price
+						return cost
+					else:
+						if item_doc.valuation_rate:
+							cost = float(item_doc.valuation_rate)
+							return cost
+						else:
+							return 0	
+				if (price_list == "Dealer"):
+					if (item_group_doc.custom_dealer_price > 0):
+						cost = float(item_doc.custom_average_cost) * item_group_doc.custom_dealer_price
+						return cost
+					else:
+						if item_doc.valuation_rate:
+							cost = float(item_doc.valuation_rate)
+							return cost
+						else:
+							return 0	
+				if (price_list == "Retail"):
+					if (item_group_doc.custom_dealer_price > 0):
+						cost = float(item_doc.custom_average_cost) * item_group_doc.custom_retail_price
+						return cost
+					else:
+						if item_doc.valuation_rate:
+							cost = float(item_doc.valuation_rate)
+							return cost
+						else:
+							return 0	
+			else:
+				if item_doc.valuation_rate:
+					cost = float(item_doc.valuation_rate)
+					return cost
+				else:
+					return 0
 		else:
 			if item_doc.valuation_rate:
 				cost = float(item_doc.valuation_rate)
 				return cost
 			else:
 				return 0
-	else:
-		if item_doc.valuation_rate:
-			cost = float(item_doc.valuation_rate)
-			return cost
-		else:
-			return 0
+
+
+@frappe.whitelist()
+def update_item_price(item_group, contract_price, dealer_price, retail_price):
+	contract_price = json.loads(contract_price)
+	dealer_price = json.loads(dealer_price)
+	retail_price = json.loads(retail_price)
+	item_doc = frappe.get_all("Item", filters={"item_group":item_group, "custom_avoid_auto_update_price_list_based_on_item_group":0},fields=["name", "custom_average_cost", "valuation_rate"])
+	if (item_doc):
+		for i in item_doc:
+			price_doc = frappe.get_all("Item Price", filters={"item_code": i.get("name")}, fields=["name"])
+			if price_doc:
+				for j in price_doc:
+					price_doc1 = frappe.get_doc("Item Price", j.get("name"))
+					if (i.get("custom_average_cost")):
+						if (float(i.get("custom_average_cost")) > 0):
+							if (price_doc1.price_list == "Contract"):
+								if (contract_price>0):
+									cost = float(i.get("custom_average_cost")) * contract_price
+									price_doc1.price_list_rate = cost
+								else:
+									if (i.get("valuation_rate")):
+										price_doc1.price_list_rate = float(i.get("valuation_rate"))
+									else:
+										price_doc1.price_list_rate = 0
+							if (price_doc1.price_list == "Dealer"):
+								if (dealer_price>0):
+									cost = float(i.get("custom_average_cost")) * dealer_price
+									price_doc1.price_list_rate = cost
+								else:
+									if (i.get("valuation_rate")):
+										price_doc1.price_list_rate = float(i.get("valuation_rate"))
+									else:
+										price_doc1.price_list_rate = 0
+							if (price_doc1.price_list == "Retail"):
+								if (dealer_price>0):
+									cost = float(i.get("custom_average_cost")) * retail_price
+									price_doc1.price_list_rate = cost
+								else:
+									if (i.get("valuation_rate")):
+										price_doc1.price_list_rate = float(i.get("valuation_rate"))
+									else:
+										price_doc1.price_list_rate = 0
+						else:
+							if i.get("valuation_rate"):
+								cost = float(i.get("valuation_rate"))
+								price_doc1.price_list_rate = cost
+							else:
+								price_doc1.price_list_rate = 0
+					else:
+						if i.get("valuation_rate"):
+							cost = float(i.get("valuation_rate"))
+							price_doc1.price_list_rate = cost
+						else:
+							price_doc1.price_list_rate = 0
+
+					price_doc1.save(ignore_permissions=True)
+	
+		frappe.msgprint("Item Price List Updated.")
 	
