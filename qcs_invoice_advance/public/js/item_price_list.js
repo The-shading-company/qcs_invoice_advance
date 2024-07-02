@@ -1,6 +1,5 @@
 frappe.ui.form.on('Item Price', {
     price_list: function(frm) {
-        console.log("jbhb")
         frappe.call({
             method: "qcs_invoice_advance.controller.item.item_price_list",
             args: {
@@ -9,7 +8,6 @@ frappe.ui.form.on('Item Price', {
             },
             callback: function(r) {
                 if(r.message) {
-                    console.log(r.message)
                     frm.set_value('price_list_rate', r.message);
                 }
                 else{

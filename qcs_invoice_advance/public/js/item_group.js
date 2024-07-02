@@ -8,7 +8,10 @@ frappe.ui.form.on('Item Group', {
 						"item_group": cur_frm.doc.name,
                         "contract_price": cur_frm.doc.custom_contract_price,
                         "dealer_price": cur_frm.doc.custom_dealer_price,
-                        "retail_price": cur_frm.doc.custom_retail_price
+                        "retail_price": cur_frm.doc.custom_retail_price,
+						"retail_price_list": cur_frm.doc.custom_retail_price_list,
+						"contract_price_list": cur_frm.doc.custom_contract_price_list,
+						"dealer_price_list": cur_frm.doc.custom_dealer_price_list
 					},
 					callback: function (r) {
 						if (!r.exc) {

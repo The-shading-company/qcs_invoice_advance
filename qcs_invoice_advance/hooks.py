@@ -178,6 +178,9 @@ fixtures = [
 					'Product Bundle Item-custom_in_stock',
 					'Quotation Item-custom_tsc_cost_with_qty',
 					'Item-custom_avoid_auto_update_price_list_based_on_item_group',
+					'Item Group-custom_retail_price_list',
+					'Item Group-custom_contract_price_list',
+					'Item Group-custom_dealer_price_list',
 				]
 			]
 		]

@@ -44,7 +44,6 @@ frappe.ui.form.on('Material Request', {
 	},
 
 	onload: function(frm) {
-		console.log("nnnn")
 		// add item, if previous view was item
 		erpnext.utils.add_item(frm);
 
@@ -81,7 +80,6 @@ frappe.ui.form.on('Material Request', {
 	},
 
 	refresh: function(frm) {
-		console.log("nnnnnnnooo")
 		frm.events.make_custom_buttons(frm);
 		frm.toggle_reqd('customer', frm.doc.material_request_type=="Customer Provided");
 	},
