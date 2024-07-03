@@ -1,7 +1,7 @@
 frappe.ui.form.on('Item Price', {
     price_list: function(frm) {
         frappe.call({
-            method: "qcs_invoice_advance.controller.item.item_price_list",
+            method: "qcs_invoice_advance.controller.item_price_list.item_price_list",
             args: {
                 "item_code": cur_frm.doc.item_code,
                 "price_list": cur_frm.doc.price_list

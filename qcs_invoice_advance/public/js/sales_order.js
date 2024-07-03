@@ -51,7 +51,6 @@ frappe.ui.form.on("Sales Order", {
 	},
 
 	refresh: function(frm) {
-		console.log("nnnnnnnnnnnnnnnnuuuuuuuuuuu")
         if(frm.doc.docstatus==1){
             frm.add_custom_button(__('Partial Invoice'), () => {
                 var d = new frappe.ui.Dialog({
