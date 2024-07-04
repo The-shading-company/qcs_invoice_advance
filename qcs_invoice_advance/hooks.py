@@ -201,7 +201,8 @@ scheduler_events = {
         "qcs_invoice_advance.controller.item.run_retail_update",
         "qcs_invoice_advance.controller.item.cron_update_item_average_rate",
         "qcs_invoice_advance.controller.item_price_list.crom_update_item_price",
-        "qcs_invoice_advance.controller.product_bundle.cron_update_product_bundle"
+        "qcs_invoice_advance.controller.product_bundle.cron_update_product_bundle",
+        "qcs_invoice_advance.controller.item.cron_rakbank_api",
     ],
 #	"hourly": [
 #		"qcs_invoice_advance.tasks.hourly"

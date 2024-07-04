@@ -7,6 +7,9 @@ from frappe import _
 from frappe.utils import flt
 from frappe.utils.jinja import render_template
 from frappe.utils.background_jobs import enqueue
+import simplify
+import os
+import certifi
 
 def create_bom(self, event):
 	if (self.variant_of == "CAN"):
@@ -655,28 +658,45 @@ def create_payment_link(dt, dn, amt, purpose):
 	
 	response = requests.request("POST", url, headers=headers, data=payload)
 	rdata = json.loads(response.text)
-	pl = frappe.new_doc("TSC Payment Link")
-	pl.requested_date = docu.transaction_date
-	pl.document_type = dt
-	pl.document_name = docu.name
-	
-	if dt == "Quotation":
-		doc = frappe.get_all("Sales Order", filters={"custom_quotation": docu.name}, fields=["name"])
-		if doc:
-			so_list = []
-			for i in doc:
-				so_list.append(i.get("name"))
-				pl.sales_order = so_list[0]
-	
-	pl.status = "Open"
-	pl.payment_url = rdata["paymentLink"]
-	pl.save(ignore_permissions=True)
  
-	quo_doc = frappe.get_doc("Quotation", docu.name)
-	quo_doc.custom_tsc_payment_link = pl.name
-	quo_doc.save(ignore_permissions=True)
+# get payment Invoice
+
+	payment_link = rdata["paymentLink"]
+	payment_id = payment_link.split('/')[-1]
+	rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
+	if (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
  
-	return rdata["paymentLink"]
+		simplify.public_key = rakbank_api_settings.public_key
+		simplify.private_key = rakbank_api_settings.private_key
+		os.environ['SSL_CERT_FILE'] = certifi.where()
+		invoice = simplify.Invoice.find(payment_id)
+		invoice_id = invoice["invoiceId"]
+	
+		pl = frappe.new_doc("TSC Payment Link")
+		pl.requested_date = docu.transaction_date
+		pl.document_type = dt
+		pl.document_name = docu.name
+		
+		if dt == "Quotation":
+			doc = frappe.get_all("Sales Order", filters={"custom_quotation": docu.name}, fields=["name"])
+			if doc:
+				so_list = []
+				for i in doc:
+					so_list.append(i.get("name"))
+					pl.sales_order = so_list[0]
+		
+		pl.status = "Open"
+		pl.payment_url = rdata["paymentLink"]
+		pl.payment_invoice = invoice_id
+		pl.save(ignore_permissions=True)
+	
+		quo_doc = frappe.get_doc("Quotation", docu.name)
+		quo_doc.custom_tsc_payment_link = pl.name
+		quo_doc.save(ignore_permissions=True)
+	
+		return rdata["paymentLink"]
+	else:
+		frappe.throw("Somthing Missing in Rakbank API Settings")
 	
 
 
@@ -796,3 +816,24 @@ def cron_update_item_average_rate():
 			else:
 				doc.custom_average_cost = 0
 			doc.save(ignore_permissions=True)
+   
+   
+def cron_rakbank_api():
+	all_payment = frappe.get_all("TSC Payment Link", fields=["name"])
+	if (all_payment):
+		for i in all_payment:
+			doc = frappe.get_doc("TSC Payment Link", i.get("name"))
+			if(doc.payment_url):
+				frappe.errprint(doc.name)
+				payment_link = doc.payment_url
+				payment_id = payment_link.split('/')[-1]
+				rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
+				if (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
+					simplify.public_key = rakbank_api_settings.public_key
+					simplify.private_key = rakbank_api_settings.private_key
+					os.environ['SSL_CERT_FILE'] = certifi.where()
+					payment = simplify.Invoice.find(payment_id)
+					payemnt_status = payment["status"]
+					frappe.errprint(payment["status"])
+					doc.status = payemnt_status
+					doc.save(ignore_permissions=True)
