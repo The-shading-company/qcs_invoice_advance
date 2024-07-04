@@ -11,6 +11,8 @@ import simplify
 import os
 import certifi
 
+
+
 def create_bom(self, event):
 	if (self.variant_of == "CAN"):
 				
@@ -836,7 +838,8 @@ def process_batch(items):
         doc.custom_average_cost = valuation_rate or 0
         doc.save(ignore_permissions=True)
    
-   
+ 
+@frappe.whitelist() 
 def cron_rakbank_api():
 	all_payment = frappe.get_all("TSC Payment Link", fields=["name"])
 	if (all_payment):
