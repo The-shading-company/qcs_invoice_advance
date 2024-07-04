@@ -13,7 +13,7 @@ def check_transferred_qty(self, event):
                     for j in range(0, len(work_tab)):
                         if (tab[i].get("idx") == work_tab[j].get("idx")):
                             if (tab[i].get("qty") > work_tab[j].get("required_qty")):
-                                frappe.throw(_("Transferred Qty is More than Required Qty. To Check {0} Line Item in Work Order").format(tab[i].get("item_code")))
+                                #frappe.throw(_("Transferred Qty is More than Required Qty. To Check {0} Line Item in Work Order").format(tab[i].get("item_code")))
                                 
                             if (tab[i].get("qty") < work_tab[j].get("required_qty")):
-                                frappe.throw(_("Transferred Qty is Less than Required Qty. To Check {0} Line Item in Work Order").format(tab[i].get("item_code")))
+                                #frappe.throw(_("Transferred Qty is Less than Required Qty. To Check {0} Line Item in Work Order").format(tab[i].get("item_code")))
