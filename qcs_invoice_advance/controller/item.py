@@ -861,7 +861,7 @@ def cron_rakbank_api():
 					payment = simplify.Invoice.find(payment_id)
 					payemnt_status = payment["status"]
 					frappe.errprint(payment["status"])
-					doc.status = payemnt_status
+					doc.payment_status = payemnt_status
 					doc.save(ignore_permissions=True)
   
   
@@ -881,5 +881,5 @@ def process_batch1(items):
                 payment = simplify.Invoice.find(payment_id)
                 payment_status = payment["status"]
                 frappe.errprint(payment["status"])
-                doc.status = payment_status
+                doc.payment_status = payment_status
                 doc.save(ignore_permissions=True)
