@@ -30,11 +30,12 @@ app_license = "MIT"
 
 # include js in doctype views
 doctype_js = {"Sales Order": "public/js/sales_order.js",
-			  "Sales Invoice": "public/js/sales_invoice.js",
-			  "Product Bundle": "public/js/product_bundle.js",
-	 		  "Item Price": "public/js/item_price_list.js",
-		 	  "Material Request": "public/js/material_request.js",
-			  "Item Group": "public/js/item_group.js"}
+              "Sales Invoice": "public/js/sales_invoice.js",
+              "Product Bundle": "public/js/product_bundle.js",
+               "Item Price": "public/js/item_price_list.js",
+               "Material Request": "public/js/material_request.js",
+              "Item Group": "public/js/item_group.js",
+               "Item": "public/js/item.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -100,7 +101,7 @@ doctype_js = {"Sales Order": "public/js/sales_order.js",
 # Override standard doctype classes
 
 override_doctype_class = {
-	"Purchase Order": "qcs_invoice_advance.controller.qcs_purchase_order.CustomPurchaseOrder",
+    "Purchase Order": "qcs_invoice_advance.controller.qcs_purchase_order.CustomPurchaseOrder",
 }
 
 # Document Events
@@ -108,84 +109,85 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
-	"Item": {
-		"after_insert": ["qcs_invoice_advance.controller.item.create_bom", "qcs_invoice_advance.controller.item.add_image", "qcs_invoice_advance.controller.item.create_shade_sail_price"],
-			"on_update": "qcs_invoice_advance.controller.item.update_bom",
-			"on_trash": "qcs_invoice_advance.controller.item.delete_bom",
-		"before_save": "qcs_invoice_advance.controller.item.set_dynamic_item_description"
-		 #"validate": "qcs_invoice_advance.controller.item.add_image"
-	},
-	"BOM": {
-		 	"on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
-		 	"on_update_after_submit": "qcs_invoice_advance.controller.item.add_sale_price",
-			"on_update": "qcs_invoice_advance.controller.item.add_sale_price"
+    "Item": {
+        "after_insert": ["qcs_invoice_advance.controller.item.create_bom", "qcs_invoice_advance.controller.item.add_image", "qcs_invoice_advance.controller.item.create_shade_sail_price"],
+            "on_update": "qcs_invoice_advance.controller.item.update_bom",
+            "on_trash": "qcs_invoice_advance.controller.item.delete_bom",
+        "before_save": "qcs_invoice_advance.controller.item.set_dynamic_item_description"
+         #"validate": "qcs_invoice_advance.controller.item.add_image"
+    },
+    "BOM": {
+             "on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
+             "on_update_after_submit": "qcs_invoice_advance.controller.item.add_sale_price",
+            "on_update": "qcs_invoice_advance.controller.item.add_sale_price"
 
-   	},
-	"Sales Invoice": {
-		"validate": "qcs_invoice_advance.controller.item.tsc_custom_accounts"
-	},
-	"Quotation": {
-		"validate": ["qcs_invoice_advance.controller.item.update_tsc_payemnt_link",  "qcs_invoice_advance.controller.item.add_margins"],
-		"after_insert": ["qcs_invoice_advance.controller.item.add_quote_link", "qcs_invoice_advance.controller.item.update_service_call"]
-	},
-	"Purchase Order":{
-		"after_insert": "qcs_invoice_advance.controller.item.update_purchase_to_sales"
-	},
-	"Sales Order":{
-		"after_insert": ["qcs_invoice_advance.controller.item.update_service_call_sales_order", "qcs_invoice_advance.controller.sales_order.update_payment_link"]
-	},
-	"Stock Entry":{
-		"validate": "qcs_invoice_advance.controller.work_order.check_transferred_qty"
-	},
-	"Product Bundle":{
-		"validate": "qcs_invoice_advance.controller.product_bundle.cal_cost"
-	},
-	"Warranty Claim":{
-		"validate": "qcs_invoice_advance.controller.item.warrenty_claim_sales_order"
-	},
+       },
+    "Sales Invoice": {
+        "validate": "qcs_invoice_advance.controller.item.tsc_custom_accounts"
+    },
+    "Quotation": {
+        "validate": ["qcs_invoice_advance.controller.item.update_tsc_payemnt_link",  "qcs_invoice_advance.controller.item.add_margins"],
+        "after_insert": ["qcs_invoice_advance.controller.item.add_quote_link", "qcs_invoice_advance.controller.item.update_service_call"]
+    },
+    "Purchase Order":{
+        "after_insert": "qcs_invoice_advance.controller.item.update_purchase_to_sales"
+    },
+    "Sales Order":{
+        "after_insert": ["qcs_invoice_advance.controller.item.update_service_call_sales_order", "qcs_invoice_advance.controller.sales_order.update_payment_link"]
+    },
+    "Stock Entry":{
+        "validate": "qcs_invoice_advance.controller.work_order.check_transferred_qty"
+    },
+    "Product Bundle":{
+        "validate": "qcs_invoice_advance.controller.product_bundle.cal_cost"
+    },
+    "Warranty Claim":{
+        "validate": "qcs_invoice_advance.controller.item.warrenty_claim_sales_order"
+    },
 }
 
 
 
 fixtures = [
-	{
-		"dt": "Custom Field", "filters": [
-			[
-				"name", "in", [
-					'Sales Invoice-original_total',
-					'Sales Invoice Item-original_qty',
-					'Sales Order-partial_invoice',
-					'Sales Invoice-original_total',
-					'Sales Invoice-order_percentage',
-					'Sales Invoice Item-custom_ref_no',
-					'Sales Order Item-custom_ref_no',
-					'Quotation-custom_tsc_service_call',
-					'Quotation-custom_tsc_payment_link',
-					'Sales Order-custom_tsc_service_call',
-					'Sales Order-custom_quotation',
-					'Sales Order-custom_purchase_order',
-					'Material Request-custom_sales_order',
-					'Purchase Order-custom_sales_order',
-					'Item Group-custom_retail_price',
-					'Item Group-custom_contract_price',
-					'Item Group-custom_dealer_price',
-					'Warranty Claim-custom_sales_order',
-					'Warranty Claim-custom_sales_order_name',
-					'Product Bundle-custom_item_total_cost',
-					'Product Bundle Item-custom_item_cost',
-					'Product Bundle Item-custom_average_rate',
-					'Product Bundle Item-custom_item_validation_rate',
-					'Product Bundle Item-custom_in_stock',
-					'Quotation Item-custom_tsc_cost_with_qty',
-					'Item-custom_avoid_auto_update_price_list_based_on_item_group',
-					'Item Group-custom_retail_price_list',
-					'Item Group-custom_contract_price_list',
-					'Item Group-custom_dealer_price_list',
-				]
-			]
-		]
-	},
-	
+    {
+        "dt": "Custom Field", "filters": [
+            [
+                "name", "in", [
+                    'Sales Invoice-original_total',
+                    'Sales Invoice Item-original_qty',
+                    'Sales Order-partial_invoice',
+                    'Sales Invoice-original_total',
+                    'Sales Invoice-order_percentage',
+                    'Sales Invoice Item-custom_ref_no',
+                    'Sales Order Item-custom_ref_no',
+                    'Quotation-custom_tsc_service_call',
+                    'Quotation-custom_tsc_payment_link',
+                    'Sales Order-custom_tsc_service_call',
+                    'Sales Order-custom_quotation',
+                    'Sales Order-custom_purchase_order',
+                    'Material Request-custom_sales_order',
+                    'Purchase Order-custom_sales_order',
+                    'Item Group-custom_retail_price',
+                    'Item Group-custom_contract_price',
+                    'Item Group-custom_dealer_price',
+                    'Warranty Claim-custom_sales_order',
+                    'Warranty Claim-custom_sales_order_name',
+                    'Product Bundle-custom_item_total_cost',
+                    'Product Bundle Item-custom_item_cost',
+                    'Product Bundle Item-custom_average_rate',
+                    'Product Bundle Item-custom_item_validation_rate',
+                    'Product Bundle Item-custom_in_stock',
+                    'Quotation Item-custom_tsc_cost_with_qty',
+                    'Item-custom_avoid_auto_update_price_list_based_on_item_group',
+                    'Item Group-custom_retail_price_list',
+                    'Item Group-custom_contract_price_list',
+                    'Item Group-custom_dealer_price_list',
+                    'Item-custom_woo_update',
+                ]
+            ]
+        ]
+    },
+    
 ]
 
 # Scheduled Tasks
@@ -195,12 +197,12 @@ scheduler_events = {
 #	"all": [
 #		"qcs_invoice_advance.tasks.all"
 #	],
-	"daily": [
-		"qcs_invoice_advance.controller.item.run_retail_update",
-		"qcs_invoice_advance.controller.item.cron_update_item_average_rate",
-		"qcs_invoice_advance.controller.item_price_list.crom_update_item_price",
-		"qcs_invoice_advance.controller.product_bundle.cron_update_product_bundle"
-	],
+    "daily": [
+        "qcs_invoice_advance.controller.item.run_retail_update",
+        "qcs_invoice_advance.controller.item.cron_update_item_average_rate",
+        "qcs_invoice_advance.controller.item_price_list.crom_update_item_price",
+        "qcs_invoice_advance.controller.product_bundle.cron_update_product_bundle"
+    ],
 #	"hourly": [
 #		"qcs_invoice_advance.tasks.hourly"
 #	],
