@@ -843,26 +843,26 @@ def process_batch(items):
 def cron_rakbank_api():
 	all_payment = frappe.get_all("TSC Payment Link", fields=["name"])
 	if (all_payment):
-		batch_size = 50  # Adjust batch size based on performance
-		for i in range(0, len(all_payment), batch_size):
-			batch = all_payment[i:i + batch_size]
-			enqueue(process_batch1, items=batch)
-		# for i in all_payment:
-		# 	doc = frappe.get_doc("TSC Payment Link", i.get("name"))
-		# 	if(doc.payment_url):
-		# 		frappe.errprint(doc.name)
-		# 		payment_link = doc.payment_url
-		# 		payment_id = payment_link.split('/')[-1]
-		# 		rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
-		# 		if (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
-		# 			simplify.public_key = rakbank_api_settings.public_key
-		# 			simplify.private_key = rakbank_api_settings.private_key
-		# 			os.environ['SSL_CERT_FILE'] = certifi.where()
-		# 			payment = simplify.Invoice.find(payment_id)
-		# 			payemnt_status = payment["status"]
-		# 			frappe.errprint(payment["status"])
-		# 			doc.status = payemnt_status
-		# 			doc.save(ignore_permissions=True)
+		# batch_size = 50  # Adjust batch size based on performance
+		# for i in range(0, len(all_payment), batch_size):
+		# 	batch = all_payment[i:i + batch_size]
+		# 	enqueue(process_batch1, items=batch)
+		for i in all_payment:
+			doc = frappe.get_doc("TSC Payment Link", i.get("name"))
+			if(doc.payment_url):
+				frappe.errprint(doc.name)
+				payment_link = doc.payment_url
+				payment_id = payment_link.split('/')[-1]
+				rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
+				if (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
+					simplify.public_key = rakbank_api_settings.public_key
+					simplify.private_key = rakbank_api_settings.private_key
+					os.environ['SSL_CERT_FILE'] = certifi.where()
+					payment = simplify.Invoice.find(payment_id)
+					payemnt_status = payment["status"]
+					frappe.errprint(payment["status"])
+					doc.status = payemnt_status
+					doc.save(ignore_permissions=True)
   
   
 def process_batch1(items):
