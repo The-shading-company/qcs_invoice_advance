@@ -902,7 +902,7 @@ def process_batch(items):
  
 @frappe.whitelist() 
 def cron_rakbank_api():
-	all_payment = frappe.get_all("TSC Payment Link", fields=["name"])
+	all_payment = frappe.get_all("TSC Payment Link", filters={"status": ["!=", "Cancelled"]}, fields=["name"])
 	if (all_payment):
 		# batch_size = 50  # Adjust batch size based on performance
 		# for i in range(0, len(all_payment), batch_size):
@@ -923,6 +923,7 @@ def cron_rakbank_api():
 					payemnt_status = payment["status"]
 					frappe.errprint(payment["status"])
 					doc.payment_status = payemnt_status
+					doc.payment_invoice = payment["id"]
 					doc.save(ignore_permissions=True)
   
   

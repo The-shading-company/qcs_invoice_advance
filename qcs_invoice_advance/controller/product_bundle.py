@@ -40,8 +40,10 @@ def cron_update_product_bundle():
             for j in range(0, len(tab)):
                 item_code = tab[j].get("item_code")
                 item_doc = frappe.get_doc("Item", item_code)
+                stock = bundle_item_stock(item_code)
                 tab[j].custom_average_rate = item_doc.custom_average_cost or 0
                 tab[j].custom_item_validation_rate = item_doc.valuation_rate or 0
+                tab[j].custom_in_stock = stock
                 if float(item_doc.custom_average_cost) > 0:
                     tab[j].custom_item_cost = float(item_doc.custom_average_cost) or 0
                     cost.append(float(item_doc.custom_average_cost) or 0)
@@ -50,3 +52,16 @@ def cron_update_product_bundle():
                     cost.append(item_doc.valuation_rate or 0)
             doc1.custom_item_total_cost = sum(cost)
             doc1.save(ignore_permissions=True)
+            
+@frappe.whitelist()
+def bundle_item_stock(item_code):
+    up_bin_qty = []
+    bin_doc = frappe.get_all("Bin", filters={"item_code": item_code}, fields=["name", "actual_qty"])
+    if bin_doc:
+        for j in bin_doc:
+            up_bin_qty.append(j.get("actual_qty"))
+    else:
+        up_bin_qty.append(0)
+        
+    qty = sum(up_bin_qty)
+    return qty
