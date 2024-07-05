@@ -660,6 +660,7 @@ def create_payment_link(dt, dn, amt, purpose):
 	
 	response = requests.request("POST", url, headers=headers, data=payload)
 	rdata = json.loads(response.text)
+	frappe.errprint(rdata)
  
 # get payment Invoice
 
@@ -672,7 +673,8 @@ def create_payment_link(dt, dn, amt, purpose):
 		simplify.private_key = rakbank_api_settings.private_key
 		os.environ['SSL_CERT_FILE'] = certifi.where()
 		invoice = simplify.Invoice.find(payment_id)
-		invoice_id = invoice["invoiceId"]
+		frappe.errprint(invoice)
+		invoice_id = invoice["id"]
 	
 		pl = frappe.new_doc("TSC Payment Link")
 		pl.requested_date = docu.transaction_date
@@ -824,19 +826,19 @@ def cron_update_item_average_rate():
 		# 	doc.save(ignore_permissions=True)
   
 def process_batch(items):
-    for i in items:
-        doc = frappe.get_doc("Item", i.get("name"))
-        valuation_rate = frappe.db.sql("""
-            SELECT valuation_rate
-            FROM `tabStock Ledger Entry`
-            WHERE item_code = %s
-            ORDER BY posting_date DESC, posting_time DESC
-            LIMIT 1
-        """, i.get("name"))
-        valuation_rate = valuation_rate[0][0] if valuation_rate else 0
+	for i in items:
+		doc = frappe.get_doc("Item", i.get("name"))
+		valuation_rate = frappe.db.sql("""
+			SELECT valuation_rate
+			FROM `tabStock Ledger Entry`
+			WHERE item_code = %s
+			ORDER BY posting_date DESC, posting_time DESC
+			LIMIT 1
+		""", i.get("name"))
+		valuation_rate = valuation_rate[0][0] if valuation_rate else 0
 
-        doc.custom_average_cost = valuation_rate or 0
-        doc.save(ignore_permissions=True)
+		doc.custom_average_cost = valuation_rate or 0
+		doc.save(ignore_permissions=True)
    
  
 @frappe.whitelist() 
@@ -866,20 +868,37 @@ def cron_rakbank_api():
   
   
 def process_batch1(items):
-    rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
-    if rakbank_api_settings.public_key and rakbank_api_settings.private_key:
-        simplify.public_key = rakbank_api_settings.public_key
-        simplify.private_key = rakbank_api_settings.private_key
-        os.environ['SSL_CERT_FILE'] = certifi.where()
-        
-        for i in items:
-            doc = frappe.get_doc("TSC Payment Link", i.get("name"))
-            if doc.payment_url:
-                frappe.errprint(doc.name)
-                payment_link = doc.payment_url
-                payment_id = payment_link.split('/')[-1]
-                payment = simplify.Invoice.find(payment_id)
-                payment_status = payment["status"]
-                frappe.errprint(payment["status"])
-                doc.payment_status = payment_status
-                doc.save(ignore_permissions=True)
+	rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
+	if rakbank_api_settings.public_key and rakbank_api_settings.private_key:
+		simplify.public_key = rakbank_api_settings.public_key
+		simplify.private_key = rakbank_api_settings.private_key
+		os.environ['SSL_CERT_FILE'] = certifi.where()
+		
+		for i in items:
+			doc = frappe.get_doc("TSC Payment Link", i.get("name"))
+			if doc.payment_url:
+				frappe.errprint(doc.name)
+				payment_link = doc.payment_url
+				payment_id = payment_link.split('/')[-1]
+				payment = simplify.Invoice.find(payment_id)
+				payment_status = payment["status"]
+				frappe.errprint(payment["status"])
+				doc.payment_status = payment_status
+				doc.save(ignore_permissions=True)
+				
+				
+def test1():
+	simplify.public_key = "lvpb_ZjQxNjYyNTMtMDEyZi00ZDUzLThmMzEtZjIxNDQxODFmZjBl"
+	simplify.private_key = "zq2xIrdkyJtfDe0QVfBtJU5QT1y3BRWSOSW62kABas95YFFQL0ODSXAOkNtXTToq"
+
+
+
+
+	os.environ['SSL_CERT_FILE'] = certifi.where()
+
+
+
+
+	payment = simplify.Payment.find('7c081fc3-f4bc-4da3-bde9-e0edf5f24538')
+	print(payment)
+
