@@ -680,7 +680,8 @@ def create_payment_link(dt, dn, amt, purpose):
 		pl.requested_date = docu.transaction_date
 		pl.document_type = dt
 		pl.document_name = docu.name
-		
+		pl.customer = docu.party_name
+		  
 		if dt == "Quotation":
 			doc = frappe.get_all("Sales Order", filters={"custom_quotation": docu.name}, fields=["name"])
 			if doc:
@@ -699,6 +700,64 @@ def create_payment_link(dt, dn, amt, purpose):
 		quo_doc.save(ignore_permissions=True)
 	
 		return rdata["paymentLink"]
+	else:
+		frappe.throw("Somthing Missing in Rakbank API Settings")
+  
+  
+@frappe.whitelist()
+def create_payment_link1(dt, dn, amt, purpose):
+	frappe.errprint("jjjjj")
+	docu = frappe.get_doc(dt, dn)
+	url = "https://simplify-rak-gbermhh3pa-uc.a.run.app/create"
+
+	payload = json.dumps({
+	  "key": "kl8EvdFF4EPPIo5JHJto74lz-EOt5rabkmnE",
+	  "reference": dn,
+	  "note": "test",
+	  "dueDate": str(docu.transaction_date),
+	  "memo": "Delivery To",
+	  "name": docu.customer_name,
+	  "email": docu.contact_email if docu.contact_email else "",
+	  "description": purpose,
+	  "amount": amt,
+	  "quantity": "1",
+	  "currency": "AED"
+	})
+	headers = {
+	  'Content-Type': 'application/json'
+	}
+	
+	response = requests.request("POST", url, headers=headers, data=payload)
+	rdata = json.loads(response.text)
+	frappe.errprint(rdata)
+ 
+# get payment Invoice
+
+	payment_link = rdata["paymentLink"]
+	payment_id = payment_link.split('/')[-1]
+	rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
+	if (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
+ 
+		simplify.public_key = rakbank_api_settings.public_key
+		simplify.private_key = rakbank_api_settings.private_key
+		os.environ['SSL_CERT_FILE'] = certifi.where()
+		invoice = simplify.Invoice.find(payment_id)
+		frappe.errprint(invoice)
+		invoice_id = invoice["id"]
+	
+		pl = frappe.new_doc("TSC Payment Link")
+		pl.requested_date = docu.transaction_date
+		pl.document_type = dt
+		pl.document_name = docu.name
+		pl.customer = docu.customer
+		pl.sales_order = docu.name
+		pl.status = "Open"
+		pl.payment_url = rdata["paymentLink"]
+		pl.payment_invoice = invoice_id
+		pl.save(ignore_permissions=True)
+  
+		return rdata["paymentLink"]
+
 	else:
 		frappe.throw("Somthing Missing in Rakbank API Settings")
 	
