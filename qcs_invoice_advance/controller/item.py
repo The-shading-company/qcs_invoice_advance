@@ -884,6 +884,7 @@ def process_batch1(items):
 				payment_status = payment["status"]
 				frappe.errprint(payment["status"])
 				doc.payment_status = payment_status
+				doc.payment_invoice = payment["id"]
 				doc.save(ignore_permissions=True)
 				
 				
