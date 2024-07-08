@@ -1,0 +1,56 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-07-08 13:48:37.752180",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "logo_cost",
+  "item_code",
+  "cost"
+ ],
+ "fields": [
+  {
+   "fieldname": "logo_cost",
+   "fieldtype": "Link",
+   "label": "logo cost",
+   "options": "Logo"
+  },
+  {
+   "fetch_from": "logo_cost.item",
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "item code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "cost",
+   "fieldtype": "Currency",
+   "label": "Cost"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-07-08 13:52:09.995124",
+ "modified_by": "Administrator",
+ "module": "QCS Invoice Advance",
+ "name": "logo web",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
