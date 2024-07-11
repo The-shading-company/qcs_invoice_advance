@@ -9,6 +9,7 @@ from frappe.utils.jinja import render_template
 from frappe.utils.background_jobs import enqueue
 import simplify
 import os
+from datetime import datetime
 import certifi
 
 
@@ -910,7 +911,7 @@ def cron_rakbank_api():
 		# 	enqueue(process_batch1, items=batch)
 		for i in all_payment:
 			doc = frappe.get_doc("TSC Payment Link", i.get("name"))
-			if(doc.payment_url):
+			if (doc.payment_url):
 				frappe.errprint(doc.name)
 				payment_link = doc.payment_url
 				payment_id = payment_link.split('/')[-1]
@@ -921,13 +922,17 @@ def cron_rakbank_api():
 					os.environ['SSL_CERT_FILE'] = certifi.where()
 					payment = simplify.Invoice.find(payment_id)
 					frappe.errprint(payment)
-     
+	 
 					payemnt_status = payment["status"]
 					if payemnt_status == "PAID":
 						if payment["datePaid"]:
-							doc.paid_date = payment["datePaid"]
+							# doc.paid_date = payment["datePaid"]
+							timestamp_ms = payment["datePaid"]
+							timestamp_s = timestamp_ms / 1000
+							date_time = datetime.fromtimestamp(timestamp_s)
+							doc.paid_date = date_time.strftime('%Y-%m-%d %H:%M:%S')
 						if payment["payment"]:
-							doc.paid_amount = payment["payment"]["amount"]
+							doc.paid_amount = payment["payment"]["amount"] / 100
 				
 
 					doc.payment_status = payemnt_status

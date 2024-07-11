@@ -17,7 +17,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Canopy Type",
-   "options": "AWN\nUMB"
+   "options": "AWN\nUMB\nBLI"
   },
   {
    "fieldname": "canopy_size",
@@ -41,7 +41,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-11-21 13:07:43.916844",
+ "modified": "2024-07-11 18:20:21.423669",
  "modified_by": "Administrator",
  "module": "QCS Invoice Advance",
  "name": "TSC Stitching table",
