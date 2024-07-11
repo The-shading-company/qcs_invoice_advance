@@ -1,0 +1,75 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-07-09 13:29:55.489455",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "logo_costing_id",
+  "supplier",
+  "logo_details",
+  "logo_image",
+  "logo_unit_cost",
+  "row_name"
+ ],
+ "fields": [
+  {
+   "fieldname": "logo_costing_id",
+   "fieldtype": "Link",
+   "label": "Logo Costing Id",
+   "options": "Logo Costing"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "logo_details",
+   "fieldtype": "Small Text",
+   "label": "Logo Details"
+  },
+  {
+   "fieldname": "logo_image",
+   "fieldtype": "Text Editor",
+   "label": "Logo Image"
+  },
+  {
+   "fieldname": "logo_unit_cost",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Logo Unit Cost",
+   "reqd": 1
+  },
+  {
+   "fieldname": "row_name",
+   "fieldtype": "Data",
+   "label": "Row Name"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-07-09 13:38:04.410146",
+ "modified_by": "Administrator",
+ "module": "QCS Invoice Advance",
+ "name": "Logo Costing Form",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

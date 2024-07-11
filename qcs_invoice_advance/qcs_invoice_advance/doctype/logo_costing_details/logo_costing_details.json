@@ -1,0 +1,75 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-07-09 12:56:32.942069",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "logo_image",
+  "image_vchl",
+  "logo_details",
+  "logo_unit_cost",
+  "logo_unit_selling",
+  "supplier",
+  "costing_link"
+ ],
+ "fields": [
+  {
+   "fieldname": "logo_image",
+   "fieldtype": "Attach",
+   "in_list_view": 1,
+   "label": "Logo Image"
+  },
+  {
+   "fieldname": "image_vchl",
+   "fieldtype": "Image",
+   "options": "logo_image"
+  },
+  {
+   "description": "Add Logo Size, Number of Colours, Logo Qty",
+   "fieldname": "logo_details",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Logo Details"
+  },
+  {
+   "fieldname": "logo_unit_cost",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Logo Unit Cost"
+  },
+  {
+   "fieldname": "logo_unit_selling",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Logo Unit Selling"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Supplier",
+   "options": "Supplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "costing_link",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Costing Link"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-07-09 14:14:39.223831",
+ "modified_by": "Administrator",
+ "module": "QCS Invoice Advance",
+ "name": "Logo Costing Details",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

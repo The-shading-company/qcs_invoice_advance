@@ -202,7 +202,7 @@ scheduler_events = {
         "qcs_invoice_advance.controller.item.cron_update_item_average_rate",
         "qcs_invoice_advance.controller.item_price_list.crom_update_item_price",
         "qcs_invoice_advance.controller.product_bundle.cron_update_product_bundle",
-        "qcs_invoice_advance.controller.item.cron_rakbank_api",
+        # "qcs_invoice_advance.controller.item.cron_rakbank_api",
     ],
 #	"hourly": [
 #		"qcs_invoice_advance.tasks.hourly"
@@ -212,6 +212,14 @@ scheduler_events = {
 #	],
 #	"monthly": [
 #		"qcs_invoice_advance.tasks.monthly"
+    "cron": {
+        "* * * * *": [
+            "qcs_invoice_advance.qcs_invoice_advance.doctype.logo_costing_form.logo_costing_form.update_cost"
+        ],
+        "0 9-18 * * *": [
+            "qcs_invoice_advance.controller.item.cron_rakbank_api"
+        ]
+    }
 }
 
 # Testing

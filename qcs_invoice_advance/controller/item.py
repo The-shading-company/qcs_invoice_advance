@@ -920,8 +920,13 @@ def cron_rakbank_api():
 					simplify.private_key = rakbank_api_settings.private_key
 					os.environ['SSL_CERT_FILE'] = certifi.where()
 					payment = simplify.Invoice.find(payment_id)
+					frappe.errprint(payment)
+     
 					payemnt_status = payment["status"]
-					frappe.errprint(payment["status"])
+					if payemnt_status == "PAID":
+						doc.paid_date = payment["datePaid"]
+						doc.paid_amount = payment["payment"]["amount"]
+
 					doc.payment_status = payemnt_status
 					doc.payment_invoice = payment["id"]
 					doc.save(ignore_permissions=True)
