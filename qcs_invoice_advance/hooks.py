@@ -185,8 +185,15 @@ fixtures = [
                     'Item-custom_woo_update',
                 ]
             ]
+        ],
+        "dt": "Web Form", "filters": [
+            [
+                "name", "in", [
+                    'logo-costing',
+                ]
+            ]
         ]
-    },
+    }
     
 ]
 

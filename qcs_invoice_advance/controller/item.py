@@ -924,8 +924,11 @@ def cron_rakbank_api():
      
 					payemnt_status = payment["status"]
 					if payemnt_status == "PAID":
-						doc.paid_date = payment["datePaid"]
-						doc.paid_amount = payment["payment"]["amount"]
+						if payment["datePaid"]:
+							doc.paid_date = payment["datePaid"]
+						if payment["payment"]:
+							doc.paid_amount = payment["payment"]["amount"]
+				
 
 					doc.payment_status = payemnt_status
 					doc.payment_invoice = payment["id"]
