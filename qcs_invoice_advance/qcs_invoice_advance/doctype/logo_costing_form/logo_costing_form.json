@@ -6,11 +6,11 @@
  "engine": "InnoDB",
  "field_order": [
   "logo_costing_id",
+  "row_name",
   "supplier",
   "logo_details",
   "logo_image",
-  "logo_unit_cost",
-  "row_name"
+  "logo_unit_cost"
  ],
  "fields": [
   {
@@ -28,12 +28,14 @@
   {
    "fieldname": "logo_details",
    "fieldtype": "Small Text",
-   "label": "Logo Details"
+   "label": "Logo Details",
+   "read_only": 1
   },
   {
    "fieldname": "logo_image",
    "fieldtype": "Text Editor",
-   "label": "Logo Image"
+   "label": "Logo Image",
+   "read_only": 1
   },
   {
    "fieldname": "logo_unit_cost",
@@ -45,12 +47,13 @@
   {
    "fieldname": "row_name",
    "fieldtype": "Data",
-   "label": "Row Name"
+   "label": "Row Name",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-09 13:38:04.410146",
+ "modified": "2024-07-12 11:31:19.272121",
  "modified_by": "Administrator",
  "module": "QCS Invoice Advance",
  "name": "Logo Costing Form",
