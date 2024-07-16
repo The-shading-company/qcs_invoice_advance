@@ -11,6 +11,8 @@ import simplify
 import os
 from datetime import datetime
 import certifi
+from frappe.utils import get_system_timezone
+from pytz import timezone
 
 
 
@@ -926,15 +928,12 @@ def cron_rakbank_api():
 					payemnt_status = payment["status"]
 					if payemnt_status == "PAID":
 						if payment["datePaid"]:
-							# doc.paid_date = payment["datePaid"]
 							timestamp_ms = payment["datePaid"]
-							timestamp_s = timestamp_ms / 1000
-							date_time = datetime.fromtimestamp(timestamp_s)
-							doc.paid_date = date_time.strftime('%Y-%m-%d %H:%M:%S')
+							formatted_datetime = epoch_time_ms_to_datetime(timestamp_ms)
+							doc.paid_date = formatted_datetime
 						if payment["payment"]:
 							doc.paid_amount = payment["payment"]["amount"] / 100
 				
-
 					doc.payment_status = payemnt_status
 					doc.payment_invoice = payment["id"]
 					doc.save(ignore_permissions=True)
@@ -964,15 +963,26 @@ def process_batch1(items):
 def test1():
 	simplify.public_key = "lvpb_ZjQxNjYyNTMtMDEyZi00ZDUzLThmMzEtZjIxNDQxODFmZjBl"
 	simplify.private_key = "zq2xIrdkyJtfDe0QVfBtJU5QT1y3BRWSOSW62kABas95YFFQL0ODSXAOkNtXTToq"
-
-
-
-
 	os.environ['SSL_CERT_FILE'] = certifi.where()
-
-
-
-
-	payment = simplify.Payment.find('7c081fc3-f4bc-4da3-bde9-e0edf5f24538')
+	payment = simplify.Invoice.find("48bya95jaGd")
 	print(payment)
+	if payment["datePaid"]:
+		timestamp_ms = payment["datePaid"]
+		formatted_datetime = epoch_time_ms_to_datetime(timestamp_ms)
+		frappe.errprint(formatted_datetime)
+		# timestamp_s = timestamp_ms / 1000
+		# date_time = datetime.fromtimestamp(timestamp_s)
+		# frappe.errprint(date_time)
 
+
+	# payment = simplify.Payment.find('7c081fc3-f4bc-4da3-bde9-e0edf5f24538')
+	# print(payment)
+
+
+def epoch_time_ms_to_datetime(epoch_time_ms):
+    system_timezone = timezone(get_system_timezone())
+    epoch_time = epoch_time_ms / 1000.0
+    converted_datetime = datetime.fromtimestamp(epoch_time)
+    converted_datetime_in_timezone = converted_datetime.astimezone(system_timezone)
+    formatted_datetime = converted_datetime_in_timezone.strftime('%Y-%m-%d %H:%M:%S')
+    return formatted_datetime
