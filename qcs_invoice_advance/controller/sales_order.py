@@ -63,6 +63,7 @@ def update_payment_link(self, event):
 			for i in doc:
 				payment_doc = frappe.get_doc("TSC Payment Link", i.get("name"))
 				payment_doc.sales_order = self.name
+				payment_doc.link_sales_order = self.name
 				payment_doc.save(ignore_permissions=True)
    
    

@@ -29,7 +29,7 @@ def woo_update_normal_item(wooid, item_code):
                 b_tab = bundle_doc.items
                 for b1 in b_tab:
                     custom_in_stock = b1.get("custom_in_stock")
-                    custom_in_stock1 = float(custom_in_stock)
+                    custom_in_stock1 = float(custom_in_stock)/b1.get("qty")
                     if custom_in_stock1 is not None:
                         min_custom_in_stock = min(min_custom_in_stock, custom_in_stock1)
             frappe.errprint(min_custom_in_stock)
@@ -94,7 +94,7 @@ def woo_update_variant_item(wooid, item_code, woovariationid):
                 b_tab = bundle_doc.items
                 for b1 in b_tab:
                     custom_in_stock = b1.get("custom_in_stock")
-                    custom_in_stock1 = float(custom_in_stock)
+                    custom_in_stock1 = float(custom_in_stock)/b1.get("qty")
                     if custom_in_stock1 is not None:
                         min_custom_in_stock = min(min_custom_in_stock, custom_in_stock1)
             frappe.errprint(min_custom_in_stock)

@@ -691,7 +691,8 @@ def create_payment_link(dt, dn, amt, purpose):
 				so_list = []
 				for i in doc:
 					so_list.append(i.get("name"))
-					pl.sales_order = so_list[0]
+				pl.sales_order = so_list[0]
+				pl.link_sales_order = so_list[0]
 		
 		pl.status = "Open"
 		pl.payment_url = rdata["paymentLink"]
