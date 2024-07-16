@@ -21,7 +21,7 @@
   },
   {
    "fieldname": "supplier",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Supplier",
    "options": "Supplier"
   },
@@ -53,7 +53,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-12 11:31:19.272121",
+ "modified": "2024-07-16 20:07:09.817066",
  "modified_by": "Administrator",
  "module": "QCS Invoice Advance",
  "name": "Logo Costing Form",
