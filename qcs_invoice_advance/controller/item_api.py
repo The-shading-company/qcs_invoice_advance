@@ -21,12 +21,26 @@ def woo_update_normal_item(wooid, item_code):
             up_item_price.append(0)
         
         up_bin_qty = []
-        bin_doc = frappe.get_all("Bin", filters={"item_code": item_code}, fields=["name", "projected_qty"])
-        if bin_doc:
-            for j in bin_doc:
-                up_bin_qty.append(j.get("projected_qty"))
+        bundle_item = frappe.get_all("Product Bundle", filters={"name": item_code}, fields=["name"])
+        if bundle_item:
+            min_custom_in_stock = float('inf')  # Initialize to a large number
+            for b in bundle_item:
+                bundle_doc = frappe.get_doc("Product Bundle", b.get("name"))
+                b_tab = bundle_doc.items
+                for b1 in b_tab:
+                    custom_in_stock = b1.get("custom_in_stock")
+                    custom_in_stock1 = float(custom_in_stock)
+                    if custom_in_stock1 is not None:
+                        min_custom_in_stock = min(min_custom_in_stock, custom_in_stock1)
+            frappe.errprint(min_custom_in_stock)
+            up_bin_qty.append(min_custom_in_stock)
         else:
-            up_bin_qty.append(0)
+            bin_doc = frappe.get_all("Bin", filters={"item_code": item_code}, fields=["name", "projected_qty"])
+            if bin_doc:
+                for j in bin_doc:
+                    up_bin_qty.append(j.get("projected_qty"))
+            else:
+                up_bin_qty.append(0)
             
         
         data = {
@@ -72,12 +86,26 @@ def woo_update_variant_item(wooid, item_code, woovariationid):
             up_item_price.append(0)
         
         up_bin_qty = []
-        bin_doc = frappe.get_all("Bin", filters={"item_code": item_code}, fields=["name", "projected_qty"])
-        if bin_doc:
-            for j in bin_doc:
-                up_bin_qty.append(j.get("projected_qty"))
+        bundle_item = frappe.get_all("Product Bundle", filters={"name": item_code}, fields=["name"])
+        if bundle_item:
+            min_custom_in_stock = float('inf')  # Initialize to a large number
+            for b in bundle_item:
+                bundle_doc = frappe.get_doc("Product Bundle", b.get("name"))
+                b_tab = bundle_doc.items
+                for b1 in b_tab:
+                    custom_in_stock = b1.get("custom_in_stock")
+                    custom_in_stock1 = float(custom_in_stock)
+                    if custom_in_stock1 is not None:
+                        min_custom_in_stock = min(min_custom_in_stock, custom_in_stock1)
+            frappe.errprint(min_custom_in_stock)
+            up_bin_qty.append(min_custom_in_stock)
         else:
-            up_bin_qty.append(0)
+            bin_doc = frappe.get_all("Bin", filters={"item_code": item_code}, fields=["name", "projected_qty"])
+            if bin_doc:
+                for j in bin_doc:
+                    up_bin_qty.append(j.get("projected_qty"))
+            else:
+                up_bin_qty.append(0)
             
         data = {
             "regular_price": str(up_item_price[0]),
