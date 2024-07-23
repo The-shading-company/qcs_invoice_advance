@@ -33,7 +33,7 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "\nAwaiting Price\nRecieved"
+   "options": "Awaiting Price\nRecieved"
   },
   {
    "fieldname": "section_break_rjow",
@@ -54,7 +54,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-09 13:12:41.396631",
+ "modified": "2024-07-23 11:07:12.823526",
  "modified_by": "Administrator",
  "module": "QCS Invoice Advance",
  "name": "Logo Costing",

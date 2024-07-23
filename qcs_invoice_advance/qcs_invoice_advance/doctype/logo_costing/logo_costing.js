@@ -18,5 +18,30 @@ frappe.ui.form.on("Logo Costing", {
                 }
             }
         }
+        if (cur_frm.doc.logos.length > 0){
+            let any_item_with_web_link = frm.doc.logos.some(logo_tab => logo_tab.costing_link);
+            if (any_item_with_web_link){
+                let any_item_without_send_email = frm.doc.logos.some(logo_tab => logo_tab.sent_email!=1);
+                if (any_item_without_send_email){
+                    frm.add_custom_button(__("Send Email"), function () {
+                        frappe.call({
+                            method:"qcs_invoice_advance.qcs_invoice_advance.doctype.logo_costing.logo_costing.send_email_to_supplier",
+                            args:{
+                                "tab": cur_frm.doc.logos,
+                                "name": cur_frm.doc.name
+                            },
+                        })
+                    })
+                }
+            }
+            let any_item_without_logo_unit_cost= frm.doc.logos.some(logo_tab => logo_tab.logo_unit_cost == 0);
+            if (any_item_without_logo_unit_cost){
+                frm.set_value("status", "Awaiting Price")
+            }
+            else{
+                frm.set_value("status", "Recieved")
+                frm.save();
+            }
+        }
 	},
 });
