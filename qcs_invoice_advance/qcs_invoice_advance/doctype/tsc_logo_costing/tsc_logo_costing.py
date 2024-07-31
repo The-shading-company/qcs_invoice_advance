@@ -6,14 +6,13 @@ from frappe.model.document import Document
 from frappe.utils import get_url
 import urllib.parse
 import json
-from frappe.model.document import Document
 
 class TSCLogoCosting(Document):
 	pass
 
 @frappe.whitelist()
 def make_web_from_link(name):
-	logo_doc = frappe.get_doc("Logo Costing", name)
+	logo_doc = frappe.get_doc("TSC Logo Costing", name)
 	tab = logo_doc.logos
 	for i in range(0, len(tab)):
 		site_url = get_url()
@@ -31,12 +30,12 @@ def make_web_from_link(name):
 		tab[i].costing_link = link
   
 	logo_doc.save(ignore_permissions=True)
-	frappe.msgprint("Logo Costing Web Link Created")
+	frappe.msgprint("TSC Logo Costing Web Link Created")
 
 
 @frappe.whitelist()
 def send_email_to_supplier(tab, name):
-	doc = frappe.get_doc("Logo Costing", name)
+	doc = frappe.get_doc("TSC Logo Costing", name)
 	tab = doc.logos
 	for i in range(0, len(tab)):
 		if tab[i].get("supplier") and tab[i].get("sent_email") ==0:
@@ -59,7 +58,7 @@ def send_email_to_supplier(tab, name):
 					recipients=supplier_email,
 					subject=subject,
 					message=message,
-					reference_doctype="Logo Costing",
+					reference_doctype="TSC Logo Costing",
 					reference_name=name
 				)
 

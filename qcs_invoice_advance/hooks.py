@@ -220,9 +220,9 @@ scheduler_events = {
 #	"monthly": [
 #		"qcs_invoice_advance.tasks.monthly"
     "cron": {
-        "* * * * *": [
-            "qcs_invoice_advance.qcs_invoice_advance.doctype.logo_costing_form.logo_costing_form.update_cost"
-        ],
+        # "* * * * *": [
+        #     "qcs_invoice_advance.qcs_invoice_advance.doctype.logo_costing_form.logo_costing_form.update_cost"
+        # ],
         "0 8-19 * * *": [
             "qcs_invoice_advance.controller.item.cron_rakbank_api"
         ]
