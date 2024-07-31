@@ -26,7 +26,7 @@ def update_cost():
 		for j in cost_doc:
 			cost_doc1 = frappe.get_doc("Logo Costing Form", j.get("name"))
 			if cost_doc1.logo_costing_id and cost_doc1.row_name:
-				doc = frappe.get_doc("Logo Costing", cost_doc1.logo_costing_id)
+				doc = frappe.get_doc("TSC Logo Costing", cost_doc1.logo_costing_id)
 				tab = doc.logos
 				if (tab):
 					for i in range(0, len(tab)):
