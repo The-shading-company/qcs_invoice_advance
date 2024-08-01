@@ -8,6 +8,14 @@ frappe.ui.form.on("TSC Logo Costing", {
                 let any_item_without_web_link = frm.doc.logos.some(logo_tab => !logo_tab.costing_link);
                 if (any_item_without_web_link){
                     frm.add_custom_button(__("Create Web Form Link"), function () {
+                        let any_item_without_supplier = frm.doc.logos.some(logo_tab => !logo_tab.supplier);
+                        if (any_item_without_supplier){
+                            frappe.throw("Supplier is Missing.")
+                        }
+                        let any_item_without_logo_details = frm.doc.logos.some(logo_tab => !logo_tab.logo_details);
+                        if (any_item_without_logo_details){
+                            frappe.throw("Logo Detail is Missing.")
+                        }
                         frappe.call({
                             method:"qcs_invoice_advance.qcs_invoice_advance.doctype.tsc_logo_costing.tsc_logo_costing.make_web_from_link",
                             args:{
@@ -45,3 +53,4 @@ frappe.ui.form.on("TSC Logo Costing", {
         }
 	},
 });
+

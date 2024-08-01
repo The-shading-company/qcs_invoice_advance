@@ -38,6 +38,7 @@ def make_web_from_link(name):
 
 @frappe.whitelist()
 def send_email_to_supplier(tab, name):
+	pass
 	doc = frappe.get_doc("Logo Costing", name)
 	tab = doc.logos
 	for i in range(0, len(tab)):
