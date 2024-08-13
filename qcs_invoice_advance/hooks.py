@@ -187,15 +187,15 @@ fixtures = [
             ]
         ],
     },
-    # {
-    #     "dt": "Web Form", "filters": [
-    #         [
-    #             "name", "in", [
-    #                 'logo-costing',
-    #             ]
-    #         ]
-    #     ]
-    # }
+    {
+        "dt": "Web Form", "filters": [
+            [
+                "name", "in", [
+                    'logo-costing',
+                ]
+            ]
+        ]
+    }
     
 ]
 
