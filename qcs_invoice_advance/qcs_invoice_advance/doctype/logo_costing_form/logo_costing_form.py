@@ -21,6 +21,7 @@ def update_cost():
 					for i in range(0, len(tab)):
 						if (tab[i].get("name") == cost_doc1.row_name):
 							tab[i].logo_unit_cost = cost_doc1.logo_unit_cost
+							tab[i].logo_unit_selling = cost_doc1.logo_unit_cost*2
 				doc.save(ignore_permissions=True)
 	
 

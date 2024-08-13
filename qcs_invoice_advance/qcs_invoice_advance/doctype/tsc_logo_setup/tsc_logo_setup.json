@@ -1,0 +1,46 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-08-02 13:23:55.646918",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "table_zrnj",
+  "supplier_email_content"
+ ],
+ "fields": [
+  {
+   "fieldname": "table_zrnj",
+   "fieldtype": "Table",
+   "options": "Logo Supplier"
+  },
+  {
+   "fieldname": "supplier_email_content",
+   "fieldtype": "Code",
+   "label": "Supplier Email Content"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-08-02 14:45:12.870892",
+ "modified_by": "Administrator",
+ "module": "QCS Invoice Advance",
+ "name": "TSC Logo Setup",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
