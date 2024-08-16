@@ -11,6 +11,7 @@
   "quotation",
   "column_break_ozyv",
   "status",
+  "custom_send_link_via_whats_app_to_supplier",
   "section_break_szjq",
   "logos",
   "notes"
@@ -60,11 +61,16 @@
    "fieldname": "notes",
    "fieldtype": "Long Text",
    "label": "Notes"
+  },
+  {
+   "fieldname": "custom_send_link_via_whats_app_to_supplier",
+   "fieldtype": "Button",
+   "label": "Send link Via Whats App to Supplier"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-08-16 11:39:35.970883",
+ "modified": "2024-08-16 12:33:04.497371",
  "modified_by": "Administrator",
  "module": "QCS Invoice Advance",
  "name": "TSC Logo Costing",
