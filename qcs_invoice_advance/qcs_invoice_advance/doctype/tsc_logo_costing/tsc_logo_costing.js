@@ -2,27 +2,6 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("TSC Logo Costing", {
-    get_item_based_on_supplier(frm) {
-        if (cur_frm.doc.attach_logos.length > 0){
-            frappe.call({
-                method:"qcs_invoice_advance.qcs_invoice_advance.doctype.tsc_logo_costing.tsc_logo_costing.update_logos",
-                args:{
-                    "logo_tab": cur_frm.doc.attach_logos,
-                },
-                callback: function (r) {
-                    if (r.message) {
-                        frm.set_value("logos", []);
-                        frm.set_value("logos", r.message);
-                        frm.save();
-                    }
-                }
-            })
-        }
-        else{
-            frm.set_value("logos", []);
-            frm.save();
-        }
-    },
 	refresh(frm) {
         if (!frm.is_new()) {
             if (cur_frm.doc.logos.length > 0){

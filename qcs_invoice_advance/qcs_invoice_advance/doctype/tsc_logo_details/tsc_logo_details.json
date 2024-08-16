@@ -19,7 +19,8 @@
   {
    "fieldname": "logo_image",
    "fieldtype": "Attach Image",
-   "label": "Logo Image"
+   "label": "Logo Image",
+   "reqd": 1
   },
   {
    "fieldname": "image_vchl",
@@ -37,7 +38,6 @@
   {
    "fieldname": "logo_unit_cost",
    "fieldtype": "Currency",
-   "hidden": 1,
    "in_list_view": 1,
    "label": "Logo Unit Cost",
    "permlevel": 1
@@ -51,16 +51,17 @@
   {
    "fieldname": "supplier",
    "fieldtype": "Link",
-   "hidden": 1,
    "in_list_view": 1,
    "label": "Supplier",
-   "options": "Supplier"
+   "options": "Supplier",
+   "permlevel": 1
   },
   {
    "fieldname": "costing_link",
    "fieldtype": "Small Text",
    "in_list_view": 1,
-   "label": "Costing Link"
+   "label": "Costing Link",
+   "read_only": 1
   },
   {
    "default": "0",
@@ -73,7 +74,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-08-02 14:26:26.480754",
+ "modified": "2024-08-16 12:28:09.340220",
  "modified_by": "Administrator",
  "module": "QCS Invoice Advance",
  "name": "TSC Logo Details",

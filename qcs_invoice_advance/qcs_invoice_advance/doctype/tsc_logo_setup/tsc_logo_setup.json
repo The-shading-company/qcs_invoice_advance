@@ -5,25 +5,50 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "table_zrnj",
+  "logo_details_section",
+  "logo_supplier",
+  "selling_multiplier",
+  "email_content_section",
   "supplier_email_content"
  ],
  "fields": [
   {
-   "fieldname": "table_zrnj",
-   "fieldtype": "Table",
-   "options": "Logo Supplier"
-  },
-  {
    "fieldname": "supplier_email_content",
    "fieldtype": "Code",
-   "label": "Supplier Email Content"
+   "in_list_view": 1,
+   "label": "Supplier Email Content",
+   "reqd": 1
+  },
+  {
+   "fieldname": "logo_details_section",
+   "fieldtype": "Section Break",
+   "label": "Logo Details"
+  },
+  {
+   "fieldname": "logo_supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Logo Supplier",
+   "options": "Supplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "selling_multiplier",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Selling Multiplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "email_content_section",
+   "fieldtype": "Section Break",
+   "label": "Email Content"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-08-02 14:45:12.870892",
+ "modified": "2024-08-16 11:54:06.081674",
  "modified_by": "Administrator",
  "module": "QCS Invoice Advance",
  "name": "TSC Logo Setup",

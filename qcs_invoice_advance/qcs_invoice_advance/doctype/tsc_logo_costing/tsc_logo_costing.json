@@ -12,8 +12,6 @@
   "column_break_ozyv",
   "status",
   "section_break_szjq",
-  "attach_logos",
-  "get_item_based_on_supplier",
   "logos",
   "notes"
  ],
@@ -56,30 +54,17 @@
    "fieldtype": "Table",
    "label": "Logos",
    "max_height": "10px",
-   "options": "TSC Logo Details",
-   "read_only": 1
+   "options": "TSC Logo Details"
   },
   {
    "fieldname": "notes",
    "fieldtype": "Long Text",
    "label": "Notes"
-  },
-  {
-   "fieldname": "attach_logos",
-   "fieldtype": "Table",
-   "label": "Attach Logos",
-   "options": "Logo Attach Table"
-  },
-  {
-   "default": "0",
-   "fieldname": "get_item_based_on_supplier",
-   "fieldtype": "Button",
-   "label": "Get Item Based On Supplier"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-08-02 14:21:52.076107",
+ "modified": "2024-08-16 11:39:35.970883",
  "modified_by": "Administrator",
  "module": "QCS Invoice Advance",
  "name": "TSC Logo Costing",
