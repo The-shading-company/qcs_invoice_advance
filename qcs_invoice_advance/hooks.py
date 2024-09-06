@@ -183,6 +183,7 @@ fixtures = [
                     'Item Group-custom_contract_price_list',
                     'Item Group-custom_dealer_price_list',
                     'Item-custom_woo_update',
+                    'Product Bundle Item-custom_item_total_cost'
                 ]
             ]
         ],

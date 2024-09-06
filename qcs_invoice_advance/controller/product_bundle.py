@@ -6,7 +6,8 @@ def cal_cost(self, event):
         tab = self.items
         avg_rate = []
         for i in range(0, len(tab)):
-            avg_rate.append(tab[i].get("custom_item_cost"))
+            tab[i].custom_item_total_cost = (tab[i].get("qty") or 0) * (tab[i].get("custom_item_cost") or 0)
+            avg_rate.append(tab[i].get("custom_item_total_cost"))
         self.custom_item_total_cost = sum(avg_rate)
         
         
@@ -46,10 +47,12 @@ def cron_update_product_bundle():
                 tab[j].custom_in_stock = stock
                 if float(item_doc.custom_average_cost) > 0:
                     tab[j].custom_item_cost = float(item_doc.custom_average_cost) or 0
-                    cost.append(float(item_doc.custom_average_cost) or 0)
+                    tab[j].custom_item_total_cost = (tab[j].get("qty") or 0) * (tab[j].get("custom_item_cost") or 0)
+                    cost.append(tab[j].get("custom_item_total_cost") or 0)
                 else:
                     tab[j].custom_item_cost = item_doc.valuation_rate or 0
-                    cost.append(item_doc.valuation_rate or 0)
+                    tab[j].custom_item_total_cost = (tab[j].get("qty") or 0) * (tab[j].get("custom_item_cost") or 0)
+                    cost.append(tab[j].get("custom_item_total_cost") or 0)
             doc1.custom_item_total_cost = sum(cost)
             doc1.save(ignore_permissions=True)
             
