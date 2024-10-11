@@ -519,7 +519,9 @@ def make_quotation_site_visit(source_name, target_doc=None):
 			})
 			address.save(ignore_permissions=True)
 	else:
-		frappe.throw(title='Error', msg='Same Customer Name exists, please differentiate!')
+		# pass
+		frappe.throw("Quatation Created Already for this Customer. So No Need to Create!")
+		# frappe.throw(title='Error', msg='Same Customer Name exists, please differentiate!')
 			
 		
 		
