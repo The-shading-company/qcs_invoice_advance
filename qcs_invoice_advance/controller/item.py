@@ -374,6 +374,7 @@ def update_service_call(self, event):
 	if self.custom_tsc_service_call:
 		doc = frappe.get_doc("TSC Service Call", self.custom_tsc_service_call)
 		doc.quote = self.name
+		doc.status = "Quoting"
 		doc.save(ignore_permissions=True)
   
 def update_service_call_sales_order(self, event):
