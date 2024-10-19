@@ -1,11 +1,10 @@
-from . import __version__ as app_version
-
 app_name = "qcs_invoice_advance"
 app_title = "QCS Invoice Advance"
 app_publisher = "Quark Cyber Systems FZC"
 app_description = "QCS Invoice Advance"
 app_email = "support@quarkcs.com"
 app_license = "MIT"
+# required_apps = []
 
 # Includes in <head>
 # ------------------

@@ -337,8 +337,10 @@
   },
   {
    "fieldname": "sales_order",
-   "fieldtype": "Data",
-   "label": "Sales Order"
+   "fieldtype": "Link",
+   "label": "Sales Order",
+   "options": "Sales Order",
+   "search_index": 1
   },
   {
    "fieldname": "status_time_log",
@@ -349,7 +351,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-11 14:40:59.733495",
+ "modified": "2024-10-19 10:34:39.441397",
  "modified_by": "Administrator",
  "module": "QCS Invoice Advance",
  "name": "TSC Service Call",
