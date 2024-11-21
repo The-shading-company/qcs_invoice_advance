@@ -225,7 +225,7 @@ scheduler_events = {
         "* * * * *": [
             "qcs_invoice_advance.qcs_invoice_advance.doctype.logo_costing_form.logo_costing_form.update_cost"
         ],
-        "0 8-19 * * *": [
+        "0 8-19/2 * * *": [
             "qcs_invoice_advance.controller.item.cron_rakbank_api"
         ]
     }
