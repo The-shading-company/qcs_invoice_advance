@@ -85,7 +85,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Arranging Site Visit\nReq Site Visit\nSite Visit Undertaken\nUndertaken To be Quoted\nQuoting\nApproved\nWaiting for Quote Approval\nWaiting for Customer\nInvoiced\nRejected\nOn Hold\nClosed"
+   "options": "Arranging Site Visit\nSite Visit Undertaken\nQuoting\nApproved\nInvoiced\nClosed"
   },
   {
    "allow_in_quick_entry": 1,
