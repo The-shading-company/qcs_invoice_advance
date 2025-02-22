@@ -7,7 +7,7 @@ def cal_cost(self, event):
         avg_rate = []
         for i in range(0, len(tab)):
             item_cost = (tab[i].get("qty") or 0) * (tab[i].get("custom_item_cost") or 0)
-            tab[i].custom_item_total_cost = item_cost
+            tab[i].custom_item_total_cost = float(item_cost)
             avg_rate.append(float(item_cost))
         self.custom_item_total_cost = sum(avg_rate)
         
