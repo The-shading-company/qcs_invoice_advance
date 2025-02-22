@@ -11,21 +11,22 @@ from pytz import timezone
 class TSCServiceCall(Document):
 	def validate(self):
 		if self.status == "Arranging Site Visit":
-			if (self.status_time_log):
-				pass
-			else:
-				item = []
-				system_current_time = timezone_converted_datetime(datetime.now())
-				current_time = system_current_time.strftime('%H:%M:%S')
+			pass
+			#if (self.status_time_log):
+			#	pass
+			#else:
+			#	item = []
+			#	system_current_time = timezone_converted_datetime(datetime.now())
+			#	current_time = system_current_time.strftime('%H:%M:%S')
 				#current_time = datetime.now().strftime('%H:%M:%S')
-				item.append({
-					"status": self.status,
-					"date": today(),
-					"time": current_time,
-				})
-				self.update({
-					"status_time_log" : item
-				})
+			#	item.append({
+			#		"status": self.status,
+			#		"date": today(),
+			#		"time": current_time,
+			#	})
+			#	self.update({
+			#		"status_time_log" : item
+			#	})
 
 		if len(self.status_time_log) > 0:
 			tab = self.status_time_log
