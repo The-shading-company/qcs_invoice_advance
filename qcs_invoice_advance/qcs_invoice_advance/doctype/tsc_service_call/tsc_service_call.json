@@ -341,12 +341,6 @@
    "label": "Sales Order",
    "options": "Sales Order",
    "search_index": 1
-  },
-  {
-   "fieldname": "status_time_log",
-   "fieldtype": "Table",
-   "label": "Status Time Log",
-   "options": "TSC Service Call Time Log"
   }
  ],
  "index_web_pages_for_search": 1,
