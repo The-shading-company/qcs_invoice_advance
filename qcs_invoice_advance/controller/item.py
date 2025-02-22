@@ -754,6 +754,10 @@ def create_payment_link1(dt, dn, amt, purpose):
 	
 		pl = frappe.new_doc("TSC Payment Link")
 		pl.requested_date = docu.transaction_date
+		if dt=="Quotation":
+			pl.quotation = dn
+		if dt=="Sales Order":
+			pl.link_sales_order = dn
 		pl.document_type = dt
 		pl.document_name = docu.name
 		pl.customer = docu.customer
