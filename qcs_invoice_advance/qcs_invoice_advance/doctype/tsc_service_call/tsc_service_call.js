@@ -51,22 +51,22 @@ frappe.ui.form.on('TSC Service Call', {
     
 });
 
-function create_quotation(frm) {
+//function create_quotation(frm) {
     // You can fetch data from the Issue and use it in the Quotation
-    var customer = frm.doc.customer;
-    var issue_details = frm.doc.description;
+ //   var customer = frm.doc.customer;
+  //  var issue_details = frm.doc.description;
 
     // Create a new Quotation document
-    if (cur_frm.doc.status_time_log && cur_frm.doc.status_time_log.length > 0){
-        frappe.model.open_mapped_doc({
-            method: "qcs_invoice_advance.controller.item.make_quotation",
-            frm: frm
-        });
-    }
-    else{
+  //  if (cur_frm.doc.status_time_log && cur_frm.doc.status_time_log.length > 0){
+  //      frappe.model.open_mapped_doc({
+  //          method: "qcs_invoice_advance.controller.item.make_quotation",
+  //          frm: frm
+  //      });
+  //  }
+  //  else{
         frappe.throw("Previous Status(Arranging Site Visit) Missing in Status Time Log Table")
-    }
-}
+  //  }
+//}
 
 
 function create_warranty(frm) {
