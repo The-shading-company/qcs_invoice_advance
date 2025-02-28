@@ -64,7 +64,7 @@ frappe.ui.form.on('TSC Service Call', {
   //      });
   //  }
   //  else{
-        frappe.throw("Previous Status(Arranging Site Visit) Missing in Status Time Log Table")
+  //      frappe.throw("Previous Status(Arranging Site Visit) Missing in Status Time Log Table")
   //  }
 //}
 
