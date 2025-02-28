@@ -63,17 +63,17 @@ frappe.ui.form.on("TSC Logo Costing", {
 
         if (costing_links.length > 0) {
             // Assuming you have a specific number to send the message to
-            let phoneNumber = '971559994750';  // Replace with the actual phone number
+            //let phoneNumber = '971559994750';  // Replace with the actual phone number
 
             // Custom message
-            let customMessage = "Please can you let us know the price for this logo. Thanks. ";
-            let message = customMessage + costing_links.join(', ');
+            //let customMessage = "Please can you let us know the price for this logo. Thanks. ";
+            //let message = customMessage + costing_links.join(', ');
 
             // Generate WhatsApp web link
-            let whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            //let whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
             // Open WhatsApp web link in a new tab/window
-            window.open(whatsappLink, '_blank');
+            //window.open(whatsappLink, '_blank');
         } else {
             frappe.msgprint(__('No costing links found.'));
         }
