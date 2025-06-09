@@ -399,9 +399,7 @@ def check_discounts(self, event):
 			if self.net_total >= self.total * 0.05:
 				frappe.throw(_("Total Discount more than 10%"))
 	
-	
-
-				
+					
 
 @frappe.whitelist()
 def make_quotation(source_name, target_doc=None):
@@ -473,9 +471,6 @@ def make_quotation(source_name, target_doc=None):
 # 	)
 
 # 	return doclist
-
-
-
 
 
 @frappe.whitelist()
@@ -617,11 +612,6 @@ def warrenty_claim_sales_order(self, event):
 			if (sales_order):
 				self.custom_sales_order = sales_order.name
 
-def update_tsc_payemnt_link(self, event):
-	if (self.custom_tsc_payment_link):
-		payment_link = frappe.get_doc("TSC Payment Link", self.custom_tsc_payment_link)
-		payment_link.document_name = self.name
-		payment_link.save(ignore_permissions=True)
 
 @frappe.whitelist()
 def get_contact_query(customer):
@@ -640,138 +630,6 @@ def get_contact_query(customer):
 		WHERE 
 			links.link_doctype = 'Customer' AND links.link_name = %s
 	""", (customer1))
-
-
-@frappe.whitelist()
-def create_payment_link(dt, dn, amt, purpose):
-	docu = frappe.get_doc(dt, dn)
-	url = "https://simplify-rak-gbermhh3pa-uc.a.run.app/create"
-
-	payload = json.dumps({
-	  "key": "kl8EvdFF4EPPIo5JHJto74lz-EOt5rabkmnE",
-	  "reference": dn,
-	  "note": "test",
-	  "dueDate": str(docu.transaction_date),
-	  "memo": "Delivery To",
-	  "name": docu.customer_name,
-	  "email": docu.contact_email if docu.contact_email else "",
-	  "description": purpose,
-	  "amount": amt,
-	  "quantity": "1",
-	  "currency": "AED"
-	})
-	headers = {
-	  'Content-Type': 'application/json'
-	}
-	
-	response = requests.request("POST", url, headers=headers, data=payload)
-	rdata = json.loads(response.text)
-	frappe.errprint(rdata)
- 
-# get payment Invoice
-
-	payment_link = rdata["paymentLink"]
-	payment_id = payment_link.split('/')[-1]
-	rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
-	if (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
- 
-		simplify.public_key = rakbank_api_settings.public_key
-		simplify.private_key = rakbank_api_settings.private_key
-		os.environ['SSL_CERT_FILE'] = certifi.where()
-		invoice = simplify.Invoice.find(payment_id)
-		frappe.errprint(invoice)
-		invoice_id = invoice["id"]
-	
-		pl = frappe.new_doc("TSC Payment Link")
-		pl.requested_date = docu.transaction_date
-		pl.document_type = dt
-		pl.document_name = docu.name
-		pl.customer = docu.party_name
-		  
-		if dt == "Quotation":
-			doc = frappe.get_all("Sales Order", filters={"custom_quotation": docu.name}, fields=["name"])
-			if doc:
-				so_list = []
-				for i in doc:
-					so_list.append(i.get("name"))
-				pl.sales_order = so_list[0]
-				pl.link_sales_order = so_list[0]
-		
-		pl.status = "Open"
-		pl.payment_url = rdata["paymentLink"]
-		pl.payment_invoice = invoice_id
-		pl.save(ignore_permissions=True)
-	
-		quo_doc = frappe.get_doc("Quotation", docu.name)
-		quo_doc.custom_tsc_payment_link = pl.name
-		quo_doc.save(ignore_permissions=True)
-	
-		return rdata["paymentLink"]
-	else:
-		frappe.throw("Somthing Missing in Rakbank API Settings")
-  
-  
-@frappe.whitelist()
-def create_payment_link1(dt, dn, amt, purpose):
-	frappe.errprint("jjjjj")
-	docu = frappe.get_doc(dt, dn)
-	url = "https://simplify-rak-gbermhh3pa-uc.a.run.app/create"
-
-	payload = json.dumps({
-	  "key": "kl8EvdFF4EPPIo5JHJto74lz-EOt5rabkmnE",
-	  "reference": dn,
-	  "note": "test",
-	  "dueDate": str(docu.transaction_date),
-	  "memo": "Delivery To",
-	  "name": docu.customer_name,
-	  "email": docu.contact_email if docu.contact_email else "",
-	  "description": purpose,
-	  "amount": amt,
-	  "quantity": "1",
-	  "currency": "AED"
-	})
-	headers = {
-	  'Content-Type': 'application/json'
-	}
-	
-	response = requests.request("POST", url, headers=headers, data=payload)
-	rdata = json.loads(response.text)
-	frappe.errprint(rdata)
- 
-# get payment Invoice
-
-	payment_link = rdata["paymentLink"]
-	payment_id = payment_link.split('/')[-1]
-	rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
-	if (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
- 
-		simplify.public_key = rakbank_api_settings.public_key
-		simplify.private_key = rakbank_api_settings.private_key
-		os.environ['SSL_CERT_FILE'] = certifi.where()
-		invoice = simplify.Invoice.find(payment_id)
-		frappe.errprint(invoice)
-		invoice_id = invoice["id"]
-	
-		pl = frappe.new_doc("TSC Payment Link")
-		pl.requested_date = docu.transaction_date
-		if dt=="Quotation":
-			pl.quotation = dn
-		if dt=="Sales Order":
-			pl.link_sales_order = dn
-		pl.document_type = dt
-		pl.document_name = docu.name
-		pl.customer = docu.customer
-		pl.sales_order = docu.name
-		pl.status = "Open"
-		pl.payment_url = rdata["paymentLink"]
-		pl.payment_invoice = invoice_id
-		pl.save(ignore_permissions=True)
-  
-		return rdata["paymentLink"]
-
-	else:
-		frappe.throw("Somthing Missing in Rakbank API Settings")
-	
 
 
 @frappe.whitelist()
@@ -910,90 +768,6 @@ def process_batch(items):
 		doc.custom_average_cost = valuation_rate or 0
 		doc.save(ignore_permissions=True)
    
- 
-@frappe.whitelist() 
-def cron_rakbank_api():
-	all_payment = frappe.get_all("TSC Payment Link", filters={"status": ["!=", "Cancelled"], "payment_status": ["!=", "PAID"]}, fields=["name"])
-	if (all_payment):
-		# batch_size = 50  # Adjust batch size based on performance
-		# for i in range(0, len(all_payment), batch_size):
-		# 	batch = all_payment[i:i + batch_size]
-		# 	enqueue(process_batch1, items=batch)
-		for i in all_payment:
-			doc = frappe.get_doc("TSC Payment Link", i.get("name"))
-			if (doc.payment_url):
-				frappe.errprint(doc.name)
-				payment_link = doc.payment_url
-				payment_id = payment_link.split('/')[-1]
-				rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
-				if (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
-					simplify.public_key = rakbank_api_settings.public_key
-					simplify.private_key = rakbank_api_settings.private_key
-					os.environ['SSL_CERT_FILE'] = certifi.where()
-					payment = simplify.Invoice.find(payment_id)
-					frappe.errprint(payment)
-	 
-					payment_status = payment["status"]
-					if payment_status == "PAID":
-						if payment["datePaid"]:
-							timestamp_ms = payment["datePaid"]
-							formatted_datetime = epoch_time_ms_to_datetime(timestamp_ms)
-							doc.paid_date = formatted_datetime
-						if payment["payment"]:
-							doc.paid_amount = payment["payment"]["amount"] / 100
-				
-					doc.payment_status = payment_status
-					doc.payment_invoice = payment["id"]
-					doc.save(ignore_permissions=True)
-  
-  
-def process_batch1(items):
-	rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
-	if rakbank_api_settings.public_key and rakbank_api_settings.private_key:
-		simplify.public_key = rakbank_api_settings.public_key
-		simplify.private_key = rakbank_api_settings.private_key
-		os.environ['SSL_CERT_FILE'] = certifi.where()
-		
-		for i in items:
-			doc = frappe.get_doc("TSC Payment Link", i.get("name"))
-			if doc.payment_url:
-				frappe.errprint(doc.name)
-				payment_link = doc.payment_url
-				payment_id = payment_link.split('/')[-1]
-				payment = simplify.Invoice.find(payment_id)
-    
-				payment_status = payment["status"]
-				if payment_status == "PAID":
-					if payment["datePaid"]:
-						timestamp_ms = payment["datePaid"]
-						formatted_datetime = epoch_time_ms_to_datetime(timestamp_ms)
-						doc.paid_date = formatted_datetime
-					if payment["payment"]:
-						doc.paid_amount = payment["payment"]["amount"] / 100
-    
-				doc.payment_status = payment_status
-				doc.payment_invoice = payment["id"]
-				doc.save(ignore_permissions=True)
-				
-				
-def test1():
-	simplify.public_key = "lvpb_ZjQxNjYyNTMtMDEyZi00ZDUzLThmMzEtZjIxNDQxODFmZjBl"
-	simplify.private_key = "zq2xIrdkyJtfDe0QVfBtJU5QT1y3BRWSOSW62kABas95YFFQL0ODSXAOkNtXTToq"
-	os.environ['SSL_CERT_FILE'] = certifi.where()
-	payment = simplify.Invoice.find("48bya95jaGd")
-	print(payment)
-	if payment["datePaid"]:
-		timestamp_ms = payment["datePaid"]
-		formatted_datetime = epoch_time_ms_to_datetime(timestamp_ms)
-		frappe.errprint(formatted_datetime)
-		# timestamp_s = timestamp_ms / 1000
-		# date_time = datetime.fromtimestamp(timestamp_s)
-		# frappe.errprint(date_time)
-
-
-	# payment = simplify.Payment.find('7c081fc3-f4bc-4da3-bde9-e0edf5f24538')
-	# print(payment)
-
 
 def epoch_time_ms_to_datetime(epoch_time_ms):
     system_timezone = timezone(get_system_timezone())

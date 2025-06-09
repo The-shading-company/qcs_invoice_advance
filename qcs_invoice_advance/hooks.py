@@ -125,7 +125,7 @@ doc_events = {
         "validate": "qcs_invoice_advance.controller.item.tsc_custom_accounts"
     },
     "Quotation": {
-        "validate": ["qcs_invoice_advance.controller.item.update_tsc_payemnt_link",  "qcs_invoice_advance.controller.item.add_margins"],
+        "validate": ["qcs_invoice_advance.controller.rakbank_payment_link.update_tsc_payment_link",  "qcs_invoice_advance.controller.item.add_margins"],
         "after_insert": ["qcs_invoice_advance.controller.item.add_quote_link", "qcs_invoice_advance.controller.item.update_service_call"]
     },
     "Purchase Order":{
@@ -211,7 +211,6 @@ scheduler_events = {
         "qcs_invoice_advance.controller.item.cron_update_item_average_rate",
         "qcs_invoice_advance.controller.item_price_list.crom_update_item_price",
         "qcs_invoice_advance.controller.product_bundle.cron_update_product_bundle",
-        # "qcs_invoice_advance.controller.item.cron_rakbank_api",
     ],
 #	"hourly": [
 #		"qcs_invoice_advance.tasks.hourly"
@@ -226,7 +225,7 @@ scheduler_events = {
             "qcs_invoice_advance.qcs_invoice_advance.doctype.logo_costing_form.logo_costing_form.update_cost"
         ],
         "0 8-19/2 * * *": [
-            "qcs_invoice_advance.controller.item.cron_rakbank_api"
+            "qcs_invoice_advance.controller.rakbank_payment_link.cron_rakbank_api"
         ]
     }
 }
