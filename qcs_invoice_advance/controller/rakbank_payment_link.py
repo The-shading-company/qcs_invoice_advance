@@ -58,7 +58,7 @@ def create_payment_link(dt, dn, amt, purpose):
 		pl.requested_date = docu.transaction_date
 		pl.document_type = dt
 		pl.document_name = docu.name
-		pl.customer = docu.party_name
+		pl.customer = getattr(docu, "party_name", None) or getattr(docu, "customer", None)
 		  
 		if dt == "Quotation":
 			doc = frappe.get_all("Sales Order", filters={"custom_quotation": docu.name}, fields=["name"])
