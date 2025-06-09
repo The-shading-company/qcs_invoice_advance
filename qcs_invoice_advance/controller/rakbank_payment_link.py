@@ -152,6 +152,144 @@ def create_payment_link1(dt, dn, amt, purpose):
 		frappe.throw("Something Missing in Rakbank API Settings")
 		
 """
+# This is an improved version which handles sales orders and quotations. Uses Echt Microservice
+
+@frappe.whitelist()
+def create_payment_link2(dt, dn, amt, purpose):
+	import requests, json, certifi, os
+	from simplify import simplify
+
+	docu = frappe.get_doc(dt, dn)
+	url = "https://simplify-rak-gbermhh3pa-uc.a.run.app/create"
+
+	payload = json.dumps({
+		"key": "kl8EvdFF4EPPIo5JHJto74lz-EOt5rabkmnE",
+		"reference": dn,
+		"note": "test",
+		"dueDate": str(docu.get("transaction_date")),
+		"memo": "Delivery To",
+		"name": docu.get("customer_name"),
+		"email": docu.get("contact_email") or "",
+		"description": purpose,
+		"amount": amt,
+		"quantity": "1",
+		"currency": "AED"
+	})
+
+	headers = {
+		'Content-Type': 'application/json'
+	}
+
+	response = requests.post(url, headers=headers, data=payload)
+	rdata = json.loads(response.text)
+	frappe.errprint(rdata)
+
+	payment_link = rdata.get("paymentLink")
+	if not payment_link:
+		frappe.throw("No payment link returned from Rakbank")
+
+	payment_id = payment_link.split('/')[-1]
+
+	rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
+	if not (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
+		frappe.throw("Rakbank API credentials are missing")
+
+	simplify.public_key = rakbank_api_settings.public_key
+	simplify.private_key = rakbank_api_settings.private_key
+	os.environ['SSL_CERT_FILE'] = certifi.where()
+
+	invoice = simplify.Invoice.find(payment_id)
+	frappe.errprint(invoice)
+
+	invoice_id = invoice.get("id")
+
+	pl = frappe.new_doc("TSC Payment Link")
+	pl.requested_date = docu.get("transaction_date")
+	pl.document_type = dt
+	pl.document_name = dn
+	pl.customer = docu.get("customer")
+	pl.status = "Open"
+	pl.payment_url = payment_link
+	pl.payment_invoice = invoice_id
+
+	if dt == "Quotation":
+		pl.quotation = dn
+	if dt == "Sales Order":
+		pl.link_sales_order = dn
+		pl.sales_order = dn  # keep if needed by reports/scripts
+
+	pl.save(ignore_permissions=True)
+
+	return payment_link
+
+
+# This version is a direct to rakbank api request not using Echt Microservice. For Testing.
+
+@frappe.whitelist()
+def create_payment_link3(dt, dn, amt, purpose):
+	import simplify, os, certifi
+	from datetime import datetime
+
+	docu = frappe.get_doc(dt, dn)
+	rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
+
+	if not (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
+		frappe.throw("Rakbank API keys are missing in Rakbank API Settings")
+
+	simplify.public_key = rakbank_api_settings.public_key
+	simplify.private_key = rakbank_api_settings.private_key
+	os.environ['SSL_CERT_FILE'] = certifi.where()
+
+	email = getattr(docu, "contact_email", "") or "sales@theshadingcompany.ae"
+	send_email = email != "sales@theshadingcompany.ae"
+
+	try:
+		invoice = simplify.Invoice.create({
+			"reference": dn,
+			"note": "test",
+			"name": getattr(docu, "customer_name", None),
+			"memo": "Delivery To",
+			"currency": "AED",
+			"dueDate": str(docu.get("transaction_date")),
+			"items": [{
+				"amount": int(float(amt) * 100),  # convert AED to fils
+				"quantity": 1,
+				"description": purpose
+			}],
+			"email": email
+		})
+	except Exception as e:
+		frappe.log_error(str(e), "Rakbank Invoice Creation Error")
+		frappe.throw("Error while creating invoice with Rakbank API")
+
+	try:
+		invoice["status"] = "OPEN"
+		if send_email:
+			invoice["sendMail"] = True
+		invoice.update()
+	except Exception as e:
+		frappe.log_error(str(e), "Rakbank Invoice Update Error")
+		frappe.throw("Invoice created but failed to update with Rakbank")
+
+	payment_link = f"https://rakbank.simplify.com/invoicing/pay/#/{simplify.public_key}/id/{invoice['uuid']}"
+
+	# Save in TSC Payment Link
+	pl = frappe.new_doc("TSC Payment Link")
+	pl.requested_date = docu.get("transaction_date")
+	if dt == "Quotation":
+		pl.quotation = dn
+	elif dt == "Sales Order":
+		pl.link_sales_order = dn
+	pl.document_type = dt
+	pl.document_name = docu.name
+	pl.customer = getattr(docu, "customer", None)
+	pl.sales_order = docu.name
+	pl.status = "Open"
+	pl.payment_url = payment_link
+	pl.payment_invoice = invoice["id"]
+	pl.save(ignore_permissions=True)
+
+	return payment_link
 
 ## Cron which checks for paid payment links
 
