@@ -282,7 +282,7 @@ def create_payment_link3(dt, dn, amt, purpose):
 		pl.link_sales_order = dn
 	pl.document_type = dt
 	pl.document_name = docu.name
-	pl.customer = getattr(docu, "customer", None)
+	pl.customer = docu.customer
 	pl.sales_order = docu.name
 	pl.status = "Open"
 	pl.payment_url = payment_link
