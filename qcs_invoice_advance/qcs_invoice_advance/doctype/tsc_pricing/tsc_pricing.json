@@ -1,0 +1,54 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-27 14:41:40.428043",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "retail",
+  "contract",
+  "dealer"
+ ],
+ "fields": [
+  {
+   "fieldname": "retail",
+   "fieldtype": "Float",
+   "label": "Retail"
+  },
+  {
+   "fieldname": "contract",
+   "fieldtype": "Float",
+   "label": "Contract"
+  },
+  {
+   "fieldname": "dealer",
+   "fieldtype": "Float",
+   "label": "Dealer"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-06-04 09:06:47.441079",
+ "modified_by": "Administrator",
+ "module": "QCS Invoice Advance",
+ "name": "TSC Pricing",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
