@@ -31,16 +31,27 @@ def update_cost():
 		try:
 			doc = frappe.get_doc("TSC Logo Costing", parent_id)
 			changed = False
+
 			for item in updates:
-				for line in doc.logos:
-					if line.name == item["row_name"]:
-						line.logo_unit_cost = item["logo_unit_cost"]
-						line.logo_unit_selling = item["logo_unit_cost"] * multiplier
+				target_row = next((row for row in doc.logos if row.name == item["row_name"]), None)
+				if target_row:
+					new_cost = item["logo_unit_cost"]
+					new_selling = new_cost * multiplier
+
+					if (
+						target_row.logo_unit_cost != new_cost or
+						target_row.logo_unit_selling != new_selling
+					):
+						target_row.logo_unit_cost = new_cost
+						target_row.logo_unit_selling = new_selling
 						changed = True
+
 			if changed:
 				doc.save(ignore_permissions=True)
+
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), f"Logo Costing Update Failed: {parent_id}")
+				frappe.log_error(frappe.get_traceback(), f"Logo Costing Update Failed: {parent_id}")
 	
 
 				
