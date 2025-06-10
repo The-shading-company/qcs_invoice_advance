@@ -290,8 +290,7 @@ def create_payment_link3(dt, dn, amt, purpose):
 ## Updated with List function to check 40 payment links at a time. improve load on server.
 @frappe.whitelist()
 def cron_rakbank_api():
-	start_time = now_datetime()
-	batch_size = 40
+	batch_size = 40  # Adjust batch size to your server's capacity
 
 	all_payment = frappe.db.get_all("TSC Payment Link",
 		filters=[
@@ -302,18 +301,13 @@ def cron_rakbank_api():
 	)
 
 	if not all_payment:
-		frappe.log_error("No open payment links to check.", "Rakbank Payment Link Cron")
 		return
 
 	for i in range(0, len(all_payment), batch_size):
 		batch = all_payment[i:i + batch_size]
 		enqueue(process_rakbank_batch, queue='long', timeout=300, items=batch)
 
-	duration = (now_datetime() - start_time).total_seconds()
-	frappe.log_error(f"Enqueued {len(all_payment)} payment links in batches of {batch_size}.\nTime Taken: {duration:.2f} seconds", "Rakbank Payment Link Cron")
-
 def process_rakbank_batch(items):
-	start_time = now_datetime()
 	settings = frappe.get_cached_doc("Rakbank API Settings")
 
 	if not (settings.public_key and settings.private_key):
@@ -328,64 +322,43 @@ def process_rakbank_batch(items):
 	for row in items:
 		doc = frappe.get_doc("TSC Payment Link", row.name)
 		if doc.payment_url:
-			payment_id = doc.payment_url.split("/")[-1]
+			payment_id = doc.payment_url.split('/')[-1]
 			payment_map[payment_id] = doc
 
 	invoice_ids = list(payment_map.keys())
-	updated = 0
-	skipped = 0
-	errors = 0
 
 	try:
 		result = simplify.Invoice.list({
 			"filter.invoiceId": ",".join(invoice_ids),
 			"max": len(invoice_ids)
 		})
-
-		returned = {inv.id: inv for inv in result.list}
+		invoices = {inv.id: inv for inv in result.list}
 
 		for pid in invoice_ids:
-			doc = payment_map[pid]
-			payment = returned.get(pid)
+			doc = payment_map.get(pid)
+			payment = invoices.get(pid)
 
 			if not payment:
-				skipped += 1
 				continue
 
 			try:
-				status = payment.get("status")
+				status = payment.status
 				doc.payment_status = status
-				doc.payment_invoice = payment.get("id")
+				doc.payment_invoice = payment.id
 
 				if status == "PAID":
-					if payment.get("datePaid"):
-						doc.paid_date = epoch_time_ms_to_datetime(payment["datePaid"])
-					if payment.get("payment"):
-						doc.paid_amount = payment["payment"]["amount"] / 100
+					if getattr(payment, "datePaid", None):
+						doc.paid_date = epoch_time_ms_to_datetime(payment.datePaid)
+					if getattr(payment, "payment", None):
+						doc.paid_amount = payment.payment["amount"] / 100
 
 				doc.save(ignore_permissions=True)
-				updated += 1
 
 			except Exception:
-				errors += 1
 				frappe.log_error(frappe.get_traceback(), f"Rakbank Payment Sync Failed: {doc.name}")
 
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "Rakbank API Batch Call Failed")
-		return
-
-	duration = (now_datetime() - start_time).total_seconds()
-	summary = (
-		f"Rakbank payment check completed.\n"
-		f"Checked: {len(items)}\n"
-		f"Updated: {updated}\n"
-		f"Skipped (not returned): {skipped}\n"
-		f"Errors: {errors}\n"
-		f"Time Taken: {duration:.2f} seconds"
-	)
-
-	frappe.log_error(summary, "Rakbank Payment Link Batch")
-
 
 def epoch_time_ms_to_datetime(epoch_time_ms):
     system_timezone = timezone(get_system_timezone())
