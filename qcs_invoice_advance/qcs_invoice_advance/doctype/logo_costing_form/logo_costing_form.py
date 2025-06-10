@@ -51,7 +51,7 @@ def update_cost():
 
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), f"Logo Costing Update Failed: {parent_id}")
-				frappe.log_error(frappe.get_traceback(), f"Logo Costing Update Failed: {parent_id}")
+				
 	
 
 				
