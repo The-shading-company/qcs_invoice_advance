@@ -328,10 +328,19 @@ def process_rakbank_batch(items):
 	invoice_ids = list(payment_map.keys())
 
 	try:
+		# Log the list of IDs being sent
+		frappe.log_error("\n".join(invoice_ids), "Rakbank Invoice IDs Sent")
+
+		# Call Rakbank (Simplify API)
 		result = simplify.Invoice.list({
 			"filter.invoiceId": ",".join(invoice_ids),
 			"max": len(invoice_ids)
 		})
+
+		# Log raw response for debugging
+		raw_response = "\n".join([f"{inv.id} | {inv.status}" for inv in result.list]) or "No invoices returned"
+		frappe.log_error(raw_response, "Rakbank API Response")
+
 		invoices = {inv.id: inv for inv in result.list}
 
 		for pid in invoice_ids:
@@ -359,7 +368,7 @@ def process_rakbank_batch(items):
 
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "Rakbank API Batch Call Failed")
-
+		
 def epoch_time_ms_to_datetime(epoch_time_ms):
     system_timezone = timezone(get_system_timezone())
     epoch_time = epoch_time_ms / 1000.0
