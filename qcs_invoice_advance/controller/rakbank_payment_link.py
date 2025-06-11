@@ -346,7 +346,29 @@ def process_batch1(items):
 
 		except Exception as e:
 			frappe.log_error(frappe.get_traceback(), f"Rakbank Batch Error - {i.get('name')}")
-				
+
+##this is a function to find old payment links and cancel them if they are older than 90 days.
+#this just logs in error log as datetime can be tricky to handle.
+def cancel_old_open_payment_links():
+    # 90 days ago from now
+    cutoff_date = frappe.utils.now_datetime() - datetime.timedelta(days=90)
+
+    # Fetch all open and unpaid payment links
+    open_links = frappe.get_all(
+        "TSC Payment Link",
+        filters={
+            "status": "Open",
+            "payment_status": "OPEN"
+        },
+        fields=["name", "creation"]
+    )
+
+    for entry in open_links:
+        try:
+            if entry.creation and entry.creation < cutoff_date:
+                frappe.errprint(f"⚠️ OLD Payment Link: {entry.name} | Created: {entry.creation.date()}")
+        except Exception as e:
+            frappe.errprint(f"❌ Error processing {entry.name}: {e}")				
 		
 def epoch_time_ms_to_datetime(epoch_time_ms):
     system_timezone = timezone(get_system_timezone())
