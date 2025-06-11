@@ -288,86 +288,70 @@ def create_payment_link3(dt, dn, amt, purpose):
 
 ## Cron which checks for paid payment links
 ## Updated with List function to check 40 payment links at a time. improve load on server.
-@frappe.whitelist()
+@frappe.whitelist() 
 def cron_rakbank_api():
-	batch_size = 40  # Adjust batch size to your server's capacity
-
-	all_payment = frappe.db.get_all("TSC Payment Link",
-		filters=[
-			["status", "in", ["Open"]],
-			["payment_status", "!=", "PAID"]
-		],
-		fields=["name"]
-	)
-
-	if not all_payment:
-		return
-
-	for i in range(0, len(all_payment), batch_size):
-		batch = all_payment[i:i + batch_size]
-		enqueue(process_rakbank_batch, queue='long', timeout=300, items=batch)
-
-def process_rakbank_batch(items):
-	settings = frappe.get_cached_doc("Rakbank API Settings")
-
-	if not (settings.public_key and settings.private_key):
-		frappe.log_error("Missing Rakbank API keys", "Rakbank Sync")
-		return
-
-	simplify.public_key = settings.public_key
-	simplify.private_key = settings.private_key
-	os.environ['SSL_CERT_FILE'] = certifi.where()
-
-	payment_map = {}
-	for row in items:
-		doc = frappe.get_doc("TSC Payment Link", row.name)
-		if doc.payment_url:
-			payment_id = doc.payment_url.split('/')[-1]
-			payment_map[payment_id] = doc
-
-	invoice_ids = list(payment_map.keys())
-
-	try:
-		# Log the list of IDs being sent
-		frappe.log_error("\n".join(invoice_ids), "Rakbank Invoice IDs Sent")
-
-		# Call Rakbank (Simplify API)
-		result = simplify.Invoice.list({
-			"filter.invoiceId": ",".join(invoice_ids),
-			"max": len(invoice_ids)
-		})
-
-		# Log raw response for debugging
-		raw_response = "\n".join([f"{inv.id} | {inv.status}" for inv in result.list]) or "No invoices returned"
-		frappe.log_error(raw_response, "Rakbank API Response")
-
-		invoices = {inv.id: inv for inv in result.list}
-
-		for pid in invoice_ids:
-			doc = payment_map.get(pid)
-			payment = invoices.get(pid)
-
-			if not payment:
-				continue
-
-			try:
-				status = payment.status
-				doc.payment_status = status
-				doc.payment_invoice = payment.id
-
-				if status == "PAID":
-					if getattr(payment, "datePaid", None):
-						doc.paid_date = epoch_time_ms_to_datetime(payment.datePaid)
-					if getattr(payment, "payment", None):
-						doc.paid_amount = payment.payment["amount"] / 100
-
+	all_payment = frappe.get_all("TSC Payment Link", filters={"status": ["!=", "Cancelled"], "payment_status": ["!=", "PAID"]}, fields=["name"])
+	if (all_payment):
+		# batch_size = 50  # Adjust batch size based on performance
+		# for i in range(0, len(all_payment), batch_size):
+		# 	batch = all_payment[i:i + batch_size]
+		# 	enqueue(process_batch1, items=batch)
+		for i in all_payment:
+			doc = frappe.get_doc("TSC Payment Link", i.get("name"))
+			if (doc.payment_url):
+				frappe.errprint(doc.name)
+				payment_link = doc.payment_url
+				payment_id = payment_link.split('/')[-1]
+				rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
+				if (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
+					simplify.public_key = rakbank_api_settings.public_key
+					simplify.private_key = rakbank_api_settings.private_key
+					os.environ['SSL_CERT_FILE'] = certifi.where()
+					payment = simplify.Invoice.find(payment_id)
+					frappe.errprint(payment)
+	 
+					payment_status = payment["status"]
+					if payment_status == "PAID":
+						if payment["datePaid"]:
+							timestamp_ms = payment["datePaid"]
+							formatted_datetime = epoch_time_ms_to_datetime(timestamp_ms)
+							doc.paid_date = formatted_datetime
+						if payment["payment"]:
+							doc.paid_amount = payment["payment"]["amount"] / 100
+				
+					doc.payment_status = payment_status
+					doc.payment_invoice = payment["id"]
+					doc.save(ignore_permissions=True)
+  
+@frappe.whitelist()  
+def process_batch1(items):
+	rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
+	if rakbank_api_settings.public_key and rakbank_api_settings.private_key:
+		simplify.public_key = rakbank_api_settings.public_key
+		simplify.private_key = rakbank_api_settings.private_key
+		os.environ['SSL_CERT_FILE'] = certifi.where()
+		
+		for i in items:
+			doc = frappe.get_doc("TSC Payment Link", i.get("name"))
+			if doc.payment_url:
+				frappe.errprint(doc.name)
+				payment_link = doc.payment_url
+				payment_id = payment_link.split('/')[-1]
+				payment = simplify.Invoice.find(payment_id)
+    
+				payment_status = payment["status"]
+				if payment_status == "PAID":
+					if payment["datePaid"]:
+						timestamp_ms = payment["datePaid"]
+						formatted_datetime = epoch_time_ms_to_datetime(timestamp_ms)
+						doc.paid_date = formatted_datetime
+					if payment["payment"]:
+						doc.paid_amount = payment["payment"]["amount"] / 100
+    
+				doc.payment_status = payment_status
+				doc.payment_invoice = payment["id"]
 				doc.save(ignore_permissions=True)
-
-			except Exception:
-				frappe.log_error(frappe.get_traceback(), f"Rakbank Payment Sync Failed: {doc.name}")
-
-	except Exception:
-		frappe.log_error(frappe.get_traceback(), "Rakbank API Batch Call Failed")
+				
 		
 def epoch_time_ms_to_datetime(epoch_time_ms):
     system_timezone = timezone(get_system_timezone())
