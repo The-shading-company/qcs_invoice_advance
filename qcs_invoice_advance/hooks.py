@@ -216,9 +216,9 @@ scheduler_events = {
 #	"hourly": [
 #		"qcs_invoice_advance.tasks.hourly"
 #	],
-#	"weekly": [
-#		"qcs_invoice_advance.tasks.weekly"
-#	],
+	"weekly": [
+		"qcs_invoice_advance.controller.rakbank_payment_link.cancel_old_open_payment_links"
+	],
 #	"monthly": [
 #		"qcs_invoice_advance.tasks.monthly"
     "cron": {
