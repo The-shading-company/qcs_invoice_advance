@@ -14,6 +14,7 @@ from frappe.utils import now_datetime
 import certifi
 from frappe.utils import get_system_timezone
 from pytz import timezone
+from datetime import timedelta
 
 @frappe.whitelist()
 def create_payment_link(dt, dn, amt, purpose):
@@ -352,7 +353,7 @@ def process_batch1(items):
 @frappe.whitelist()
 def cancel_old_open_payment_links():
     # 90 days ago from now
-    cutoff_date = frappe.utils.now_datetime() - datetime.timedelta(days=90)
+    cutoff_date = frappe.utils.now_datetime() - timedelta(days=90)
 
     # Fetch all open and unpaid payment links
     open_links = frappe.get_all(
