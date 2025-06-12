@@ -349,6 +349,7 @@ def process_batch1(items):
 
 ##this is a function to find old payment links and cancel them if they are older than 90 days.
 #this just logs in error log as datetime can be tricky to handle.
+@frappe.whitelist()
 def cancel_old_open_payment_links():
     # 90 days ago from now
     cutoff_date = frappe.utils.now_datetime() - datetime.timedelta(days=90)
