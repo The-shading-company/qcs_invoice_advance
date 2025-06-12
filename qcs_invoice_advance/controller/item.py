@@ -328,7 +328,7 @@ def tsc_custom_accounts(self, event):
 			if len(cogs) > 0:
 				item.expense_account = cogs[0].name
 
-#valuation rate includes product bundle cost as well
+#This script adds margins for quotation. Iterates through the line items and updated either from bom or from item cost.
 def add_margins(self, event):
 	total_cost = 0
 	total_cost_with_qty = 0
@@ -362,6 +362,40 @@ def add_margins(self, event):
 		self.custom_total_margin = self.net_total - total_cost_with_qty
 		self.custom_margin_percent = (self.custom_total_margin * 100) / self.custom_total_cost
 
+#this adds margin to sales orders just like the script above for quotations.
+def add_margins_sales_order(doc, event):
+    total_cost = 0
+    total_cost_with_qty = 0
+    total_margin = 0
+    total_margin_with_qty = 0
+
+    for item in doc.items:
+        bom = frappe.get_all("BOM", filters={"item": item.item_code, "is_active": 1, "is_default": 1})
+        if bom:
+            bom_index = frappe.get_doc("BOM", bom[0].name)
+            item.custom_tsc_cost = bom_index.total_cost
+            item.custom_tsc_cost_with_qty = bom_index.total_cost * item.qty
+            total_cost = total_cost + item.custom_tsc_cost
+            total_cost_with_qty = total_cost_with_qty + item.custom_tsc_cost_with_qty
+        else:
+            item.custom_tsc_cost = item.valuation_rate
+            item.custom_tsc_cost_with_qty = item.valuation_rate * item.qty
+            total_cost = total_cost + item.custom_tsc_cost
+            total_cost_with_qty = total_cost_with_qty + item.custom_tsc_cost_with_qty
+
+        if item.custom_tsc_cost > 0:
+            item.custom_tsc_margin = item.rate - item.custom_tsc_cost
+            total_margin = total_margin + item.custom_tsc_margin
+            with_qty_margin = item.rate - item.custom_tsc_cost_with_qty
+            total_margin_with_qty = total_margin_with_qty + with_qty_margin
+
+            if item.custom_tsc_margin > 0:
+                item.custom_tsc_margin_per = (item.custom_tsc_margin * 100) / item.custom_tsc_cost
+
+    doc.custom_total_cost = total_cost_with_qty
+    if doc.custom_total_cost > 0 and total_cost_with_qty > 0:
+        doc.custom_total_margin = doc.net_total - total_cost_with_qty
+        doc.custom_margin_percent = (doc.custom_total_margin * 100) / doc.custom_total_cost
 
 def add_quote_link(self, event):
 	if self.custom_tsc_site_visit:
@@ -719,7 +753,7 @@ def get_items_with_latest_bom():
 	
 	return list(latest_boms.keys())
 
-#updated run_retail_price
+#updated run_retail_price from items that have a bom
 @frappe.whitelist()
 def run_retail_update():
 	# Execute the function
@@ -727,7 +761,7 @@ def run_retail_update():
 	return "Started"
 
 
-  
+## This is a cron which loops through all products and updated the Custom_average_cost in Item with the Average Cost from the stock ledger  
 @frappe.whitelist()
 def cron_update_item_average_rate():
 	all_item_doc = frappe.get_all("Item", filters={"disabled":0}, fields=["name"])

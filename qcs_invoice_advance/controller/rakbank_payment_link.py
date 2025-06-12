@@ -14,6 +14,7 @@ from frappe.utils import now_datetime
 import certifi
 from frappe.utils import get_system_timezone
 from pytz import timezone
+from datetime import timedelta
 
 @frappe.whitelist()
 def create_payment_link(dt, dn, amt, purpose):
@@ -349,26 +350,58 @@ def process_batch1(items):
 
 ##this is a function to find old payment links and cancel them if they are older than 90 days.
 #this just logs in error log as datetime can be tricky to handle.
+@frappe.whitelist()
 def cancel_old_open_payment_links():
-    # 90 days ago from now
-    cutoff_date = frappe.utils.now_datetime() - datetime.timedelta(days=90)
+    cutoff_date = frappe.utils.now_datetime() - timedelta(days=90)
 
-    # Fetch all open and unpaid payment links
-    open_links = frappe.get_all(
+    old_links = frappe.get_all(
         "TSC Payment Link",
         filters={
             "status": "Open",
             "payment_status": "OPEN"
         },
-        fields=["name", "creation"]
+        fields=["name", "payment_url", "creation"]
     )
 
-    for entry in open_links:
+    rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
+    if not (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
+        frappe.throw("Rakbank API keys are not configured.")
+
+    simplify.public_key = rakbank_api_settings.public_key
+    simplify.private_key = rakbank_api_settings.private_key
+    os.environ["SSL_CERT_FILE"] = certifi.where()
+
+    cancelled_links = []
+
+    for entry in old_links:
         try:
             if entry.creation and entry.creation < cutoff_date:
-                frappe.errprint(f"⚠️ OLD Payment Link: {entry.name} | Created: {entry.creation.date()}")
+                doc = frappe.get_doc("TSC Payment Link", entry.name)
+
+                if not doc.payment_url:
+                    continue
+
+                payment_id = doc.payment_url.split("/")[-1]
+                invoice = simplify.Invoice.find(payment_id)
+
+                if invoice and invoice["status"] == "OPEN":
+                    invoice["status"] = "CANCELLED"
+                    invoice.update()
+
+                    doc.status = "Cancelled"
+                    doc.payment_status = "CANCELLED"
+                    doc.save(ignore_permissions=True)
+
+                    cancelled_links.append({
+                        "name": doc.name,
+                        "created_on": doc.creation.date().isoformat()
+                    })
+
+                    frappe.errprint(f"✅ Cancelled: {doc.name} | Created: {doc.creation.date()}")
         except Exception as e:
-            frappe.errprint(f"❌ Error processing {entry.name}: {e}")				
+            frappe.errprint(f"❌ Failed to cancel {entry.name}: {e}")
+
+    return cancelled_links				
 		
 def epoch_time_ms_to_datetime(epoch_time_ms):
     system_timezone = timezone(get_system_timezone())
