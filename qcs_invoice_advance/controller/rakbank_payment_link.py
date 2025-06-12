@@ -352,11 +352,9 @@ def process_batch1(items):
 #this just logs in error log as datetime can be tricky to handle.
 @frappe.whitelist()
 def cancel_old_open_payment_links():
-    # 90 days ago from now
     cutoff_date = frappe.utils.now_datetime() - timedelta(days=90)
 
-    # Fetch all open and unpaid payment links
-    open_links = frappe.get_all(
+    old_links = frappe.get_all(
         "TSC Payment Link",
         filters={
             "status": "Open",
@@ -365,12 +363,16 @@ def cancel_old_open_payment_links():
         fields=["name", "creation"]
     )
 
-    for entry in open_links:
-        try:
-            if entry.creation and entry.creation < cutoff_date:
-                frappe.errprint(f"⚠️ OLD Payment Link: {entry.name} | Created: {entry.creation.date()}")
-        except Exception as e:
-            frappe.errprint(f"❌ Error processing {entry.name}: {e}")				
+    result = []
+    for entry in old_links:
+        if entry.creation and entry.creation < cutoff_date:
+            frappe.errprint(f"⚠️ OLD Payment Link: {entry.name} | Created: {entry.creation.date()}")
+            result.append({
+                "name": entry.name,
+                "created_on": entry.creation.date().isoformat()
+            })
+
+    return result				
 		
 def epoch_time_ms_to_datetime(epoch_time_ms):
     system_timezone = timezone(get_system_timezone())
