@@ -360,19 +360,48 @@ def cancel_old_open_payment_links():
             "status": "Open",
             "payment_status": "OPEN"
         },
-        fields=["name", "creation"]
+        fields=["name", "payment_url", "creation"]
     )
 
-    result = []
-    for entry in old_links:
-        if entry.creation and entry.creation < cutoff_date:
-            frappe.errprint(f"⚠️ OLD Payment Link: {entry.name} | Created: {entry.creation.date()}")
-            result.append({
-                "name": entry.name,
-                "created_on": entry.creation.date().isoformat()
-            })
+    rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
+    if not (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
+        frappe.throw("Rakbank API keys are not configured.")
 
-    return result				
+    simplify.public_key = rakbank_api_settings.public_key
+    simplify.private_key = rakbank_api_settings.private_key
+    os.environ["SSL_CERT_FILE"] = certifi.where()
+
+    cancelled_links = []
+
+    for entry in old_links:
+        try:
+            if entry.creation and entry.creation < cutoff_date:
+                doc = frappe.get_doc("TSC Payment Link", entry.name)
+
+                if not doc.payment_url:
+                    continue
+
+                payment_id = doc.payment_url.split("/")[-1]
+                invoice = simplify.Invoice.find(payment_id)
+
+                if invoice and invoice["status"] == "OPEN":
+                    invoice["status"] = "CANCELLED"
+                    invoice.update()
+
+                    doc.status = "Cancelled"
+                    doc.payment_status = "CANCELLED"
+                    doc.save(ignore_permissions=True)
+
+                    cancelled_links.append({
+                        "name": doc.name,
+                        "created_on": doc.creation.date().isoformat()
+                    })
+
+                    frappe.errprint(f"✅ Cancelled: {doc.name} | Created: {doc.creation.date()}")
+        except Exception as e:
+            frappe.errprint(f"❌ Failed to cancel {entry.name}: {e}")
+
+    return cancelled_links				
 		
 def epoch_time_ms_to_datetime(epoch_time_ms):
     system_timezone = timezone(get_system_timezone())
