@@ -291,23 +291,38 @@ def create_payment_link3(dt, dn, amt, purpose):
 ## Updated with List function to check 40 payment links at a time. improve load on server.
 @frappe.whitelist() 
 def cron_rakbank_api():
-	all_payment = frappe.get_all(
-		"TSC Payment Link",
-		filters={
-			"status": ["!=", "Cancelled"],
-			"payment_status": ["!=", "PAID"]
-		},
-		fields=["name"]
-	)
-
-	if not all_payment:
-		return
-
-	batch_size = 40  # Tune this as needed
-
-	for i in range(0, len(all_payment), batch_size):
-		batch = all_payment[i:i + batch_size]
-		enqueue("qcs_invoice_advance.controller.rakbank_payment_link.process_batch1", queue="long", timeout=300, items=batch)
+	all_payment = frappe.get_all("TSC Payment Link", filters={"status": ["!=", "Cancelled"], "payment_status": ["!=", "PAID"]}, fields=["name"])
+	if (all_payment):
+		# batch_size = 50  # Adjust batch size based on performance
+		# for i in range(0, len(all_payment), batch_size):
+		# 	batch = all_payment[i:i + batch_size]
+		# 	enqueue(process_batch1, items=batch)
+		for i in all_payment:
+			doc = frappe.get_doc("TSC Payment Link", i.get("name"))
+			if (doc.payment_url):
+				frappe.errprint(doc.name)
+				payment_link = doc.payment_url
+				payment_id = payment_link.split('/')[-1]
+				rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
+				if (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
+					simplify.public_key = rakbank_api_settings.public_key
+					simplify.private_key = rakbank_api_settings.private_key
+					os.environ['SSL_CERT_FILE'] = certifi.where()
+					payment = simplify.Invoice.find(payment_id)
+					frappe.errprint(payment)
+	 
+					payment_status = payment["status"]
+					if payment_status == "PAID":
+						if payment["datePaid"]:
+							timestamp_ms = payment["datePaid"]
+							formatted_datetime = epoch_time_ms_to_datetime(timestamp_ms)
+							doc.paid_date = formatted_datetime
+						if payment["payment"]:
+							doc.paid_amount = payment["payment"]["amount"] / 100
+				
+					doc.payment_status = payment_status
+					doc.payment_invoice = payment["id"]
+					doc.save(ignore_permissions=True)
   
 def process_batch1(items):
 	
