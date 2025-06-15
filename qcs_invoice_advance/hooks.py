@@ -131,7 +131,7 @@ doc_events = {
     "after_insert": [
         "qcs_invoice_advance.controller.item.add_quote_link",
         "qcs_invoice_advance.controller.item.update_service_call",
-        "qcs_invoice_advance.controller.item.update_related_links"  # <-- newly added
+        "qcs_invoice_advance.controller.quotation.update_related_links"  # <-- newly added
     ]
 },
     "Purchase Order":{
