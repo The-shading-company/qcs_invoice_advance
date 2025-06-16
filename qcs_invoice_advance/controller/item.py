@@ -433,10 +433,19 @@ def update_purchase_to_sales(self, event):
 # 			if self.net_total >= self.total * 0.05:
 # 				frappe.throw(_("Total Discount more than 10%"))
 
+#this checks discounts against the price list and calculated what the price list should be and ensures more than the max is not given
 def check_discounts(doc, event=None):
-    if frappe.has_role("System Manager") or frappe.has_role("Accounts Manager"):
-        # Add a comment to log override
-        frappe.utils.comment(doc.doctype, doc.name, f"Discount override allowed by {frappe.session.user}")
+    # Allow override for specific roles
+    roles = frappe.get_roles(frappe.session.user)
+    if "System Manager" in roles or "Accounts Manager" in roles:
+        # Log override
+        frappe.get_doc({
+            "doctype": "Comment",
+            "comment_type": "Comment",
+            "reference_doctype": doc.doctype,
+            "reference_name": doc.name,
+            "content": f"Discount override allowed by {frappe.session.user}"
+        }).insert(ignore_permissions=True)
         return
 
     if not doc.items:
@@ -445,7 +454,7 @@ def check_discounts(doc, event=None):
     expected_total = 0.0
 
     for item in doc.items:
-        # Get the correct price from the price list
+        # Use the official price from the selected price list
         standard_price = frappe.db.get_value("Item Price", {
             "item_code": item.item_code,
             "price_list": doc.selling_price_list
@@ -459,6 +468,7 @@ def check_discounts(doc, event=None):
     actual_total = doc.base_net_total
     discount_ratio = (expected_total - actual_total) / expected_total
 
+    # Apply price-list-based limits
     if doc.selling_price_list == "Retail" and discount_ratio > 0.10:
         frappe.throw(_("Total discount exceeds 10% for Retail price list."))
 
@@ -468,9 +478,9 @@ def check_discounts(doc, event=None):
     if doc.selling_price_list == "Dealer" and discount_ratio > 0.0:
         frappe.throw(_("No discount allowed for Dealer price list."))
 
+    # Absolute ceiling for all price lists
     if discount_ratio > 0.20:
         frappe.throw(_("Total discount exceeds 20%, which is not allowed under any price list."))
-	
 					
 
 @frappe.whitelist()
