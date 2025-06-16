@@ -132,7 +132,7 @@ def create_shade_sail_price(self, event):
 		wire_clamp_cost = 2 * 2 * 2
 		eyelet_cost = flt(sp) * 18 * 2
 		post_cap_cost = flt(sp) * 21 * 2
-		stitching_cost = flt(sw) * flt(sl) * 12.5 * 2
+		stitching_cost = flt(sw) * flt(sl) * 12.5 * 2.1
 		installation_cost = 230 * 1.65
 		concrete_cost = flt(sc) * 607 * 1.75
 		total_price = f_cost + cable_cost + bracket_cost + post_cost + post_pc_cost + post_braket_cost + dshackle_cost + wire_clamp_cost + eyelet_cost + post_cap_cost + stitching_cost + installation_cost + concrete_cost
@@ -275,13 +275,13 @@ def add_sale_price(self, event):
 	if frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Retail"}):
 		for i in itemprice:
 			ip_doc = frappe.get_doc("Item Price", i)
-			ip_doc.price_list_rate = self.total_cost * 2.1
+			ip_doc.price_list_rate = self.total_cost * 2.25
 			ip_doc.save(ignore_permissions=True)
 	else:
 		ip_doc = frappe.new_doc("Item Price")
 		ip_doc.item_code = self.item
 		ip_doc.price_list = "Retail"
-		ip_doc.price_list_rate = self.total_cost * 2.1
+		ip_doc.price_list_rate = self.total_cost * 2.25
 		ip_doc.save(ignore_permissions=True)
 
 	itemprice = frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Contract"})
@@ -302,13 +302,13 @@ def add_sale_price(self, event):
 	if frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Dealer"}):
 		for i in itemprice:
 			ip_doc = frappe.get_doc("Item Price", i)
-			ip_doc.price_list_rate = self.total_cost * 1.75
+			ip_doc.price_list_rate = self.total_cost * 1.8
 			ip_doc.save(ignore_permissions=True)
 	else:
 		ip_doc = frappe.new_doc("Item Price")
 		ip_doc.item_code = self.item
 		ip_doc.price_list = "Dealer"
-		ip_doc.price_list_rate = self.total_cost * 1.75
+		ip_doc.price_list_rate = self.total_cost * 1.8
 		ip_doc.save(ignore_permissions=True)
 
 
