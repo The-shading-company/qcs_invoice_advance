@@ -58,14 +58,6 @@ def update_related_links(doc, event=None):
 
                 frappe.log_error(f"Updated {doctype}: {linked_doc.name} -> Old Quotation Removed, New Quotation: {doc.name}")
 
-# def check_discounts(self, event):
-# 	if self.net_total != self.total:
-# 		if self.selling_price_list == "Retail":
-# 			if self.net_total >= self.total * 0.10:
-# 				frappe.throw(_("Total Discount more than 10%"))
-# 		if self.selling_price_list == "Contract":
-# 			if self.net_total >= self.total * 0.05:
-# 				frappe.throw(_("Total Discount more than 10%"))
 
 #this checks discounts against the price list and calculated what the price list should be and ensures more than the max is not given
 def check_discounts(doc, event=None):
@@ -119,3 +111,18 @@ def log_discount_override(doc, event=None):
             "reference_name": doc.name,
             "content": f"Discount override allowed by {doc._discount_override_by}"
         }).insert(ignore_permissions=True)
+
+def set_company(doc, method=None):
+    has_pergola = any(
+        item.item_code and "PER-" in item.item_code
+        for item in doc.items
+    )
+
+    target_company = (
+        "The Shading Oasis Pergola Installation LLC"
+        if has_pergola else
+        "The Shading Umbrella Trading Co LLC"
+    )
+
+    if doc.company != target_company:
+        doc.company = target_company
