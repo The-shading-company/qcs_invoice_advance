@@ -1156,7 +1156,7 @@
   "fetch_if_empty": 0,
   "fieldname": "custom_tsc_payment_link",
   "fieldtype": "Link",
-  "hidden": 1,
+  "hidden": 0,
   "hide_border": 0,
   "hide_days": 0,
   "hide_seconds": 0,

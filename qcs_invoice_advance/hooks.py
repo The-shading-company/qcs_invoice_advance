@@ -125,9 +125,16 @@ doc_events = {
         "validate": "qcs_invoice_advance.controller.item.tsc_custom_accounts"
     },
     "Quotation": {
-        "validate": ["qcs_invoice_advance.controller.rakbank_payment_link.update_tsc_payment_link",  "qcs_invoice_advance.controller.item.add_margins"],
-        "after_insert": ["qcs_invoice_advance.controller.item.add_quote_link", "qcs_invoice_advance.controller.item.update_service_call"]
-    },
+    "validate": [
+        "qcs_invoice_advance.controller.rakbank_payment_link.update_tsc_payment_link",
+        "qcs_invoice_advance.controller.item.add_margins","qcs_invoice_advance.controller.quotation.check_discounts"], # <--added check discounts
+    "after_insert": [
+        "qcs_invoice_advance.controller.item.add_quote_link",
+        "qcs_invoice_advance.controller.item.update_service_call",
+        "qcs_invoice_advance.controller.quotation.log_discount_override", # <-- logs discount overide adds a comment
+        "qcs_invoice_advance.controller.quotation.update_related_links"  # <-- newly added
+    ]
+},
     "Purchase Order":{
         "after_insert": "qcs_invoice_advance.controller.item.update_purchase_to_sales"
     },

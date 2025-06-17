@@ -63,7 +63,7 @@ def woo_update_normal_item(wooid, item_code):
             error_doc.save(ignore_permissions=True)
         
     else:
-        frappe.throw("Somthing Missing in Woocommerce API Settings. Please Check")
+        frappe.throw("Something Missing in Woocommerce API Settings. Please Check")
         
         
         
@@ -127,4 +127,4 @@ def woo_update_variant_item(wooid, item_code, woovariationid):
             error_doc.save(ignore_permissions=True)
         
     else:
-        frappe.throw("Somthing Missing in Woocommerce API Settings. Please Check")
+        frappe.throw("Something Missing in Woocommerce API Settings. Please Check")
