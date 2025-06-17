@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 
 def update_service_call(self, event):
     if self.custom_tsc_service_call:
@@ -97,13 +98,13 @@ def check_discounts(doc, event=None):
 
     # Apply price-list-based limits with float safety
     if doc.selling_price_list == "Retail" and round(discount_ratio, 4) > 0.10:
-        frappe.throw(_("Total discount exceeds 10% for Retail price list."))
+        frappe.throw("Total discount exceeds 10% for Retail price list.")
 
     if doc.selling_price_list == "Contract" and round(discount_ratio, 4) > 0.05:
-        frappe.throw(_("Total discount exceeds 5% for Contract price list."))
+        frappe.throw("Total discount exceeds 5% for Contract price list.")
 
     if doc.selling_price_list == "Dealer" and round(discount_ratio, 4) > 0.0:
-        frappe.throw(_("No discount allowed for Dealer price list."))
+        frappe.throw("No discount allowed for Dealer price list.")
 
     # Absolute failsafe
     if discount_ratio > 0.20:
