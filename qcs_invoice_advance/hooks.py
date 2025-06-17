@@ -131,6 +131,7 @@ doc_events = {
     "after_insert": [
         "qcs_invoice_advance.controller.item.add_quote_link",
         "qcs_invoice_advance.controller.item.update_service_call",
+        "qcs_invoice_advance.controller.quotation.log_discount_override", # <-- logs discount overide adds a comment
         "qcs_invoice_advance.controller.quotation.update_related_links"  # <-- newly added
     ]
 },

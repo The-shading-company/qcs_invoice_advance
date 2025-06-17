@@ -71,14 +71,8 @@ def check_discounts(doc, event=None):
     # Allow override for specific roles
     roles = frappe.get_roles(frappe.session.user)
     if "System Manager" in roles or "Accounts Manager" in roles:
-        # Log override
-        frappe.get_doc({
-            "doctype": "Comment",
-            "comment_type": "Comment",
-            "reference_doctype": doc.doctype,
-            "reference_name": doc.name,
-            "content": f"Discount override allowed by {frappe.session.user}"
-        }).insert(ignore_permissions=True)
+        # Mark override to be logged later
+        doc._discount_override_by = frappe.session.user
         return
 
     if not doc.items:
@@ -101,7 +95,7 @@ def check_discounts(doc, event=None):
     actual_total = doc.base_net_total
     discount_ratio = (expected_total - actual_total) / expected_total
 
-    # Apply price-list-based limits
+    # Apply price-list-based limits with float safety
     if doc.selling_price_list == "Retail" and round(discount_ratio, 4) > 0.10:
         frappe.throw(_("Total discount exceeds 10% for Retail price list."))
 
@@ -111,7 +105,16 @@ def check_discounts(doc, event=None):
     if doc.selling_price_list == "Dealer" and round(discount_ratio, 4) > 0.0:
         frappe.throw(_("No discount allowed for Dealer price list."))
 
-    # Absolute ceiling for all price lists
+    # Absolute failsafe
     if discount_ratio > 0.20:
         frappe.throw(_("Total discount exceeds 20%, which is not allowed under any price list."))
-					
+
+def log_discount_override(doc, event=None):
+    if getattr(doc, "_discount_override_by", None):
+        frappe.get_doc({
+            "doctype": "Comment",
+            "comment_type": "Comment",
+            "reference_doctype": doc.doctype,
+            "reference_name": doc.name,
+            "content": f"Discount override allowed by {doc._discount_override_by}"
+        }).insert(ignore_permissions=True)
