@@ -56,3 +56,62 @@ def update_related_links(doc, event=None):
                 frappe.db.set_value(doctype, linked_doc.name, quotation_field, doc.name)
 
                 frappe.log_error(f"Updated {doctype}: {linked_doc.name} -> Old Quotation Removed, New Quotation: {doc.name}")
+
+# def check_discounts(self, event):
+# 	if self.net_total != self.total:
+# 		if self.selling_price_list == "Retail":
+# 			if self.net_total >= self.total * 0.10:
+# 				frappe.throw(_("Total Discount more than 10%"))
+# 		if self.selling_price_list == "Contract":
+# 			if self.net_total >= self.total * 0.05:
+# 				frappe.throw(_("Total Discount more than 10%"))
+
+#this checks discounts against the price list and calculated what the price list should be and ensures more than the max is not given
+def check_discounts(doc, event=None):
+    # Allow override for specific roles
+    roles = frappe.get_roles(frappe.session.user)
+    if "System Manager" in roles or "Accounts Manager" in roles:
+        # Log override
+        frappe.get_doc({
+            "doctype": "Comment",
+            "comment_type": "Comment",
+            "reference_doctype": doc.doctype,
+            "reference_name": doc.name,
+            "content": f"Discount override allowed by {frappe.session.user}"
+        }).insert(ignore_permissions=True)
+        return
+
+    if not doc.items:
+        return
+
+    expected_total = 0.0
+
+    for item in doc.items:
+        # Use the official price from the selected price list
+        standard_price = frappe.db.get_value("Item Price", {
+            "item_code": item.item_code,
+            "price_list": doc.selling_price_list
+        }, "price_list_rate")
+
+        if standard_price is None:
+            frappe.throw(f"No price found for {item.item_code} in price list '{doc.selling_price_list}'")
+
+        expected_total += (standard_price * item.qty)
+
+    actual_total = doc.base_net_total
+    discount_ratio = (expected_total - actual_total) / expected_total
+
+    # Apply price-list-based limits
+    if doc.selling_price_list == "Retail" and round(discount_ratio, 4) > 0.10:
+        frappe.throw(_("Total discount exceeds 10% for Retail price list."))
+
+    if doc.selling_price_list == "Contract" and round(discount_ratio, 4) > 0.05:
+        frappe.throw(_("Total discount exceeds 5% for Contract price list."))
+
+    if doc.selling_price_list == "Dealer" and round(discount_ratio, 4) > 0.0:
+        frappe.throw(_("No discount allowed for Dealer price list."))
+
+    # Absolute ceiling for all price lists
+    if discount_ratio > 0.20:
+        frappe.throw(_("Total discount exceeds 20%, which is not allowed under any price list."))
+					
