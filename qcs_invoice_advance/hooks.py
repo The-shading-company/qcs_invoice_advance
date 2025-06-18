@@ -140,7 +140,7 @@ doc_events = {
         "qcs_invoice_advance.controller.quotation.update_related_links"
     ]
 },
-    "Purchase Order":{
+    "Purchase Order": {
         "after_insert": "qcs_invoice_advance.controller.item.update_purchase_to_sales"
     },
     "Sales Order":{
