@@ -58,14 +58,6 @@ def update_related_links(doc, event=None):
 
                 frappe.log_error(f"Updated {doctype}: {linked_doc.name} -> Old Quotation Removed, New Quotation: {doc.name}")
 
-# def check_discounts(self, event):
-# 	if self.net_total != self.total:
-# 		if self.selling_price_list == "Retail":
-# 			if self.net_total >= self.total * 0.10:
-# 				frappe.throw(_("Total Discount more than 10%"))
-# 		if self.selling_price_list == "Contract":
-# 			if self.net_total >= self.total * 0.05:
-# 				frappe.throw(_("Total Discount more than 10%"))
 
 #this checks discounts against the price list and calculated what the price list should be and ensures more than the max is not given
 def check_discounts(doc, event=None):
@@ -119,3 +111,60 @@ def log_discount_override(doc, event=None):
             "reference_name": doc.name,
             "content": f"Discount override allowed by {doc._discount_override_by}"
         }).insert(ignore_permissions=True)
+
+def set_company(doc, method=None):
+    # 1. Check if PER- item exists
+    has_pergola = any(
+        item.item_code and "PER-" in item.item_code
+        for item in doc.items
+    )
+
+    # 2. Decide company and tax template
+    if has_pergola:
+        target_company = "The Shading Oasis Pergola Installation LLC"
+        target_taxes = "UAE VAT 5% - TSOPIL"
+    else:
+        target_company = "The Shading Umbrella Trading Co LLC"
+        target_taxes = "UAE VAT 5% - TSUTCL"
+
+    # 3. Set company FIRST
+    if doc.company != target_company:
+        doc.company = target_company
+
+    # 4. Set tax template
+    doc.taxes_and_charges = target_taxes
+
+    # 5. Clear old tax rows
+    doc.set("taxes", [])
+
+    # 6. Pull fresh tax rows from the selected template
+    template = frappe.get_doc("Sales Taxes and Charges Template", target_taxes)
+    default_cost_center = frappe.get_value("Company", target_company, "cost_center")
+
+    for row in template.taxes:
+        # Ensure account belongs to correct company
+        account_company = frappe.get_value("Account", row.account_head, "company")
+        if account_company != target_company:
+            frappe.throw(f"Account {row.account_head} does not belong to {target_company}")
+
+        # Ensure cost center belongs to correct company (or fallback)
+        cost_center = row.cost_center
+        if cost_center:
+            cc_company = frappe.get_value("Cost Center", cost_center, "company")
+            if cc_company != target_company:
+                cost_center = default_cost_center
+        else:
+            cost_center = default_cost_center
+
+                # Append validated tax row
+        doc.append("taxes", {
+            "charge_type": row.charge_type,
+            "account_head": row.account_head,
+            "description": row.description,
+            "rate": row.rate,
+            "cost_center": cost_center,
+            "included_in_print_rate": row.included_in_print_rate,
+        })
+
+    # 7. Ensure totals are recalculated
+    doc.calculate_taxes_and_totals()
