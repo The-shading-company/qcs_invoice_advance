@@ -362,6 +362,13 @@ def add_margins(self, event):
 		self.custom_total_margin = self.net_total - total_cost_with_qty
 		self.custom_margin_percent = (self.custom_total_margin * 100) / self.custom_total_cost
 
+@frappe.whitelist()
+def recalculate_sales_order_margins(sales_order):
+    doc = frappe.get_doc("Sales Order", sales_order)
+    from qcs_invoice_advance.controller.item import add_margins_sales_order
+    add_margins_sales_order(doc, None)
+    doc.save(ignore_permissions=True)
+
 #this adds margin to sales orders just like the script above for quotations.
 def add_margins_sales_order(doc, event):
     total_cost = 0
