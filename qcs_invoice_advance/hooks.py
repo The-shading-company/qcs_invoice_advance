@@ -145,7 +145,8 @@ doc_events = {
     },
     "Sales Order":{
         "after_insert": ["qcs_invoice_advance.controller.item.update_service_call_sales_order", "qcs_invoice_advance.controller.sales_order.update_payment_link"],
-        "validate": ["qcs_invoice_advance.controller.item.add_margins_sales_order"]
+        "validate": ["qcs_invoice_advance.controller.item.add_margins_sales_order"],
+        "on_update_after_submit": ["qcs_invoice_advance.controller.item.add_margins_sales_order"]
     },
     "Stock Entry":{
         "validate": "qcs_invoice_advance.controller.work_order.check_transferred_qty"
