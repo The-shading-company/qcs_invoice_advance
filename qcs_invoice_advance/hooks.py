@@ -125,22 +125,28 @@ doc_events = {
         "validate": "qcs_invoice_advance.controller.item.tsc_custom_accounts"
     },
     "Quotation": {
+    "before_validate": [
+        "qcs_invoice_advance.controller.quotation.set_company"
+    ],
     "validate": [
         "qcs_invoice_advance.controller.rakbank_payment_link.update_tsc_payment_link",
-        "qcs_invoice_advance.controller.item.add_margins","qcs_invoice_advance.controller.quotation.check_discounts","qcs_invoice_advance.controller.quotation.set_company"], # <--added check discounts
+        "qcs_invoice_advance.controller.item.add_margins",
+        "qcs_invoice_advance.controller.quotation.check_discounts"
+    ],
     "after_insert": [
         "qcs_invoice_advance.controller.item.add_quote_link",
         "qcs_invoice_advance.controller.item.update_service_call",
-        "qcs_invoice_advance.controller.quotation.log_discount_override", # <-- logs discount overide adds a comment
-        "qcs_invoice_advance.controller.quotation.update_related_links"  # <-- newly added
+        "qcs_invoice_advance.controller.quotation.log_discount_override",
+        "qcs_invoice_advance.controller.quotation.update_related_links"
     ]
 },
-    "Purchase Order":{
+    "Purchase Order": {
         "after_insert": "qcs_invoice_advance.controller.item.update_purchase_to_sales"
     },
     "Sales Order":{
         "after_insert": ["qcs_invoice_advance.controller.item.update_service_call_sales_order", "qcs_invoice_advance.controller.sales_order.update_payment_link"],
-        "validate": ["qcs_invoice_advance.controller.item.add_margins_sales_order"]
+        "validate": ["qcs_invoice_advance.controller.item.add_margins_sales_order"],
+        "on_update": ["qcs_invoice_advance.controller.item.add_margins_sales_order"]
     },
     "Stock Entry":{
         "validate": "qcs_invoice_advance.controller.work_order.check_transferred_qty"

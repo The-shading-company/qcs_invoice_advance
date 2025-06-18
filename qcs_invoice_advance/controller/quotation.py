@@ -59,12 +59,9 @@ def update_related_links(doc, event=None):
                 frappe.log_error(f"Updated {doctype}: {linked_doc.name} -> Old Quotation Removed, New Quotation: {doc.name}")
 
 
-#this checks discounts against the price list and calculated what the price list should be and ensures more than the max is not given
 def check_discounts(doc, event=None):
-    # Allow override for specific roles
     roles = frappe.get_roles(frappe.session.user)
     if "System Manager" in roles or "Accounts Manager" in roles:
-        # Mark override to be logged later
         doc._discount_override_by = frappe.session.user
         return
 
@@ -72,23 +69,27 @@ def check_discounts(doc, event=None):
         return
 
     expected_total = 0.0
+    actual_total = 0.0
 
     for item in doc.items:
-        # Use the official price from the selected price list
         standard_price = frappe.db.get_value("Item Price", {
             "item_code": item.item_code,
             "price_list": doc.selling_price_list
         }, "price_list_rate")
 
         if standard_price is None:
-            frappe.throw(f"No price found for {item.item_code} in price list '{doc.selling_price_list}'")
+            # Skip this item completely
+            continue
 
         expected_total += (standard_price * item.qty)
+        actual_total += (item.base_net_amount or 0)
 
-    actual_total = doc.base_net_total
+    # If no price-matchable items found, skip check
+    if expected_total == 0:
+        return
+
     discount_ratio = (expected_total - actual_total) / expected_total
 
-    # Apply price-list-based limits with float safety
     if doc.selling_price_list == "Retail" and round(discount_ratio, 4) > 0.10:
         frappe.throw("Total discount exceeds 10% for Retail price list.")
 
@@ -98,7 +99,6 @@ def check_discounts(doc, event=None):
     if doc.selling_price_list == "Dealer" and round(discount_ratio, 4) > 0.0:
         frappe.throw("No discount allowed for Dealer price list.")
 
-    # Absolute failsafe
     if discount_ratio > 0.20:
         frappe.throw(_("Total discount exceeds 20%, which is not allowed under any price list."))
 
@@ -113,58 +113,54 @@ def log_discount_override(doc, event=None):
         }).insert(ignore_permissions=True)
 
 def set_company(doc, method=None):
-    # 1. Check if PER- item exists
-    has_pergola = any(
-        item.item_code and "PER-" in item.item_code
-        for item in doc.items
-    )
+    # 1. Decide target company / tax template
+    has_pergola = any(item.item_code and "PER-" in item.item_code for item in doc.items)
 
-    # 2. Decide company and tax template
     if has_pergola:
         target_company = "The Shading Oasis Pergola Installation LLC"
-        target_taxes = "UAE VAT 5% - TSOPIL"
+        target_taxes   = "UAE VAT 5% - TSOPIL"
     else:
         target_company = "The Shading Umbrella Trading Co LLC"
-        target_taxes = "UAE VAT 5% - TSUTCL"
+        target_taxes   = "UAE VAT 5% - TSUTCL"
 
-    # 3. Set company FIRST
+    # 2. Switch company first
     if doc.company != target_company:
         doc.company = target_company
 
-    # 4. Set tax template
-    doc.taxes_and_charges = target_taxes
+    default_cc = frappe.get_value("Company", target_company, "cost_center")
 
-    # 5. Clear old tax rows
+    # ---------- NEW: realign every cost-centre ----------
+    if getattr(doc, "cost_center", None) and doc.cost_center != default_cc:
+        doc.cost_center = default_cc
+
+    for row in doc.items:
+        if row.cost_center != default_cc:
+            row.cost_center = default_cc
+    # ----------------------------------------------------
+
+    # 3. Reset taxes & pull fresh rows
+    doc.taxes_and_charges = target_taxes
     doc.set("taxes", [])
 
-    # 6. Pull fresh tax rows from the selected template
     template = frappe.get_doc("Sales Taxes and Charges Template", target_taxes)
-    default_cost_center = frappe.get_value("Company", target_company, "cost_center")
-
     for row in template.taxes:
-        # Ensure account belongs to correct company
-        account_company = frappe.get_value("Account", row.account_head, "company")
-        if account_company != target_company:
+        # ensure account belongs to the company
+        if frappe.get_value("Account", row.account_head, "company") != target_company:
             frappe.throw(f"Account {row.account_head} does not belong to {target_company}")
 
-        # Ensure cost center belongs to correct company (or fallback)
-        cost_center = row.cost_center
-        if cost_center:
-            cc_company = frappe.get_value("Cost Center", cost_center, "company")
-            if cc_company != target_company:
-                cost_center = default_cost_center
-        else:
-            cost_center = default_cost_center
+        # pick a company-correct cost centre
+        cc = row.cost_center or default_cc
+        if frappe.get_value("Cost Center", cc, "company") != target_company:
+            cc = default_cc
 
-                # Append validated tax row
         doc.append("taxes", {
-            "charge_type": row.charge_type,
-            "account_head": row.account_head,
-            "description": row.description,
-            "rate": row.rate,
-            "cost_center": cost_center,
-            "included_in_print_rate": row.included_in_print_rate,
+            "charge_type"            : row.charge_type,
+            "account_head"           : row.account_head,
+            "description"            : row.description,
+            "rate"                   : row.rate,
+            "cost_center"            : cc,
+            "included_in_print_rate" : row.included_in_print_rate,
         })
 
-    # 7. Ensure totals are recalculated
+    # 4. Re-calculate totals
     doc.calculate_taxes_and_totals()

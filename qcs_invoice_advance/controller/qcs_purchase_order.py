@@ -955,3 +955,5 @@ def is_subcontracting_order_created(po_name) -> bool:
 		if frappe.db.exists("Subcontracting Order", {"purchase_order": po_name, "docstatus": ["=", 1]})
 		else False
 	)
+
+
