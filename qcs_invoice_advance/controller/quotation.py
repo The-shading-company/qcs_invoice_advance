@@ -134,7 +134,7 @@ def set_company(doc, method=None):
         doc.cost_center = default_cc
 
     for row in doc.items:
-        if row.cost_center != default_cc:
+        if getattr(row, "cost_center", None) != default_cc:
             row.cost_center = default_cc
     # ----------------------------------------------------
 
