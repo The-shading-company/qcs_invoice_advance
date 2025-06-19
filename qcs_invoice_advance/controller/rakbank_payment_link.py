@@ -283,6 +283,7 @@ def create_payment_link3(dt, dn, amt, purpose):
 	pl.status = "Open"
 	pl.payment_url = payment_link
 	pl.payment_invoice = invoice["id"]
+	pl.custom_source = "Rakbank"
 	pl.save(ignore_permissions=True)
 
 	return payment_link
