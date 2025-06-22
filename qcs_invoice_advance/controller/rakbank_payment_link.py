@@ -1,14 +1,14 @@
 import frappe
-import requests
-import json
-from frappe import _
-import simplify
 import os
-from datetime import datetime
+import math
 import certifi
+import simplify
+import requests  # Required if calling external APIs (like Rakbank auth)
+from frappe import _
 from frappe.utils import get_system_timezone
-from datetime import timedelta
-from zoneinfo import ZoneInfo 
+from frappe.utils.background_jobs import enqueue
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo  # Only needed if you're converting timezones
 
 @frappe.whitelist()
 def create_payment_link(dt, dn, amt, purpose):
@@ -165,8 +165,13 @@ def epoch_time_ms_to_datetime(ms: int) -> datetime:
 # ─────────────────────────────────────────────────────────────────────────────
 # Cron: check Rakbank payment links (all inline, no batching yet)
 # ─────────────────────────────────────────────────────────────────────────────
+import pprint  # <-- pretty-prints dicts for easier reading
+
 @frappe.whitelist()
 def cron_rakbank_api():
+    """
+    Check all open Rakbank payment links and update their status.
+    """
     links = frappe.get_all(
         "TSC Payment Link",
         filters={
@@ -181,7 +186,7 @@ def cron_rakbank_api():
         frappe.logger().info("Rakbank cron: nothing to check")
         return
 
-    # one-time API key setup
+    # API key setup
     keys = frappe.get_cached_doc("Rakbank API Settings")
     simplify.public_key = keys.public_key
     simplify.private_key = keys.private_key
@@ -194,7 +199,7 @@ def cron_rakbank_api():
                 continue
 
             payment_id = row.payment_url.rsplit("/", 1)[-1]
-            payment = simplify.Invoice.find(payment_id)
+            payment = simplify.Invoice.find(payment_id).to_dict()
 
             frappe.logger().info(f"Checked {name} → {payment['status']}")
 
@@ -204,57 +209,88 @@ def cron_rakbank_api():
 
             if payment["status"] == "PAID":
                 if payment.get("datePaid"):
-                    doc.paid_date = epoch_time_ms_to_datetime(payment["datePaid"])
+                    doc.paid_date = epoch_time_ms_to_datetime(payment["datePaid"]).replace(tzinfo=None)
                 if payment.get("payment"):
                     doc.paid_amount = payment["payment"]["amount"] / 100
 
             doc.save(ignore_permissions=True)
 
         except Exception:
-            frappe.log_error(frappe.get_traceback(),
-                             f"Rakbank cron failed for {name}")
-            continue  # keep processing the next link
+            frappe.log_error(frappe.get_traceback(), f"Rakbank cron failed for {name}")
+            continue
 
     frappe.db.commit()
-    
+
 def process_batch1(items):
-    
     for i in items:
         try:
             doc = frappe.get_doc("TSC Payment Link", i.get("name"))
             if not doc.payment_url:
                 continue
 
-            frappe.errprint(doc.name)
-            payment_link = doc.payment_url
-            payment_id = payment_link.split('/')[-1]
+            payment_id = doc.payment_url.rsplit('/', 1)[-1]
 
-            rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
-            if rakbank_api_settings.public_key and rakbank_api_settings.private_key:
-                simplify.public_key = rakbank_api_settings.public_key
-                simplify.private_key = rakbank_api_settings.private_key
-                os.environ['SSL_CERT_FILE'] = certifi.where()
+            keys = frappe.get_cached_doc("Rakbank API Settings")
+            simplify.public_key  = keys.public_key
+            simplify.private_key = keys.private_key
+            os.environ["SSL_CERT_FILE"] = certifi.where()
 
-                payment = simplify.Invoice.find(payment_id)
-                frappe.errprint(payment)
+            payment = simplify.Invoice.find(payment_id).to_dict()   # ← dict
+            status  = payment["status"]
 
-                payment_status = payment["status"]
+            if status == "PAID":
+                if payment.get("datePaid"):
+                    # strip tzinfo so MySQL accepts it
+                    doc.paid_date = epoch_time_ms_to_datetime(payment["datePaid"]).replace(tzinfo=None)
+                if payment.get("payment"):
+                    doc.paid_amount = payment["payment"]["amount"] / 100
 
-                if payment_status == "PAID":
-                    if payment.get("datePaid"):
-                        timestamp_ms = payment["datePaid"]
-                        formatted_datetime = epoch_time_ms_to_datetime(timestamp_ms)
-                        doc.paid_date = formatted_datetime
+            doc.payment_status  = status
+            doc.payment_invoice = payment["id"]
+            doc.save(ignore_permissions=True)
 
-                    if payment.get("payment"):
-                        doc.paid_amount = payment["payment"]["amount"] / 100
+        except Exception:
+            frappe.log_error(frappe.get_traceback(),
+                             f"Rakbank Batch Error – {i.get('name')}")
 
-                doc.payment_status = payment_status
-                doc.payment_invoice = payment["id"]
-                doc.save(ignore_permissions=True)
+# ---------------------------------------------------------------------------
+# BATCH-FRIENDLY WRAPPER  ➜  bench execute "qcs_invoice_advance.controller.rakbank_payment_link.cron_rakbank_api_batch"
+# ---------------------------------------------------------------------------
+@frappe.whitelist()
+def cron_rakbank_api_batch(test_inline: bool = False, batch_size: int = 40):
+    """Slice open Rakbank links into batches and process or enqueue them."""
+    names = frappe.get_all(
+        "TSC Payment Link",
+        filters={
+            "status": ["!=", "Cancelled"],
+            "payment_status": ["!=", "PAID"],
+            "custom_source": "Rakbank"
+        },
+        pluck="name"
+    )
 
-        except Exception as e:
-            frappe.log_error(frappe.get_traceback(), f"Rakbank Batch Error - {i.get('name')}")
+    if not names:
+        frappe.logger().info("Rakbank batch cron: nothing to check")
+        return
+
+    for i in range(0, len(names), batch_size):
+        batch = [{"name": n} for n in names[i : i + batch_size]]
+
+        if test_inline:
+            frappe.logger().info(f"▶ Running batch inline ({i}-{i+len(batch)-1})")
+            process_batch1(batch)
+            frappe.db.commit()
+        else:
+            enqueue(
+                "qcs_invoice_advance.controller.rakbank_payment_link.process_batch1",
+                queue="long",
+                timeout=300,
+                items=batch,
+            )
+
+    if not test_inline:
+        total_batches = math.ceil(len(names) / batch_size)
+        frappe.logger().info(f"✅ Enqueued {len(names)} links in {total_batches} batches")
 
 ##this is a function to find old payment links and cancel them if they are older than 90 days.
 #this just logs in error log as datetime can be tricky to handle.
