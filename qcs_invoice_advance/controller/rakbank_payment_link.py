@@ -78,6 +78,8 @@ def create_payment_link(dt, dn, amt, purpose):
     else:
         frappe.throw("Somthing Missing in Rakbank API Settings")
 
+
+#this calls the quotation payment link update. im not sure this is needed. we should be directly updating in the tsc payment link link field.
 def update_tsc_payment_link(self, event):
     if (self.custom_tsc_payment_link):
         payment_link = frappe.get_doc("TSC Payment Link", self.custom_tsc_payment_link)
@@ -163,6 +165,7 @@ def epoch_time_ms_to_datetime(ms: int) -> datetime:
 # ─────────────────────────────────────────────────────────────────────────────
 # Cron: check Rakbank payment links (all inline, no batching yet)
 # ─────────────────────────────────────────────────────────────────────────────
+@frappe.whitelist()
 def cron_rakbank_api():
     links = frappe.get_all(
         "TSC Payment Link",
