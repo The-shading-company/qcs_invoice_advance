@@ -157,6 +157,10 @@ doc_events = {
     "Warranty Claim":{
         "validate": "qcs_invoice_advance.controller.item.warrenty_claim_sales_order"
     },
+     "TSC Logo Costing": {
+        "validate": "qcs_invoice_advance.controller.logo_costing.sync_logo_costs"
+    }
+
 }
 
 
@@ -235,9 +239,6 @@ scheduler_events = {
 #	"monthly": [
 #		"qcs_invoice_advance.tasks.monthly"
     "cron": {
-        "* * * * *": [
-            "qcs_invoice_advance.qcs_invoice_advance.doctype.logo_costing_form.logo_costing_form.update_cost"
-        ],
         "0 8-19/2 * * *": [
             "qcs_invoice_advance.controller.rakbank_payment_link.cron_rakbank_api_batch"
         ]
