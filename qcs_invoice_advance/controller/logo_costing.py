@@ -1,23 +1,13 @@
 import frappe
 
-def sync_parent_logo_cost(doc, _):
-    """Update parent Logo Costing doc when a Logo Costing Form row is saved."""
-    if not (doc.logo_costing_id and doc.name):
-        return
+def sync_logo_costs(doc, _):
+    """Update logo_unit_selling in each child row based on logo_unit_cost and multiplier."""
 
     multiplier = frappe.db.get_single_value("TSC Logo Setup", "selling_multiplier") or 1
-    parent = frappe.get_doc("TSC Logo Costing", doc.logo_costing_id)
 
-    row = next((r for r in parent.logos if r.name == doc.name), None)
-    if not row:
-        return
+    for row in doc.logos:
+        cost = row.logo_unit_cost or 0
+        selling = cost * multiplier
 
-    new_cost = doc.logo_unit_cost
-    new_selling = new_cost * multiplier
-
-    if row.logo_unit_cost == new_cost and row.logo_unit_selling == new_selling:
-        return  # No change, no save needed
-
-    row.logo_unit_cost = new_cost
-    row.logo_unit_selling = new_selling
-    parent.save(ignore_permissions=True)
+        if row.logo_unit_selling != selling:
+            row.logo_unit_selling = selling

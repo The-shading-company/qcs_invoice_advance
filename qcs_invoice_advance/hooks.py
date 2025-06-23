@@ -157,8 +157,8 @@ doc_events = {
     "Warranty Claim":{
         "validate": "qcs_invoice_advance.controller.item.warrenty_claim_sales_order"
     },
-    "Logo Costing Form": {
-        "on_update": "qcs_invoice_advance.controller.logo_costing.sync_parent_logo_cost"
+     "TSC Logo Costing": {
+        "validate": "qcs_invoice_advance.controller.logo_costing.sync_logo_costs"
     }
 
 }
