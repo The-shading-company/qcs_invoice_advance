@@ -222,36 +222,46 @@ def cron_rakbank_api():
     frappe.db.commit()
 
 def process_batch1(items):
-    for i in items:
+    keys = frappe.get_cached_doc("Rakbank API Settings")
+    simplify.public_key  = keys.public_key
+    simplify.private_key = keys.private_key
+    os.environ["SSL_CERT_FILE"] = certifi.where()
+
+    to_update, errors = [], []
+
+    for row in items:
         try:
-            doc = frappe.get_doc("TSC Payment Link", i.get("name"))
-            if not doc.payment_url:
+            doc = frappe.get_doc("TSC Payment Link", row["name"])
+            if not doc.payment_url or doc.payment_status in ("PAID", "CANCELLED"):
                 continue
 
             payment_id = doc.payment_url.rsplit('/', 1)[-1]
+            payment    = simplify.Invoice.find(payment_id).to_dict()
 
-            keys = frappe.get_cached_doc("Rakbank API Settings")
-            simplify.public_key  = keys.public_key
-            simplify.private_key = keys.private_key
-            os.environ["SSL_CERT_FILE"] = certifi.where()
+            updates = {
+                "payment_status":  payment["status"],
+                "payment_invoice": payment["id"],
+            }
 
-            payment = simplify.Invoice.find(payment_id).to_dict()   # ← dict
-            status  = payment["status"]
-
-            if status == "PAID":
+            if payment["status"] == "PAID":
                 if payment.get("datePaid"):
-                    # strip tzinfo so MySQL accepts it
-                    doc.paid_date = epoch_time_ms_to_datetime(payment["datePaid"]).replace(tzinfo=None)
+                    updates["paid_date"] = epoch_time_ms_to_datetime(
+                        payment["datePaid"]).replace(tzinfo=None)
                 if payment.get("payment"):
-                    doc.paid_amount = payment["payment"]["amount"] / 100
+                    updates["paid_amount"] = payment["payment"]["amount"] / 100
 
-            doc.payment_status  = status
-            doc.payment_invoice = payment["id"]
-            doc.save(ignore_permissions=True)
+            to_update.append((updates, doc.name))
 
         except Exception:
-            frappe.log_error(frappe.get_traceback(),
-                             f"Rakbank Batch Error – {i.get('name')}")
+            errors.append(frappe.get_traceback())
+
+    # bulk DB write
+    for upd, name in to_update:
+        frappe.db.set_value("TSC Payment Link", name, upd, update_modified=False)
+    frappe.db.commit()
+
+    if errors:
+        frappe.log_error("\n\n".join(errors[:10]), "Rakbank Batch Errors")
 
 # ---------------------------------------------------------------------------
 # BATCH-FRIENDLY WRAPPER  ➜  bench execute "qcs_invoice_advance.controller.rakbank_payment_link.cron_rakbank_api_batch"
