@@ -15,86 +15,86 @@ from frappe.utils import get_system_timezone
 from pytz import timezone
 
 
+#this creates a canopy on item creation for Canopies Awn Bli and Umbrellas . Uses parsing rather than getting from item attributes
+def create_canopy_bom(self, event):
+	if not self.item_code.startswith("CAN-"):
+		return
 
-def create_bom(self, event):
-	if (self.variant_of == "CAN"):
-				
-		fab_abb = []
-		awn_abb = []
-		size = []
-		flag = 0
-		
-		tab = self.attributes
-		for i in range(0, len(tab)):
-			
-			if (tab[i].get("attribute") == "Fabric Color"):
-				value = tab[i].get("attribute_value")
-				i_att = frappe.get_doc("Item Attribute", tab[i].get("attribute"))
-				att_tab = i_att.item_attribute_values
-				for j in range(0, len(att_tab)):
-					if (att_tab[j].get("attribute_value") == value):
-						fab_abb.append(att_tab[j].get("abbr"))
-						
-			if (tab[i].get("attribute") == "Canopy Type"):
-				value = tab[i].get("attribute_value")
-				i_att = frappe.get_doc("Item Attribute", tab[i].get("attribute"))
-				att_tab = i_att.item_attribute_values
-				for j in range(0, len(att_tab)):
-					if (att_tab[j].get("attribute_value") == value):
-						awn_abb.append(att_tab[j].get("abbr"))
-						
-			if (tab[i].get("attribute") == "Size"):
-				value = tab[i].get("attribute_value")
-				i_att = frappe.get_doc("Item Attribute", tab[i].get("attribute"))
-				att_tab = i_att.item_attribute_values
-				for j in range(0, len(att_tab)):
-					if (att_tab[j].get("attribute_value") == value):
-						size.append(att_tab[j].get("abbr"))
+	try:
+		parts = self.item_code.split("-")
+		if len(parts) < 5:
+			frappe.log_error(f"Invalid item code format: {self.item_code}", "BOM Creation Skipped")
+			return
 
-		stich = frappe.get_all("TSC Stitching Cost")
-		for i in stich:
-			s_doc = frappe.get_doc("TSC Stitching Cost", i)
-			s_tab = s_doc.cost_table_tab
-			for j in range(0, len(s_tab)):
+		canopy_type = parts[1]  # AWN / BLI / UMB
+		canopy_size = parts[2]  # e.g., 6x3
+		fabric_code = "-".join(parts[4:]).strip()
 
-								
-				if (s_tab[j].get("canopy_type") == awn_abb[0] and s_tab[j].get("canopy_size") == size[0]):
+		if not fabric_code or fabric_code == self.item_code:
+			frappe.log_error(f"Fabric code parsing failed for {self.item_code}. Got: '{fabric_code}'", "BOM Creation Skipped")
+			return
 
-					if (frappe.get_all("BOM", filters={"item": self.name})):
-						bom = frappe.get_all("BOM", filters={"item": self.name})
-						for k in bom:
-							bom_doc = frappe.get_doc("BOM", k)
-							if(bom_doc.docstatus == 0):
-								bom_doc.items[0].qty = s_tab[j].get("canopy_qty")
-								bom_doc.fg_based_operating_cost = 1
-								bom_doc.operating_cost_per_bom_quantity = s_tab[j].get("no_flap_stitching_cost")
-								bom_doc.save(ignore_permissions=True)
-								bom_doc.submit()
-								flag = 1
-								frappe.msgprint("BOM Updated Successfully")
-								#addition from code space
-								
+		if not frappe.db.exists("Item", fabric_code):
+			frappe.log_error(f"Fabric item '{fabric_code}' not found for {self.item_code}", "BOM Creation Skipped")
+			return
+
+		stitching_found = False
+		stitching_docs = frappe.get_all("TSC Stitching Cost", pluck="name")
+
+		for docname in stitching_docs:
+			s_doc = frappe.get_doc("TSC Stitching Cost", docname)
+			for row in s_doc.cost_table_tab:
+				if row.get("canopy_type") == canopy_type and row.get("canopy_size") == canopy_size:
+					fabric_qty = float(row.get("canopy_qty") or 1)
+					stitch_minutes = int(row.get("custom_tsc_stitching_minutes") or 0)
+					op_cost = float(row.get("no_flap_stitching_cost") or 0)
+
+					existing = frappe.get_all("BOM", filters={"item": self.name}, limit=1)
+					if existing:
+						bom_doc = frappe.get_doc("BOM", existing[0].name)
+						if bom_doc.docstatus == 0:
+							bom_doc.items[0].qty = fabric_qty
+							bom_doc.fg_based_operating_cost = 1
+							bom_doc.operating_cost_per_bom_quantity = op_cost
+							bom_doc.save(ignore_permissions=True)
+							bom_doc.submit()
+							frappe.logger().info(f"BOM updated for {self.name}")
 					else:
-						self.save(ignore_permissions=True)
-						item = []
-						item.append({
-							"item_code": fab_abb[0],
-							"qty": s_tab[j].get("canopy_qty"),
-						})
-									
 						doc = frappe.new_doc("BOM")
 						doc.update({
 							"item": self.name,
-							"items": item,
+							"is_active": 1,
+							"is_default": 1,
+							"with_operations": 1,
+							"routing": "stitching",
+							"items": [
+								{"item_code": fabric_code, "qty": fabric_qty}
+							],
+							"operations": [
+								{
+									"operation": "Stitching",
+									"workstation": "Stitching Station",
+									"workstation_type": "Stitching",
+									"time_in_mins": stitch_minutes
+								}
+							],
 							"fg_based_operating_cost": 1,
-							"operating_cost_per_bom_quantity": s_tab[j].get("no_flap_stitching_cost")
+							"operating_cost_per_bom_quantity": op_cost
 						})
 						doc.insert(ignore_permissions=True)
 						doc.submit()
-						flag = 1
-						frappe.msgprint("BOM Created Successfully")
-			if flag == 0:
-				frappe.msgprint("TSC Costing Table missing values, BOM wasnt created")
+						frappe.logger().info(f"BOM created for {self.name}")
+					
+					stitching_found = True
+					break
+			if stitching_found:
+				break
+
+		if not stitching_found:
+			frappe.logger().warning(f"No stitching row found for {self.name} (Type: {canopy_type}, Size: {canopy_size})")
+
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), f"BOM Auto-Creation Error for {self.name}")
  
 
 #moving to seperate code
@@ -150,53 +150,58 @@ def create_bom(self, event):
 
 			
 
- 
-def update_bom(self, event):
-	
-	if (self.variant_of == "CAN"):
-				
-		fab_abb = []
-		awn_abb = []
-		size = []
-		
-		tab = self.attributes
-		for i in range(0, len(tab)):
-			
-			if (tab[i].get("attribute") == "Fabric Color"):
-				value = tab[i].get("attribute_value")
-				i_att = frappe.get_doc("Item Attribute", tab[i].get("attribute"))
-				att_tab = i_att.item_attribute_values
-				for j in range(0, len(att_tab)):
-					if (att_tab[j].get("attribute_value") == value):
-						fab_abb.append(att_tab[j].get("abbr"))
-						
-			if (tab[i].get("attribute") == "Canopy Type"):
-				value = tab[i].get("attribute_value")
-				i_att = frappe.get_doc("Item Attribute", tab[i].get("attribute"))
-				att_tab = i_att.item_attribute_values
-				for j in range(0, len(att_tab)):
-					if (att_tab[j].get("attribute_value") == value):
-						awn_abb.append(att_tab[j].get("abbr"))
-						
-			if (tab[i].get("attribute") == "Size"):
-				size.append(tab[i].get("abbr"))
-	  
-		stich = frappe.get_all("TSC Stitching Cost")
-		for i in stich:
-			s_doc = frappe.get_doc("TSC Stitching Cost", i)
-			s_tab = s_doc.cost_table_tab
-			for j in range(0, len(s_tab)):
-				if (s_tab[j].get("canopy_type") == awn_abb[0] and s_tab[j].get("canopy_size") == size[0]):
-					if (frappe.get_all("BOM", filters={"item": self.name, "docstatus":0})):
-						bom = frappe.get_all("BOM", filters={"item": self.name, "docstatus":0})
-						for k in bom:
-							bom_doc = frappe.get_doc("BOM", k)
-							bom_doc.items[0].qty = s_tab[j].get("canopy_qty")
-							bom_doc.fg_based_operating_cost = 1
-							bom_doc.operating_cost_per_bom_quantity = s_tab[j].get("no_flap_stitching_cost")
-							bom_doc.save(ignore_permissions=True)
-							frappe.msgprint("BOM Updated Successfully")
-							
+#updates the canopy bom for changes. 
+def update_canopy_bom(self, event):
+	if not self.item_code.startswith("CAN-"):
+		return
+
+	try:
+		parts = self.item_code.split("-")
+		if len(parts) < 5:
+			frappe.log_error(f"Invalid item code format: {self.item_code}", "Canopy BOM Update Skipped")
+			return
+
+		canopy_type = parts[1]  # e.g., 'AWN', 'BLI', 'UMB'
+		canopy_size = parts[2]  # e.g., '4x3'
+		fabric_code = "-".join(parts[4:]).strip()
+
+		if not fabric_code or fabric_code == self.item_code:
+			frappe.log_error(f"Fabric code parsing failed for {self.item_code}. Got: '{fabric_code}'", "Canopy BOM Update Skipped")
+			return
+
+		stitching_docs = frappe.get_all("TSC Stitching Cost", pluck="name")
+
+		for docname in stitching_docs:
+			s_doc = frappe.get_doc("TSC Stitching Cost", docname)
+			for row in s_doc.cost_table_tab:
+				if row.get("canopy_type") == canopy_type and row.get("canopy_size") == canopy_size:
+					fabric_qty = float(row.get("canopy_qty") or 1)
+					stitch_minutes = int(row.get("custom_tsc_stitching_minutes") or 0)
+					op_cost = float(row.get("no_flap_stitching_cost") or 0)
+
+					boms = frappe.get_all("BOM", filters={"item": self.name, "docstatus": 0})
+					for b in boms:
+						bom_doc = frappe.get_doc("BOM", b.name)
+
+						# Update fabric quantity
+						if bom_doc.items:
+							bom_doc.items[0].qty = fabric_qty
+
+						# Update stitching time
+						if bom_doc.operations:
+							bom_doc.operations[0].time_in_mins = stitch_minutes
+
+						bom_doc.fg_based_operating_cost = 1
+						bom_doc.operating_cost_per_bom_quantity = op_cost
+						bom_doc.save(ignore_permissions=True)
+						frappe.logger().info(f"Canopy BOM updated for {self.name}")
+
+					return  # Stop after first match
+
+		frappe.logger().warning(f"No stitching row found for {self.name} (Type: {canopy_type}, Size: {canopy_size})")
+
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), f"Canopy BOM Update Error for {self.name}")
 							
 def delete_bom(self, event):
 	
@@ -269,7 +274,7 @@ def set_dynamic_item_description(doc, method):
 		if not doc.custom_tsc_color:
 			doc.custom_tsc_color = c_color
 
-
+#this adds the selling price for items created in the bom
 def add_sale_price(self, event):
 
 	itemprice = frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Retail"})
@@ -336,33 +341,60 @@ def add_margins(self, event):
 	total_cost_with_qty = 0
 	total_margin = 0
 	total_margin_with_qty = 0
-	for item in self.items:
-		bom = frappe.get_all("BOM", filters={"item": item.item_code, "is_active": 1, "is_default": 1})
-		if len(bom) > 0:
-			bom_index = frappe.get_doc("BOM", bom[0].name)
-			item.custom_tsc_cost = bom_index.total_cost
-			item.custom_tsc_cost_with_qty = bom_index.total_cost * item.qty
-			total_cost += item.custom_tsc_cost
-			total_cost_with_qty += item.custom_tsc_cost_with_qty
-		else:
-			item.custom_tsc_cost = item.valuation_rate
-			item.custom_tsc_cost_with_qty = item.valuation_rate * item.qty
-			total_cost += item.custom_tsc_cost
-			total_cost_with_qty += item.custom_tsc_cost_with_qty
-   
-		if item.custom_tsc_cost > 0:
-			item.custom_tsc_margin = item.rate - item.custom_tsc_cost
-			total_margin += item.custom_tsc_margin
-			with_qty_margin = item.rate - item.custom_tsc_cost_with_qty
-			total_margin_with_qty += with_qty_margin
-   
-			if item.custom_tsc_margin > 0:
-				item.custom_tsc_margin_per = (item.custom_tsc_margin * 100) / item.custom_tsc_cost
 
+	for item in self.items:
+		item_cost = 0
+
+		# ── Try BOM first ──
+		bom = frappe.get_all("BOM", filters={"item": item.item_code, "is_active": 1, "is_default": 1})
+		if bom:
+			bom_doc = frappe.get_doc("BOM", bom[0].name)
+			item_cost = bom_doc.total_cost
+		else:
+			# ── Fallback to Item Master: custom_average_cost → valuation_rate ──
+			try:
+				item_doc = frappe.get_doc("Item", item.item_code)
+				if item_doc.custom_average_cost:
+					item_cost = float(item_doc.custom_average_cost)
+				else:
+					item_cost = float(item_doc.valuation_rate or 0)
+			except Exception as e:
+				frappe.log_error(f"Error fetching cost for item {item.item_code}: {e}", "Add Margins Error")
+				item_cost = 0
+
+		# ── Assign cost ──
+		try:
+			qty = float(item.qty or 0)
+			item.custom_tsc_cost = item_cost
+			item.custom_tsc_cost_with_qty = item_cost * qty
+			total_cost += item_cost
+			total_cost_with_qty += item.custom_tsc_cost_with_qty
+		except Exception as e:
+			frappe.log_error(f"Error calculating cost_with_qty for {item.item_code}: {e}", "Add Margins Error")
+			item.custom_tsc_cost = 0
+			item.custom_tsc_cost_with_qty = 0
+
+		# ── Margin calculations ──
+		if item_cost > 0:
+			try:
+				item.custom_tsc_margin = float(item.rate) - item_cost
+				with_qty_margin = (float(item.rate) * qty) - (item_cost * qty)
+				total_margin += item.custom_tsc_margin
+				total_margin_with_qty += with_qty_margin
+
+				if item.custom_tsc_margin > 0:
+					item.custom_tsc_margin_per = (item.custom_tsc_margin * 100) / item_cost
+			except Exception as e:
+				frappe.log_error(f"Error calculating margin for {item.item_code}: {e}", "Add Margins Error")
+
+	# ── Final totals ──
 	self.custom_total_cost = total_cost_with_qty
-	if self.custom_total_cost > 0 and total_cost_with_qty > 0:
-		self.custom_total_margin = self.net_total - total_cost_with_qty
-		self.custom_margin_percent = (self.custom_total_margin * 100) / self.custom_total_cost
+	if self.custom_total_cost > 0:
+		try:
+			self.custom_total_margin = self.net_total - total_cost_with_qty
+			self.custom_margin_percent = (self.custom_total_margin * 100) / self.custom_total_cost
+		except Exception as e:
+			frappe.log_error(f"Error calculating document margin: {e}", "Add Margins Error")
 
 @frappe.whitelist()
 def recalculate_sales_order_margins(sales_order):
