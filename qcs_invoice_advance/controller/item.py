@@ -819,18 +819,19 @@ def cron_update_item_average_rate():
   
 def process_batch(items):
 	for i in items:
-		doc = frappe.get_doc("Item", i.get("name"))
+		item_code = i.get("name")
 		valuation_rate = frappe.db.sql("""
 			SELECT valuation_rate
 			FROM `tabStock Ledger Entry`
 			WHERE item_code = %s
 			ORDER BY posting_date DESC, posting_time DESC
 			LIMIT 1
-		""", i.get("name"))
+		""", item_code)
 		valuation_rate = valuation_rate[0][0] if valuation_rate else 0
 
-		doc.custom_average_cost = valuation_rate or 0
-		doc.save(ignore_permissions=True)
+		current = frappe.db.get_value("Item", item_code, "custom_average_cost")
+		if current != valuation_rate:
+			frappe.db.set_value("Item", item_code, "custom_average_cost", valuation_rate)
    
 
 def epoch_time_ms_to_datetime(epoch_time_ms):
