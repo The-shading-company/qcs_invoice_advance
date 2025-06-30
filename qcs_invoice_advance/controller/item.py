@@ -97,7 +97,7 @@ def create_bom(self, event):
 				frappe.msgprint("TSC Costing Table missing values, BOM wasnt created")
  
 
-#moving to seperate code.
+#moving to seperate code
 
 # def create_shade_sail_price(self, event):
 # 	sh_type = ""
