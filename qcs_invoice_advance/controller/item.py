@@ -276,47 +276,28 @@ def set_dynamic_item_description(doc, method):
 
 #this adds the selling price for items created in the bom
 def add_sale_price(self, event):
+	multipliers = {
+		"Retail": 2.25,
+		"Contract": 1.9,
+		"Dealer": 1.8
+	}
 
-	itemprice = frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Retail"})
+	for price_list, multiplier in multipliers.items():
+		item_prices = frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": price_list})
 
-	if frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Retail"}):
-		for i in itemprice:
-			ip_doc = frappe.get_doc("Item Price", i)
-			ip_doc.price_list_rate = self.total_cost * 2.25
+		new_price = round(self.total_cost * multiplier)
+
+		if item_prices:
+			for i in item_prices:
+				ip_doc = frappe.get_doc("Item Price", i)
+				ip_doc.price_list_rate = new_price
+				ip_doc.save(ignore_permissions=True)
+		else:
+			ip_doc = frappe.new_doc("Item Price")
+			ip_doc.item_code = self.item
+			ip_doc.price_list = price_list
+			ip_doc.price_list_rate = new_price
 			ip_doc.save(ignore_permissions=True)
-	else:
-		ip_doc = frappe.new_doc("Item Price")
-		ip_doc.item_code = self.item
-		ip_doc.price_list = "Retail"
-		ip_doc.price_list_rate = self.total_cost * 2.25
-		ip_doc.save(ignore_permissions=True)
-
-	itemprice = frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Contract"})
-	
-	if frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Contract"}):
-		for i in itemprice:
-			ip_doc = frappe.get_doc("Item Price", i)
-			ip_doc.price_list_rate = self.total_cost * 1.9
-			ip_doc.save(ignore_permissions=True)
-	else:
-		ip_doc = frappe.new_doc("Item Price")
-		ip_doc.item_code = self.item
-		ip_doc.price_list = "Contract"
-		ip_doc.price_list_rate = self.total_cost * 1.9
-		ip_doc.save(ignore_permissions=True)
-
-	itemprice = frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Dealer"})
-	if frappe.get_all("Item Price", filters={"item_code": self.item, "price_list": "Dealer"}):
-		for i in itemprice:
-			ip_doc = frappe.get_doc("Item Price", i)
-			ip_doc.price_list_rate = self.total_cost * 1.8
-			ip_doc.save(ignore_permissions=True)
-	else:
-		ip_doc = frappe.new_doc("Item Price")
-		ip_doc.item_code = self.item
-		ip_doc.price_list = "Dealer"
-		ip_doc.price_list_rate = self.total_cost * 1.8
-		ip_doc.save(ignore_permissions=True)
 
 
 def tsc_custom_accounts(self, event):
