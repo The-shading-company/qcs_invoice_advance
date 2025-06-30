@@ -109,8 +109,8 @@ doctype_js = {"Sales Order": "public/js/sales_order.js",
 
 doc_events = {
     "Item": {
-        "after_insert": ["qcs_invoice_advance.controller.item.create_bom", "qcs_invoice_advance.controller.item.add_image", "qcs_invoice_advance.controller.item.create_shade_sail_price"],
-            "on_update": "qcs_invoice_advance.controller.item.update_bom",
+        "after_insert": ["qcs_invoice_advance.controller.item.create_canopy_bom", "qcs_invoice_advance.controller.item.add_image"],
+            "on_update": "qcs_invoice_advance.controller.item.update_canopy_bom",
             "on_trash": "qcs_invoice_advance.controller.item.delete_bom",
         "before_save": "qcs_invoice_advance.controller.item.set_dynamic_item_description"
          #"validate": "qcs_invoice_advance.controller.item.add_image"
