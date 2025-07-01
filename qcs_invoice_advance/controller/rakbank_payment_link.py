@@ -179,6 +179,7 @@ def cron_rakbank_api():
         filters={
             "status": ["!=", "Cancelled"],
             "payment_status": ["!=", "PAID"],
+            "custom_company": "The Shading Umbrella Trading Co LLC",
             "custom_source": "Rakbank"
         },
         fields=["name", "payment_url"]
@@ -276,6 +277,7 @@ def cron_rakbank_api_batch(test_inline: bool = False, batch_size: int = 40):
         filters={
             "status": ["!=", "Cancelled"],
             "payment_status": ["!=", "PAID"],
+            "custom_company": "The Shading Umbrella Trading Co LLC",
             "custom_source": "Rakbank"
         },
         pluck="name"
@@ -317,6 +319,8 @@ def cancel_old_open_payment_links():
         "TSC Payment Link",
         filters={
             "status": "Open",
+            "custom_company": "The Shading Umbrella Trading Co LLC",
+            "custom_source": "Rakbank",
             "payment_status": "OPEN"
         },
         fields=["name", "payment_url", "creation"]
