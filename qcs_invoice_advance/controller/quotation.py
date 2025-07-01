@@ -61,7 +61,7 @@ def update_related_links(doc, event=None):
 
 def check_discounts(doc, event=None):
     roles = frappe.get_roles(frappe.session.user)
-    if "System Manager" in roles or "Accounts Manager" in roles:
+    if "System Manager" in roles or "Accounts Manager" in roles or "TSC Service Call User" in roles:
         doc._discount_override_by = frappe.session.user
         return
 
