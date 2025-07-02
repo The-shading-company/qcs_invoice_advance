@@ -10,73 +10,73 @@ from frappe.utils.background_jobs import enqueue
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo  # Only needed if you're converting timezones
 
-@frappe.whitelist()
-def create_payment_link(dt, dn, amt, purpose):
-    docu = frappe.get_doc(dt, dn)
-    url = "https://simplify-rak-gbermhh3pa-uc.a.run.app/create"
+#@frappe.whitelist()
+# def create_payment_link(dt, dn, amt, purpose):
+#     docu = frappe.get_doc(dt, dn)
+#     url = "https://simplify-rak-gbermhh3pa-uc.a.run.app/create"
 
-    payload = json.dumps({
-      "key": "kl8EvdFF4EPPIo5JHJto74lz-EOt5rabkmnE",
-      "reference": dn,
-      "note": "test",
-      "dueDate": str(docu.transaction_date),
-      "memo": "Delivery To",
-      "name": docu.customer_name,
-      "email": docu.contact_email if docu.contact_email else "",
-      "description": purpose,
-      "amount": amt,
-      "quantity": "1",
-      "currency": "AED"
-    })
-    headers = {
-      'Content-Type': 'application/json'
-    }
+#     payload = json.dumps({
+#       "key": "kl8EvdFF4EPPIo5JHJto74lz-EOt5rabkmnE",
+#       "reference": dn,
+#       "note": "test",
+#       "dueDate": str(docu.transaction_date),
+#       "memo": "Delivery To",
+#       "name": docu.customer_name,
+#       "email": docu.contact_email if docu.contact_email else "",
+#       "description": purpose,
+#       "amount": amt,
+#       "quantity": "1",
+#       "currency": "AED"
+#     })
+#     headers = {
+#       'Content-Type': 'application/json'
+#     }
     
-    response = requests.request("POST", url, headers=headers, data=payload)
-    rdata = json.loads(response.text)
-    frappe.errprint(rdata)
+#     response = requests.request("POST", url, headers=headers, data=payload)
+#     rdata = json.loads(response.text)
+#     frappe.errprint(rdata)
  
-# get payment Invoice
+# # get payment Invoice
 
-    payment_link = rdata["paymentLink"]
-    payment_id = payment_link.split('/')[-1]
-    rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
-    if (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
+#     payment_link = rdata["paymentLink"]
+#     payment_id = payment_link.split('/')[-1]
+#     rakbank_api_settings = frappe.get_doc("Rakbank API Settings")
+#     if (rakbank_api_settings.public_key and rakbank_api_settings.private_key):
  
-        simplify.public_key = rakbank_api_settings.public_key
-        simplify.private_key = rakbank_api_settings.private_key
-        os.environ['SSL_CERT_FILE'] = certifi.where()
-        invoice = simplify.Invoice.find(payment_id)
-        frappe.errprint(invoice)
-        invoice_id = invoice["id"]
+#         simplify.public_key = rakbank_api_settings.public_key
+#         simplify.private_key = rakbank_api_settings.private_key
+#         os.environ['SSL_CERT_FILE'] = certifi.where()
+#         invoice = simplify.Invoice.find(payment_id)
+#         frappe.errprint(invoice)
+#         invoice_id = invoice["id"]
     
-        pl = frappe.new_doc("TSC Payment Link")
-        pl.requested_date = docu.transaction_date
-        pl.document_type = dt
-        pl.document_name = docu.name
-        pl.customer = getattr(docu, "party_name", None) or getattr(docu, "customer", None)
+#         pl = frappe.new_doc("TSC Payment Link")
+#         pl.requested_date = docu.transaction_date
+#         pl.document_type = dt
+#         pl.document_name = docu.name
+#         pl.customer = getattr(docu, "party_name", None) or getattr(docu, "customer", None)
           
-        if dt == "Quotation":
-            doc = frappe.get_all("Sales Order", filters={"custom_quotation": docu.name}, fields=["name"])
-            if doc:
-                so_list = []
-                for i in doc:
-                    so_list.append(i.get("name"))
-                pl.sales_order = so_list[0]
-                pl.link_sales_order = so_list[0]
+#         if dt == "Quotation":
+#             doc = frappe.get_all("Sales Order", filters={"custom_quotation": docu.name}, fields=["name"])
+#             if doc:
+#                 so_list = []
+#                 for i in doc:
+#                     so_list.append(i.get("name"))
+#                 pl.sales_order = so_list[0]
+#                 pl.link_sales_order = so_list[0]
         
-        pl.status = "Open"
-        pl.payment_url = rdata["paymentLink"]
-        pl.payment_invoice = invoice_id
-        pl.save(ignore_permissions=True)
+#         pl.status = "Open"
+#         pl.payment_url = rdata["paymentLink"]
+#         pl.payment_invoice = invoice_id
+#         pl.save(ignore_permissions=True)
     
-        quo_doc = frappe.get_doc("Quotation", docu.name)
-        quo_doc.custom_tsc_payment_link = pl.name
-        quo_doc.save(ignore_permissions=True)
+#         quo_doc = frappe.get_doc("Quotation", docu.name)
+#         quo_doc.custom_tsc_payment_link = pl.name
+#         quo_doc.save(ignore_permissions=True)
     
-        return rdata["paymentLink"]
-    else:
-        frappe.throw("Somthing Missing in Rakbank API Settings")
+#         return rdata["paymentLink"]
+#     else:
+#         frappe.throw("Somthing Missing in Rakbank API Settings")
 
 
 #this calls the quotation payment link update. im not sure this is needed. we should be directly updating in the tsc payment link link field.
@@ -87,8 +87,9 @@ def update_tsc_payment_link(self, event):
         payment_link.save(ignore_permissions=True)  
 
 
-# This version is a direct to rakbank api request not using Echt Microservice. For Testing.
-
+# ─────────────────────────────────────────────────────────────────────────────
+# The Shading Umbrella Trading Co LLC - RakBank
+# ─────────────────────────────────────────────────────────────────────────────
 @frappe.whitelist()
 def create_payment_link3(dt, dn, amt, purpose):
     docu = frappe.get_doc(dt, dn)
@@ -149,6 +150,7 @@ def create_payment_link3(dt, dn, amt, purpose):
     pl.payment_url = payment_link
     pl.payment_invoice = invoice["id"]
     pl.custom_source = "Rakbank"
+    pl.custom_company = "The Shading Umbrella Trading Co LLC"
     pl.save(ignore_permissions=True)
 
     return payment_link
@@ -177,6 +179,7 @@ def cron_rakbank_api():
         filters={
             "status": ["!=", "Cancelled"],
             "payment_status": ["!=", "PAID"],
+            "custom_company": "The Shading Umbrella Trading Co LLC",
             "custom_source": "Rakbank"
         },
         fields=["name", "payment_url"]
@@ -274,6 +277,7 @@ def cron_rakbank_api_batch(test_inline: bool = False, batch_size: int = 40):
         filters={
             "status": ["!=", "Cancelled"],
             "payment_status": ["!=", "PAID"],
+            "custom_company": "The Shading Umbrella Trading Co LLC",
             "custom_source": "Rakbank"
         },
         pluck="name"
@@ -302,8 +306,11 @@ def cron_rakbank_api_batch(test_inline: bool = False, batch_size: int = 40):
         total_batches = math.ceil(len(names) / batch_size)
         frappe.logger().info(f"✅ Enqueued {len(names)} links in {total_batches} batches")
 
-##this is a function to find old payment links and cancel them if they are older than 90 days.
-#this just logs in error log as datetime can be tricky to handle.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Cron: Cancels old Payment Links 1 per week - older than 90 days
+# ─────────────────────────────────────────────────────────────────────────────
+
 @frappe.whitelist()
 def cancel_old_open_payment_links():
     cutoff_date = frappe.utils.now_datetime() - timedelta(days=90)
@@ -312,6 +319,8 @@ def cancel_old_open_payment_links():
         "TSC Payment Link",
         filters={
             "status": "Open",
+            "custom_company": "The Shading Umbrella Trading Co LLC",
+            "custom_source": "Rakbank",
             "payment_status": "OPEN"
         },
         fields=["name", "payment_url", "creation"]
