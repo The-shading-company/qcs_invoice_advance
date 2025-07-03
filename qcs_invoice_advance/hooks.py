@@ -129,7 +129,6 @@ doc_events = {
         "qcs_invoice_advance.controller.quotation.set_company"
     ],
     "validate": [
-        "qcs_invoice_advance.controller.rakbank_payment_link.update_tsc_payment_link",
         "qcs_invoice_advance.controller.item.add_margins",
         "qcs_invoice_advance.controller.quotation.check_discounts"
     ],
@@ -229,20 +228,7 @@ scheduler_events = {
         "qcs_invoice_advance.controller.item.cron_update_item_average_rate",
         "qcs_invoice_advance.controller.item_price_list.crom_update_item_price",
         "qcs_invoice_advance.controller.product_bundle.cron_update_product_bundle",
-    ],
-#	"hourly": [
-#		"qcs_invoice_advance.tasks.hourly"
-#	],
-	"weekly": [
-		"qcs_invoice_advance.controller.rakbank_payment_link.cancel_old_open_payment_links"
-	],
-#	"monthly": [
-#		"qcs_invoice_advance.tasks.monthly"
-    "cron": {
-        "0 8-19/2 * * *": [
-            "qcs_invoice_advance.controller.rakbank_payment_link.cron_rakbank_api_batch"
-        ]
-    }
+    ]
 }
 
 # Testing
