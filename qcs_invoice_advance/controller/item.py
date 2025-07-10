@@ -733,24 +733,45 @@ def create_sub_po(dt, dn, parent_item, can_item, qty, uom, line_id, supplier):
 
 
 
-
+#updated jul 2025 to handle errors in the bom where a field is not filled in
 def update_item_price_based_on_bom():
+	allowed_ops = ["", "MAN", "SOM", "LLA"]
+
 	# Fetch all Item Prices where the item has a BOM and belongs to the "Retail" Price List
-	item_prices = frappe.get_all("Item Price", filters={
-		'price_list': 'Retail',
-		'item_code': ['in', get_items_with_latest_bom()]
-	}, fields=["name", "item_code"])
+	item_prices = frappe.get_all(
+		"Item Price",
+		filters={
+			'price_list': 'Retail',
+			'item_code': ['in', get_items_with_latest_bom()]
+		},
+		fields=["name", "item_code"]
+	)
 
 	for item_price in item_prices:
-		bom_name = frappe.get_value("BOM", {"item": item_price.item_code, "is_default": 1, "docstatus": 1}, "name", order_by="creation desc")
+		bom_name = frappe.get_value(
+			"BOM",
+			{"item": item_price.item_code, "is_default": 1, "docstatus": 1},
+			"name",
+			order_by="creation desc"
+		)
 		if bom_name:
 			bom = frappe.get_doc("BOM", bom_name)
+
+			# Check operation_type before saving
+			if hasattr(bom, "operation_type") and bom.operation_type not in allowed_ops:
+				frappe.logger().warning(
+					f"BOM {bom.name} has invalid operation_type '{bom.operation_type}'. Skipping."
+				)
+				continue
+
 			bom.update_cost()
-			bom.save()
-			
 
+			try:
+				bom.save()
+			except Exception as e:
+				frappe.logger().error(f"Failed to save BOM {bom.name}: {e}")
 
-	frappe.db.commit()  # Commit changes to the database
+	frappe.db.commit()  # Commit all changes at the end
 
 def get_items_with_latest_bom():
 	"""Helper function to get item codes that have an associated latest BOM."""
