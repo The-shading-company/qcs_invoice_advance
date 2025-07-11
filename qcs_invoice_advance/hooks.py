@@ -164,57 +164,57 @@ doc_events = {
 
 
 
-fixtures = [
-    {
-        "dt": "Custom Field", "filters": [
-            [
-                "name", "in", [
-                    'Sales Invoice-original_total',
-                    'Sales Invoice Item-original_qty',
-                    'Sales Order-partial_invoice',
-                    'Sales Invoice-original_total',
-                    'Sales Invoice-order_percentage',
-                    'Sales Invoice Item-custom_ref_no',
-                    'Sales Order Item-custom_ref_no',
-                    'Quotation-custom_tsc_service_call',
-                    'Quotation-custom_tsc_payment_link',
-                    'Sales Order-custom_tsc_service_call',
-                    'Sales Order-custom_quotation',
-                    'Sales Order-custom_purchase_order',
-                    'Material Request-custom_sales_order',
-                    'Purchase Order-custom_sales_order',
-                    'Item Group-custom_retail_price',
-                    'Item Group-custom_contract_price',
-                    'Item Group-custom_dealer_price',
-                    'Warranty Claim-custom_sales_order',
-                    'Warranty Claim-custom_sales_order_name',
-                    'Product Bundle-custom_item_total_cost',
-                    'Product Bundle Item-custom_item_cost',
-                    'Product Bundle Item-custom_average_rate',
-                    'Product Bundle Item-custom_item_validation_rate',
-                    'Product Bundle Item-custom_in_stock',
-                    'Quotation Item-custom_tsc_cost_with_qty',
-                    'Item-custom_avoid_auto_update_price_list_based_on_item_group',
-                    'Item Group-custom_retail_price_list',
-                    'Item Group-custom_contract_price_list',
-                    'Item Group-custom_dealer_price_list',
-                    'Item-custom_woo_update',
-                    'Product Bundle Item-custom_item_total_cost'
-                ]
-            ]
-        ],
-    },
-    {
-        "dt": "Web Form", "filters": [
-            [
-                "name", "in", [
-                    'logo-costing',
-                ]
-            ]
-        ]
-    }
+# fixtures = [
+#     {
+#         "dt": "Custom Field", "filters": [
+#             [
+#                 "name", "in", [
+#                     #'Sales Invoice-original_total',
+#                     #'Sales Invoice Item-original_qty',
+#                     #'Sales Order-partial_invoice',
+#                     #'Sales Invoice-original_total',
+#                     #'Sales Invoice-order_percentage',
+#                     #'Sales Invoice Item-custom_ref_no',
+#                     #'Sales Order Item-custom_ref_no',
+#                     #'Quotation-custom_tsc_service_call',
+#                     #'Quotation-custom_tsc_payment_link',
+#                     #'Sales Order-custom_tsc_service_call',
+#                     #'Sales Order-custom_quotation',
+#                     #'Sales Order-custom_purchase_order',
+#                     #'Material Request-custom_sales_order',
+#                     #'Purchase Order-custom_sales_order',
+#                     #'Item Group-custom_retail_price',
+#                     #'Item Group-custom_contract_price',
+#                     #'Item Group-custom_dealer_price',
+#                     #'Warranty Claim-custom_sales_order',
+#                     #'Warranty Claim-custom_sales_order_name',
+#                     #'Product Bundle-custom_item_total_cost',
+#                     #'Product Bundle Item-custom_item_cost',
+#                     #'Product Bundle Item-custom_average_rate',
+#                     #'Product Bundle Item-custom_item_validation_rate',
+#                     #'Product Bundle Item-custom_in_stock',
+#                     #'Quotation Item-custom_tsc_cost_with_qty',
+#                     #'Item-custom_avoid_auto_update_price_list_based_on_item_group',
+#                     #'Item Group-custom_retail_price_list',
+#                     #'Item Group-custom_contract_price_list',
+#                     #'Item Group-custom_dealer_price_list',
+#                     #'Item-custom_woo_update',
+#                     #'Product Bundle Item-custom_item_total_cost'
+#                 ]
+#             ]
+#         ],
+#     },
+#     {
+#         "dt": "Web Form", "filters": [
+#             [
+#                 "name", "in", [
+#                     'logo-costing',
+#                 ]
+#             ]
+#         ]
+#     }
     
-]
+# ]
 
 # Scheduled Tasks
 # ---------------
