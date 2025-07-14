@@ -215,25 +215,38 @@ def delete_bom(self, event):
 				bom_doc.cancel()
 				frappe.delete_doc("BOM", bom_doc.name, ignore_permissions=True)
 
-
+#checks if image exists and adds it to the item
 def add_image(self, event):
-	if (self.variant_of == "CAN"):
-		for item in self.attributes:
-			if item.attribute == "Fabric Color":
-				att_list = frappe.get_all("Item Attribute Value", filters={"attribute_value":item.attribute_value})
-				if len(att_list) > 0:
-					att_raw = frappe.db.get_value("Item Attribute Value", {"attribute_value":item.attribute_value}, "custom_item_code")
-					org_l = frappe.get_all("File", filters={"file_url":frappe.get_value("Item", att_raw, "image")})
-					if len(org_l) > 0:
-						org_f = frappe.get_doc("File", org_l[0].name)
-						fm = frappe.new_doc("File")
-						fm.file_name = org_f.file_name
-						fm.file_type = org_f.file_type
-						fm.file_url = org_f.file_url
-						fm.attached_to_doctype = "Item"
-						fm.attached_to_name = self.name
-						fm.attached_to_field = "image"
-						fm.save()
+    if self.variant_of == "CAN":
+        for item in self.attributes:
+            if item.attribute == "Fabric Color":
+                att_list = frappe.get_all("Item Attribute Value", filters={"attribute_value": item.attribute_value})
+                if att_list:
+                    att_raw = frappe.db.get_value("Item Attribute Value", {"attribute_value": item.attribute_value}, "custom_item_code")
+                    image_url = frappe.get_value("Item", att_raw, "image")
+                    if not image_url:
+                        continue
+
+                    org_l = frappe.get_all("File", filters={"file_url": image_url})
+                    if not org_l:
+                        continue
+
+                    org_f = frappe.get_doc("File", org_l[0].name)
+
+                    # check if the file actually exists
+                    file_path = frappe.get_site_path("public", org_f.file_url.lstrip("/"))
+                    if not os.path.exists(file_path):
+                        frappe.logger().warning(f"File missing on disk: {file_path}. Skipping attachment.")
+                        continue
+
+                    fm = frappe.new_doc("File")
+                    fm.file_name = org_f.file_name
+                    fm.file_type = org_f.file_type
+                    fm.file_url = org_f.file_url
+                    fm.attached_to_doctype = "Item"
+                    fm.attached_to_name = self.name
+                    fm.attached_to_field = "image"
+                    fm.save()
 					
 
 
