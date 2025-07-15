@@ -141,19 +141,25 @@ def cron_update_item_price():
         # Get all eligible Items in this group
         items = frappe.get_all(
             "Item",
-            filters={"item_group": group.name, "custom_avoid_auto_update_price_list_based_on_item_group": 0},
+            filters={
+                "item_group": group.name,
+                "custom_avoid_auto_update_price_list_based_on_item_group": 0
+            },
             fields=["name", "custom_average_cost", "valuation_rate"]
         )
 
         if not items:
             continue
 
-        # Process each item
         for i in items:
             item = frappe.get_doc("Item", i.name)
-            process_item(item, price_data)
 
-    frappe.msgprint("Item Price List Updated.")
+            # 🔷 Skip template items
+            if item.has_variants:
+                frappe.logger().info(f"Skipping template item: {item.name}")
+                continue
+
+            process_item(item, price_data)
 
 ##Old Code from
 
