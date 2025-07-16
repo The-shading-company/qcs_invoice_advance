@@ -432,6 +432,9 @@ def add_margins_sales_order(doc, event):
         doc.custom_total_margin = doc.net_total - total_cost_with_qty
         doc.custom_margin_percent = (doc.custom_total_margin * 100) / doc.custom_total_cost
 
+
+# These fields add to a custom field in each of the docs. 
+
 def add_quote_link(self, event):
 	if self.custom_tsc_site_visit:
 		sv = frappe.get_doc("TSC Site Visit", self.custom_tsc_site_visit)

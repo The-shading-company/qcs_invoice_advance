@@ -109,57 +109,75 @@ doctype_js = {"Sales Order": "public/js/sales_order.js",
 
 doc_events = {
     "Item": {
-        "after_insert": ["qcs_invoice_advance.controller.item.create_canopy_bom", "qcs_invoice_advance.controller.item.add_image"],
-            "on_update": "qcs_invoice_advance.controller.item.update_canopy_bom",
-            "on_trash": "qcs_invoice_advance.controller.item.delete_bom",
-        "before_save": "qcs_invoice_advance.controller.item.set_dynamic_item_description"
-         #"validate": "qcs_invoice_advance.controller.item.add_image"
+        "after_insert": [
+            "qcs_invoice_advance.controller.item.create_canopy_bom",
+            "qcs_invoice_advance.controller.item.add_image"
+        ],
+        "on_update": "qcs_invoice_advance.controller.item.update_canopy_bom",
+        "on_trash": "qcs_invoice_advance.controller.item.delete_bom",
+        "before_save": "qcs_invoice_advance.controller.item.set_dynamic_item_description",
+        # "validate": "qcs_invoice_advance.controller.item.add_image"
     },
-    "BOM": {
-             "on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
-             "on_update_after_submit": "qcs_invoice_advance.controller.item.add_sale_price",
-            "on_update": "qcs_invoice_advance.controller.item.add_sale_price"
 
-       },
+    "BOM": {
+        "on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
+        "on_update_after_submit": "qcs_invoice_advance.controller.item.add_sale_price",
+        "on_update": "qcs_invoice_advance.controller.item.add_sale_price"
+    },
+
     "Sales Invoice": {
         "validate": "qcs_invoice_advance.controller.item.tsc_custom_accounts"
     },
+
     "Quotation": {
-    "before_validate": [
-        "qcs_invoice_advance.controller.quotation.set_company"
-    ],
-    "validate": [
-        "qcs_invoice_advance.controller.item.add_margins",
-        "qcs_invoice_advance.controller.quotation.check_discounts"
-    ],
-    "after_insert": [
-        "qcs_invoice_advance.controller.item.add_quote_link",
-        "qcs_invoice_advance.controller.item.update_service_call",
-        "qcs_invoice_advance.controller.quotation.log_discount_override",
-        "qcs_invoice_advance.controller.quotation.update_related_links"
-    ]
-},
-    "Purchase Order": {
-        "after_insert": "qcs_invoice_advance.controller.item.update_purchase_to_sales"
+        "before_validate": [
+            "qcs_invoice_advance.controller.quotation.set_company"
+        ],
+        "validate": [
+            "qcs_invoice_advance.controller.item.add_margins",
+            "qcs_invoice_advance.controller.quotation.check_discounts"
+        ],
+        "after_insert": [
+            "qcs_invoice_advance.controller.item.add_quote_link",
+            "qcs_invoice_advance.controller.item.update_service_call",
+            "qcs_invoice_advance.controller.quotation.log_discount_override",
+            "qcs_invoice_advance.controller.quotation.update_related_links"
+        ]
     },
-    "Sales Order":{
-        "after_insert": ["qcs_invoice_advance.controller.item.update_service_call_sales_order", "qcs_invoice_advance.controller.sales_order.update_payment_link"],
-        "validate": ["qcs_invoice_advance.controller.item.add_margins_sales_order"],
-        "on_update": ["qcs_invoice_advance.controller.item.add_margins_sales_order"]
+
+    # Uncomment if needed
+    # "Purchase Order": {
+    #     "after_insert": "qcs_invoice_advance.controller.item.update_purchase_to_sales"
+    # },
+
+    "Sales Order": {
+        "after_insert": [
+            "qcs_invoice_advance.controller.item.update_service_call_sales_order",
+            "qcs_invoice_advance.controller.sales_order.update_payment_link"
+        ],
+        "validate": [
+            "qcs_invoice_advance.controller.item.add_margins_sales_order"
+        ],
+        "on_update": [
+            "qcs_invoice_advance.controller.item.add_margins_sales_order"
+        ]
     },
-    "Stock Entry":{
+
+    "Stock Entry": {
         "validate": "qcs_invoice_advance.controller.work_order.check_transferred_qty"
     },
-    "Product Bundle":{
+
+    "Product Bundle": {
         "validate": "qcs_invoice_advance.controller.product_bundle.cal_cost"
     },
-    "Warranty Claim":{
+
+    "Warranty Claim": {
         "validate": "qcs_invoice_advance.controller.item.warrenty_claim_sales_order"
     },
-     "TSC Logo Costing": {
+
+    "TSC Logo Costing": {
         "validate": "qcs_invoice_advance.controller.logo_costing.sync_logo_costs"
     }
-
 }
 
 
