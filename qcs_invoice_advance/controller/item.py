@@ -287,8 +287,12 @@ def set_dynamic_item_description(doc, method):
 		if not doc.custom_tsc_color:
 			doc.custom_tsc_color = c_color
 
-#this adds the selling price for items created in the bom
+#this adds the selling price for items created in the bom. only active and default BOMs get their price updated
 def add_sale_price(self, event):
+	if not (self.is_active and self.is_default):
+		# Skip if BOM is not active or not default
+		return
+
 	multipliers = {
 		"Retail": 2.25,
 		"Contract": 1.9,
