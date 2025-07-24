@@ -120,9 +120,8 @@ doc_events = {
     },
 
     "BOM": {
-        "on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
-        "on_update_after_submit": "qcs_invoice_advance.controller.item.add_sale_price",
-        "on_update": "qcs_invoice_advance.controller.item.add_sale_price"
+    "on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
+    "on_update_after_submit": "qcs_invoice_advance.controller.item.add_sale_price"
     },
 
     "Sales Invoice": {

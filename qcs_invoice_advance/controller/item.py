@@ -216,57 +216,69 @@ def delete_bom(self, event):
 				frappe.delete_doc("BOM", bom_doc.name, ignore_permissions=True)
 
 
-#updated version to fix not adding images
+#updated version to fix not adding images. Also now handles static images for other items
 
 def add_image(self, event):
     try:
-        # ✅ Check if it's a supported variant
-        allowed_prefixes = ["CAN", "REP", "AWF"]
-        if not self.variant_of or not any(self.variant_of.startswith(prefix) for prefix in allowed_prefixes):
-            return
+        # ✅ Prefixes that use fabric attribute logic
+        dynamic_prefixes = ["CAN", "REP", "AWF"]
 
-        # ✅ Step 1: find Fabric Color
-        fabric_color = None
-        for attr in self.attributes:
-            if attr.attribute == "Fabric Color":
-                fabric_color = attr.attribute_value
-                break
+        # ✅ Static prefix-to-image path map (for other items)
+        static_image_map = {
+            "PER-SRA": "/private/files/Sierra-Bioclimatic-Pergola-UAE-1024x5414edd111f1570.jpg",
+            "PER-LWA": "/files/Liwa Pergola.jpg",
+            "UMB-PALN": "/files/Palazzo%20Noblesse%20600x600%20M4%20Base.jpg",
+            "AWN-KUAD": "/files/Kuadbox%20Awning%20Anthracite91615c.jpg",
+            "AWN-STOS3": "/files/StorboxS300040180.jpg",
+			"AWN-MOD": "/files/Modulbox.jpg",
+            "SHA-T": "/files/Shade%20Sail%20Tensioned0b263a4121b25b9981660810.jpg"
+        }
 
-        if not fabric_color:
-            return
+        # ───────────────────────────────────────────────
+        # ✅ CASE 1: Dynamic image based on Fabric Color
+        # ───────────────────────────────────────────────
+        if self.variant_of and any(self.variant_of.startswith(prefix) for prefix in dynamic_prefixes):
+            fabric_color = None
+            for attr in self.attributes:
+                if attr.attribute == "Fabric Color":
+                    fabric_color = attr.attribute_value
+                    break
 
-        # ✅ Step 2: get custom_item_code from Item Attribute Value
-        custom_item_code = frappe.db.get_value(
-            "Item Attribute Value",
-            {"attribute_value": fabric_color},
-            "custom_item_code"
-        )
+            if not fabric_color:
+                return
 
-        if not custom_item_code:
-            return
+            custom_item_code = frappe.db.get_value(
+                "Item Attribute Value",
+                {"attribute_value": fabric_color},
+                "custom_item_code"
+            )
 
-        # ✅ Step 3: get image URL from fabric item
-        image_url = frappe.db.get_value("Item", custom_item_code, "image")
+            if not custom_item_code:
+                return
 
-        if not image_url:
-            return
+            image_url = frappe.db.get_value("Item", custom_item_code, "image")
+            if not image_url:
+                return
 
-        # ✅ Step 4: decide if external or internal
-        if image_url.startswith("http"):
-            frappe.db.set_value("Item", self.name, "image", image_url)
-            return
+            if image_url.startswith("http"):
+                frappe.db.set_value("Item", self.name, "image", image_url)
+                return
 
-        # Otherwise internal file → check it exists
-        file_path = frappe.get_site_path("public", image_url.lstrip("/"))
-        if not os.path.exists(file_path):
-            return
+            file_path = frappe.get_site_path("public", image_url.lstrip("/"))
+            if os.path.exists(file_path):
+                frappe.db.set_value("Item", self.name, "image", image_url)
+                return
 
-        # ✅ Set internal image
-        frappe.db.set_value("Item", self.name, "image", image_url)
+        # ───────────────────────────────────────────────
+        # ✅ CASE 2: Static fallback for other prefixes
+        # ───────────────────────────────────────────────
+        for prefix, image_path in static_image_map.items():
+            if self.name.startswith(prefix):
+                frappe.db.set_value("Item", self.name, "image", image_path)
+                return
 
     except Exception:
-        # Fail silently in production
-        pass
+        pass  # Silent fail in production
 
 #checks if image exists and adds it to the item
 # def add_image(self, event):
@@ -341,6 +353,7 @@ def set_dynamic_item_description(doc, method):
 			doc.custom_tsc_color = c_color
 
 #this adds the selling price for items created in the bom. only active and default BOMs get their price updated
+# this runs from a event hook from submit and update after submit
 def add_sale_price(self, event):
 	if not (self.is_active and self.is_default):
 		# Skip if BOM is not active or not default
