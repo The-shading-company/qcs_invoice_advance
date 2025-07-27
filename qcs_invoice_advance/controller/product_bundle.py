@@ -140,15 +140,15 @@ def cal_cost(self, event):
 #             doc1.custom_item_total_cost = sum(cost)
 #             doc1.save(ignore_permissions=True)
             
-# @frappe.whitelist()
-# def bundle_item_stock(item_code):
-#     up_bin_qty = []
-#     bin_doc = frappe.get_all("Bin", filters={"item_code": item_code}, fields=["name", "actual_qty"])
-#     if bin_doc:
-#         for j in bin_doc:
-#             up_bin_qty.append(j.get("actual_qty"))
-#     else:
-#         up_bin_qty.append(0)
-        
-#     qty = sum(up_bin_qty)
-#     return qty
+@frappe.whitelist()
+def bundle_item_stock(item_code):
+    up_bin_qty = []
+    bin_doc = frappe.get_all("Bin", filters={"item_code": item_code}, fields=["name", "actual_qty"])
+    if bin_doc:
+        for j in bin_doc:
+            up_bin_qty.append(j.get("actual_qty"))
+    else:
+        up_bin_qty.append(0)
+
+    qty = sum(up_bin_qty)
+    return qty
