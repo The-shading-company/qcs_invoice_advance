@@ -155,7 +155,8 @@ doc_events = {
             "qcs_invoice_advance.controller.sales_order.update_payment_link"
         ],
         "validate": [
-            "qcs_invoice_advance.controller.item.add_margins_sales_order"
+            "qcs_invoice_advance.controller.item.add_margins_sales_order",
+            "qcs_invoice_advance.controller.sales_order.auto_set_pd_status"
         ],
         "on_update": [
             "qcs_invoice_advance.controller.item.add_margins_sales_order"
