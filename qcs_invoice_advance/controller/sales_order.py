@@ -147,3 +147,12 @@ def get_requested_item_qty(sales_order):
 	return result
 
 
+# Automatically set production status to "In Production" when the sales order is approved, grand total is 0, and pd_status is not "In Production"
+def auto_set_pd_status(doc, method):
+    if (
+        doc.workflow_state == "Approved"
+        and doc.grand_total == 0
+        and not doc.custom_pd_status == "In Production"
+    ):
+        doc.custom_pd_status = "In Production"
+        doc.custom_so_status = "FOC"
