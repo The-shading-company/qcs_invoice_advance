@@ -1,1 +1,0 @@
-qcs_invoice_advance.patches.add_is_subcontracted_column
