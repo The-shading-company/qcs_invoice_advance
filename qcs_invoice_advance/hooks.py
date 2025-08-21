@@ -116,12 +116,11 @@ doc_events = {
         "on_update": "qcs_invoice_advance.controller.item.update_canopy_bom",
         "on_trash": "qcs_invoice_advance.controller.item.delete_bom",
         "before_save": "qcs_invoice_advance.controller.item.set_dynamic_item_description",
-        # "validate": "qcs_invoice_advance.controller.item.add_image"
     },
 
     "BOM": {
-    "on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
-    "on_update_after_submit": "qcs_invoice_advance.controller.item.add_sale_price"
+        "on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
+        "on_update_after_submit": "qcs_invoice_advance.controller.item.add_sale_price"
     },
 
     "Sales Invoice": {
@@ -133,7 +132,6 @@ doc_events = {
             "qcs_invoice_advance.controller.quotation.set_company"
         ],
         "validate": [
-            "qcs_invoice_advance.controller.item.add_margins",
             "qcs_invoice_advance.controller.quotation.check_discounts"
         ],
         "after_insert": [
@@ -144,23 +142,14 @@ doc_events = {
         ]
     },
 
-    # Uncomment if needed
-    # "Purchase Order": {
-    #     "after_insert": "qcs_invoice_advance.controller.item.update_purchase_to_sales"
-    # },
-
     "Sales Order": {
         "after_insert": [
             "qcs_invoice_advance.controller.item.update_service_call_sales_order",
             "qcs_invoice_advance.controller.sales_order.update_payment_link"
         ],
         "validate": [
-            "qcs_invoice_advance.controller.item.add_margins_sales_order",
             "qcs_invoice_advance.controller.sales_order.auto_set_pd_status"
         ],
-        "on_update": [
-            "qcs_invoice_advance.controller.item.add_margins_sales_order"
-        ]
     },
 
     "Stock Entry": {

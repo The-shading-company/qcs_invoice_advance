@@ -399,109 +399,110 @@ def tsc_custom_accounts(self, event):
 			if len(cogs) > 0:
 				item.expense_account = cogs[0].name
 
-#This script adds margins for quotation. Iterates through the line items and updated either from bom or from item cost.
-def add_margins(self, event):
-	total_cost = 0
-	total_cost_with_qty = 0
-	total_margin = 0
-	total_margin_with_qty = 0
+# #This script adds margins for quotation. Iterates through the line items and updated either from bom or from item cost.
+# def add_margins(self, event):
+# 	total_cost = 0
+# 	total_cost_with_qty = 0
+# 	total_margin = 0
+# 	total_margin_with_qty = 0
 
-	for item in self.items:
-		item_cost = 0
+# 	for item in self.items:
+# 		item_cost = 0
 
-		# ── Try BOM first ──
-		bom = frappe.get_all("BOM", filters={"item": item.item_code, "is_active": 1, "is_default": 1})
-		if bom:
-			bom_doc = frappe.get_doc("BOM", bom[0].name)
-			item_cost = bom_doc.total_cost
-		else:
-			# ── Fallback to Item Master: custom_average_cost → valuation_rate ──
-			try:
-				item_doc = frappe.get_doc("Item", item.item_code)
-				if item_doc.custom_average_cost:
-					item_cost = float(item_doc.custom_average_cost)
-				else:
-					item_cost = float(item_doc.valuation_rate or 0)
-			except Exception as e:
-				frappe.log_error(f"Error fetching cost for item {item.item_code}: {e}", "Add Margins Error")
-				item_cost = 0
+# 		# ── Try BOM first ──
+# 		bom = frappe.get_all("BOM", filters={"item": item.item_code, "is_active": 1, "is_default": 1})
+# 		if bom:
+# 			bom_doc = frappe.get_doc("BOM", bom[0].name)
+# 			item_cost = bom_doc.total_cost
+# 		else:
+# 			# ── Fallback to Item Master: custom_average_cost → valuation_rate ──
+# 			try:
+# 				item_doc = frappe.get_doc("Item", item.item_code)
+# 				if item_doc.custom_average_cost:
+# 					item_cost = float(item_doc.custom_average_cost)
+# 				else:
+# 					item_cost = float(item_doc.valuation_rate or 0)
+# 			except Exception as e:
+# 				frappe.log_error(f"Error fetching cost for item {item.item_code}: {e}", "Add Margins Error")
+# 				item_cost = 0
 
-		# ── Assign cost ──
-		try:
-			qty = float(item.qty or 0)
-			item.custom_tsc_cost = item_cost
-			item.custom_tsc_cost_with_qty = item_cost * qty
-			total_cost += item_cost
-			total_cost_with_qty += item.custom_tsc_cost_with_qty
-		except Exception as e:
-			frappe.log_error(f"Error calculating cost_with_qty for {item.item_code}: {e}", "Add Margins Error")
-			item.custom_tsc_cost = 0
-			item.custom_tsc_cost_with_qty = 0
+# 		# ── Assign cost ──
+# 		try:
+# 			qty = float(item.qty or 0)
+# 			item.custom_tsc_cost = item_cost
+# 			item.custom_tsc_cost_with_qty = item_cost * qty
+# 			total_cost += item_cost
+# 			total_cost_with_qty += item.custom_tsc_cost_with_qty
+# 		except Exception as e:
+# 			frappe.log_error(f"Error calculating cost_with_qty for {item.item_code}: {e}", "Add Margins Error")
+# 			item.custom_tsc_cost = 0
+# 			item.custom_tsc_cost_with_qty = 0
 
-		# ── Margin calculations ──
-		if item_cost > 0:
-			try:
-				item.custom_tsc_margin = float(item.rate) - item_cost
-				with_qty_margin = (float(item.rate) * qty) - (item_cost * qty)
-				total_margin += item.custom_tsc_margin
-				total_margin_with_qty += with_qty_margin
+# 		# ── Margin calculations ──
+# 		if item_cost > 0:
+# 			try:
+# 				item.custom_tsc_margin = float(item.rate) - item_cost
+# 				with_qty_margin = (float(item.rate) * qty) - (item_cost * qty)
+# 				total_margin += item.custom_tsc_margin
+# 				total_margin_with_qty += with_qty_margin
 
-				if item.custom_tsc_margin > 0:
-					item.custom_tsc_margin_per = (item.custom_tsc_margin * 100) / item_cost
-			except Exception as e:
-				frappe.log_error(f"Error calculating margin for {item.item_code}: {e}", "Add Margins Error")
+# 				if item.custom_tsc_margin > 0:
+# 					item.custom_tsc_margin_per = (item.custom_tsc_margin * 100) / item_cost
+# 			except Exception as e:
+# 				frappe.log_error(f"Error calculating margin for {item.item_code}: {e}", "Add Margins Error")
 
-	# ── Final totals ──
-	self.custom_total_cost = total_cost_with_qty
-	if self.custom_total_cost > 0:
-		try:
-			self.custom_total_margin = self.net_total - total_cost_with_qty
-			self.custom_margin_percent = (self.custom_total_margin * 100) / self.custom_total_cost
-		except Exception as e:
-			frappe.log_error(f"Error calculating document margin: {e}", "Add Margins Error")
+# 	# ── Final totals ──
+# 	self.custom_total_cost = total_cost_with_qty
+# 	if self.custom_total_cost > 0:
+# 		try:
+# 			self.custom_total_margin = self.net_total - total_cost_with_qty
+# 			self.custom_margin_percent = (self.custom_total_margin * 100) / self.custom_total_cost
+# 		except Exception as e:
+# 			frappe.log_error(f"Error calculating document margin: {e}", "Add Margins Error")
 
-@frappe.whitelist()
-def recalculate_sales_order_margins(sales_order):
-    doc = frappe.get_doc("Sales Order", sales_order)
-    from qcs_invoice_advance.controller.item import add_margins_sales_order
-    add_margins_sales_order(doc, None)
-    doc.save(ignore_permissions=True)
+# @frappe.whitelist()
+# def recalculate_sales_order_margins(sales_order):
+#     doc = frappe.get_doc("Sales Order", sales_order)
+#     from qcs_invoice_advance.controller.item import add_margins_sales_order
+#     add_margins_sales_order(doc, None)
+#     doc.save(ignore_permissions=True)
 
-#this adds margin to sales orders just like the script above for quotations.
-def add_margins_sales_order(doc, event):
-    total_cost = 0
-    total_cost_with_qty = 0
-    total_margin = 0
-    total_margin_with_qty = 0
+# #this adds margin to sales orders just like the script above for quotations.
+# def add_margins_sales_order(doc, event):
+#     total_cost = 0
+#     total_cost_with_qty = 0
+#     total_margin = 0
+#     total_margin_with_qty = 0
 
-    for item in doc.items:
-        bom = frappe.get_all("BOM", filters={"item": item.item_code, "is_active": 1, "is_default": 1})
-        if bom:
-            bom_index = frappe.get_doc("BOM", bom[0].name)
-            item.custom_tsc_cost = bom_index.total_cost
-            item.custom_tsc_cost_with_qty = bom_index.total_cost * item.qty
-            total_cost = total_cost + item.custom_tsc_cost
-            total_cost_with_qty = total_cost_with_qty + item.custom_tsc_cost_with_qty
-        else:
-            item.custom_tsc_cost = item.valuation_rate
-            item.custom_tsc_cost_with_qty = item.valuation_rate * item.qty
-            total_cost = total_cost + item.custom_tsc_cost
-            total_cost_with_qty = total_cost_with_qty + item.custom_tsc_cost_with_qty
+#     for item in doc.items:
+#         bom = frappe.get_all("BOM", filters={"item": item.item_code, "is_active": 1, "is_default": 1})
+#         if bom:
+#             bom_index = frappe.get_doc("BOM", bom[0].name)
+#             item.custom_tsc_cost = bom_index.total_cost
+#             item.custom_tsc_cost_with_qty = bom_index.total_cost * item.qty
+#             total_cost = total_cost + item.custom_tsc_cost
+#             total_cost_with_qty = total_cost_with_qty + item.custom_tsc_cost_with_qty
+#         else:
+#             item.custom_tsc_cost = item.valuation_rate
+#             item.custom_tsc_cost_with_qty = item.valuation_rate * item.qty
+#             total_cost = total_cost + item.custom_tsc_cost
+#             total_cost_with_qty = total_cost_with_qty + item.custom_tsc_cost_with_qty
 
-        if item.custom_tsc_cost > 0:
-            item.custom_tsc_margin = item.rate - item.custom_tsc_cost
-            total_margin = total_margin + item.custom_tsc_margin
-            with_qty_margin = item.rate - item.custom_tsc_cost_with_qty
-            total_margin_with_qty = total_margin_with_qty + with_qty_margin
+#         if item.custom_tsc_cost > 0:
+#             item.custom_tsc_margin = item.rate - item.custom_tsc_cost
+#             total_margin = total_margin + item.custom_tsc_margin
+#             with_qty_margin = item.rate - item.custom_tsc_cost_with_qty
+#             total_margin_with_qty = total_margin_with_qty + with_qty_margin
 
-            if item.custom_tsc_margin > 0:
-                item.custom_tsc_margin_per = (item.custom_tsc_margin * 100) / item.custom_tsc_cost
+#             if item.custom_tsc_margin > 0:
+#                 item.custom_tsc_margin_per = (item.custom_tsc_margin * 100) / item.custom_tsc_cost
 
-    doc.custom_total_cost = total_cost_with_qty
-    if doc.custom_total_cost > 0 and total_cost_with_qty > 0:
-        doc.custom_total_margin = doc.net_total - total_cost_with_qty
-        doc.custom_margin_percent = (doc.custom_total_margin * 100) / doc.custom_total_cost
+#     doc.custom_total_cost = total_cost_with_qty
+#     if doc.custom_total_cost > 0 and total_cost_with_qty > 0:
+#         doc.custom_total_margin = doc.net_total - total_cost_with_qty
+#         doc.custom_margin_percent = (doc.custom_total_margin * 100) / doc.custom_total_cost
 
+# ***moved this code to TSC_sales aug 2025. can remove if no issues *****
 
 # These fields add to a custom field in each of the docs. 
 
