@@ -140,6 +140,9 @@ doc_events = {
             "qcs_invoice_advance.controller.item.update_service_call",
             "qcs_invoice_advance.controller.quotation.log_discount_override",
             "qcs_invoice_advance.controller.quotation.update_related_links"
+        ],
+        "on_update": [
+            "qcs_invoice_advance.controller.quotation.log_discount_override"
         ]
     },
 

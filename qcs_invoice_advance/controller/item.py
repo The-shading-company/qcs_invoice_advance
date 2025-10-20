@@ -360,9 +360,9 @@ def add_sale_price(self, event):
 		return
 
 	multipliers = {
-		"Retail": 2.25,
-		"Contract": 1.9,
-		"Dealer": 1.8
+		"Retail": 2.30,
+		"Contract": 1.95,
+		"Dealer": 1.85
 	}
 
 	for price_list, multiplier in multipliers.items():

@@ -1,5 +1,6 @@
 import frappe
 from frappe import _
+from frappe.utils import flt
 
 def update_service_call(self, event):
     if self.custom_tsc_service_call:
@@ -60,57 +61,46 @@ def update_related_links(doc, event=None):
 
 
 def check_discounts(doc, event=None):
-    roles = frappe.get_roles(frappe.session.user)
-    if "System Manager" in roles or "Accounts Manager" in roles or "TSC Discount Override" in roles:
-        doc._discount_override_by = frappe.session.user
-        return
-
     if not doc.items:
         return
 
-    expected_total = 0.0
-    actual_total = 0.0
+    margin_percent = flt(getattr(doc, "custom_margin_percent", 0))
+    total_cost = flt(getattr(doc, "custom_total_cost", 0))
+    minimum_margin = 110.0
 
-    for item in doc.items:
-        standard_price = frappe.db.get_value("Item Price", {
-            "item_code": item.item_code,
-            "price_list": doc.selling_price_list
-        }, "price_list_rate")
-
-        if standard_price is None:
-            # Skip this item completely
-            continue
-
-        expected_total += (standard_price * item.qty)
-        actual_total += (item.base_net_amount or 0)
-
-    # If no price-matchable items found, skip check
-    if expected_total == 0:
+    if total_cost <= 0:
         return
 
-    discount_ratio = (expected_total - actual_total) / expected_total
+    if margin_percent >= minimum_margin:
+        return
 
-    if doc.selling_price_list == "Retail" and round(discount_ratio, 4) > 0.10:
-        frappe.throw("Total discount exceeds 10% for Retail price list.")
+    roles = frappe.get_roles(frappe.session.user)
+    if any(role in roles for role in ("System Manager", "Accounts Manager", "TSC Discount Override")):
+        doc._discount_override_by = frappe.session.user
+        return
 
-    if doc.selling_price_list == "Contract" and round(discount_ratio, 4) > 0.05:
-        frappe.throw("Total discount exceeds 5% for Contract price list.")
-
-    if doc.selling_price_list == "Dealer" and round(discount_ratio, 4) > 0.0:
-        frappe.throw("No discount allowed for Dealer price list.")
-
-    if discount_ratio > 0.20:
-        frappe.throw(_("Total discount exceeds 20%, which is not allowed under any price list."))
+    frappe.throw(
+        _("Margin percent must be at least {0}%. Current margin: {1:.2f}%").format(
+            minimum_margin,
+            margin_percent,
+        )
+    )
 
 def log_discount_override(doc, event=None):
-    if getattr(doc, "_discount_override_by", None):
-        frappe.get_doc({
-            "doctype": "Comment",
-            "comment_type": "Comment",
-            "reference_doctype": doc.doctype,
-            "reference_name": doc.name,
-            "content": f"Discount override allowed by {doc._discount_override_by}"
-        }).insert(ignore_permissions=True)
+    override_user = getattr(doc, "_discount_override_by", None)
+    if not override_user:
+        return
+
+    frappe.get_doc({
+        "doctype": "Comment",
+        "comment_type": "Comment",
+        "reference_doctype": doc.doctype,
+        "reference_name": doc.name,
+        "content": f"Discount override allowed by {override_user}"
+    }).insert(ignore_permissions=True)
+
+    # reset flag so hooks in the same request don't duplicate the comment
+    doc._discount_override_by = None
 
 def set_company(doc, method=None):
     # 1. Decide target company / tax template
