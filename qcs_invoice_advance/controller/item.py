@@ -586,23 +586,7 @@ def make_quotation(source_name, target_doc=None):
 	return doclist
 
 
-# @frappe.whitelist()
-# def make_warranty_claim(source_name, target_doc=None):
-# 	doclist = get_mapped_doc(
-# 		"TSC Service Call",
-# 		source_name,
-# 		{
-# 			"TSC Service Call": {
-# 				"doctype": "Warranty Claim",
-# 				"field_map": {"customer": "customer", "issue_log_date": "complaint_date", "address": "service_address", "mob_no": "contact_mobile", "issue_details": "complaint"},
-# 			},
-			
-# 		},
-# 		target_doc,
-		
-# 	)
 
-# 	return doclist
 
 
 @frappe.whitelist()

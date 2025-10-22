@@ -1,5 +1,5 @@
-import frappe
 from frappe import _
+import frappe
 from frappe.utils import flt
 
 def update_service_call(self, event):
@@ -7,7 +7,6 @@ def update_service_call(self, event):
         doc = frappe.get_doc("TSC Service Call", self.custom_tsc_service_call)
         doc.quote = self.name
         doc.save(ignore_permissions=True)
-
 
 def update_related_links(doc, event=None):
     # Ensure the script runs only when a Quotation is being amended
@@ -53,53 +52,30 @@ def update_related_links(doc, event=None):
             for linked_doc in linked_docs:
                 # Remove the old reference
                 frappe.db.set_value(doctype, linked_doc.name, quotation_field, None)
-
                 # Add the new reference
                 frappe.db.set_value(doctype, linked_doc.name, quotation_field, doc.name)
 
-                frappe.log_error(f"Updated {doctype}: {linked_doc.name} -> Old Quotation Removed, New Quotation: {doc.name}")
+                frappe.log_error(
+                    f"Updated {doctype}: {linked_doc.name} -> Old Quotation Removed, New Quotation: {doc.name}"
+                )
 
-
-def check_discounts(doc, event=None):
-    if not doc.items:
-        return
-
-    margin_percent = flt(getattr(doc, "custom_margin_percent", 0))
-    total_cost = flt(getattr(doc, "custom_total_cost", 0))
-    minimum_margin = 110.0
-
-    if total_cost <= 0:
-        return
-
-    if margin_percent >= minimum_margin:
-        return
-
-    roles = frappe.get_roles(frappe.session.user)
-    if any(role in roles for role in ("System Manager", "Accounts Manager", "TSC Discount Override")):
-        doc._discount_override_by = frappe.session.user
-        return
-
-    frappe.throw(
-        _("Margin percent must be at least {0}%. Current margin: {1:.2f}%").format(
-            minimum_margin,
-            margin_percent,
-        )
-    )
+# apps/qcs_invoice_advance/qcs_invoice_advance/controller/quotation.py
 
 def log_discount_override(doc, event=None):
     override_user = getattr(doc, "_discount_override_by", None)
     if not override_user:
         return
-
-    frappe.get_doc({
-        "doctype": "Comment",
-        "comment_type": "Comment",
-        "reference_doctype": doc.doctype,
-        "reference_name": doc.name,
-        "content": f"Discount override allowed by {override_user}"
-    }).insert(ignore_permissions=True)
-
-    # reset flag so hooks in the same request don't duplicate the comment
+    try:
+        frappe.get_doc({
+            "doctype": "Comment",
+            "comment_type": "Comment",
+            "reference_doctype": doc.doctype,
+            "reference_name": doc.name,
+            "content": f"Discount/margin override allowed by {override_user}"
+        }).insert(ignore_permissions=True)
+    except Exception:
+        frappe.logger().warning("Failed to insert discount override comment in log_discount_override", exc_info=True)
+    # ALWAYS clear the flag so we don't duplicate comments
     doc._discount_override_by = None
 
 def set_company(doc, method=None):
@@ -119,14 +95,13 @@ def set_company(doc, method=None):
 
     default_cc = frappe.get_value("Company", target_company, "cost_center")
 
-    # ---------- NEW: realign every cost-centre ----------
+    # realign cost center on parent + rows
     if getattr(doc, "cost_center", None) and doc.cost_center != default_cc:
         doc.cost_center = default_cc
 
     for row in doc.items:
         if getattr(row, "cost_center", None) != default_cc:
             row.cost_center = default_cc
-    # ----------------------------------------------------
 
     # 3. Reset taxes & pull fresh rows
     doc.taxes_and_charges = target_taxes
