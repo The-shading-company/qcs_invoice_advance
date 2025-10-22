@@ -129,18 +129,15 @@ doc_events = {
     },
 
     "Quotation": {
+        # Keep only qcs-specific steps here
         "before_validate": [
-            "qcs_invoice_advance.controller.quotation.set_company"
-        ],
-        "validate": [
-            "qcs_invoice_advance.controller.quotation.check_discounts"
+            "qcs_invoice_advance.controller.quotation.set_company",
         ],
         "after_insert": [
             "qcs_invoice_advance.controller.item.add_quote_link",
             "qcs_invoice_advance.controller.item.update_service_call",
-            "qcs_invoice_advance.controller.quotation.log_discount_override",
             "qcs_invoice_advance.controller.quotation.update_related_links"
-        ]
+        ],
     },
 
     "Sales Order": {

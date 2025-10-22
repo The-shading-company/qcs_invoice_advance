@@ -1,12 +1,12 @@
-import frappe
 from frappe import _
+import frappe
+from frappe.utils import flt
 
 def update_service_call(self, event):
     if self.custom_tsc_service_call:
         doc = frappe.get_doc("TSC Service Call", self.custom_tsc_service_call)
         doc.quote = self.name
         doc.save(ignore_permissions=True)
-
 
 def update_related_links(doc, event=None):
     # Ensure the script runs only when a Quotation is being amended
@@ -52,65 +52,31 @@ def update_related_links(doc, event=None):
             for linked_doc in linked_docs:
                 # Remove the old reference
                 frappe.db.set_value(doctype, linked_doc.name, quotation_field, None)
-
                 # Add the new reference
                 frappe.db.set_value(doctype, linked_doc.name, quotation_field, doc.name)
 
-                frappe.log_error(f"Updated {doctype}: {linked_doc.name} -> Old Quotation Removed, New Quotation: {doc.name}")
+                frappe.log_error(
+                    f"Updated {doctype}: {linked_doc.name} -> Old Quotation Removed, New Quotation: {doc.name}"
+                )
 
-
-def check_discounts(doc, event=None):
-    roles = frappe.get_roles(frappe.session.user)
-    if "System Manager" in roles or "Accounts Manager" in roles or "TSC Discount Override" in roles:
-        doc._discount_override_by = frappe.session.user
-        return
-
-    if not doc.items:
-        return
-
-    expected_total = 0.0
-    actual_total = 0.0
-
-    for item in doc.items:
-        standard_price = frappe.db.get_value("Item Price", {
-            "item_code": item.item_code,
-            "price_list": doc.selling_price_list
-        }, "price_list_rate")
-
-        if standard_price is None:
-            # Skip this item completely
-            continue
-
-        expected_total += (standard_price * item.qty)
-        actual_total += (item.base_net_amount or 0)
-
-    # If no price-matchable items found, skip check
-    if expected_total == 0:
-        return
-
-    discount_ratio = (expected_total - actual_total) / expected_total
-
-    if doc.selling_price_list == "Retail" and round(discount_ratio, 4) > 0.10:
-        frappe.throw("Total discount exceeds 10% for Retail price list.")
-
-    if doc.selling_price_list == "Contract" and round(discount_ratio, 4) > 0.05:
-        frappe.throw("Total discount exceeds 5% for Contract price list.")
-
-    if doc.selling_price_list == "Dealer" and round(discount_ratio, 4) > 0.0:
-        frappe.throw("No discount allowed for Dealer price list.")
-
-    if discount_ratio > 0.20:
-        frappe.throw(_("Total discount exceeds 20%, which is not allowed under any price list."))
+# apps/qcs_invoice_advance/qcs_invoice_advance/controller/quotation.py
 
 def log_discount_override(doc, event=None):
-    if getattr(doc, "_discount_override_by", None):
+    override_user = getattr(doc, "_discount_override_by", None)
+    if not override_user:
+        return
+    try:
         frappe.get_doc({
             "doctype": "Comment",
             "comment_type": "Comment",
             "reference_doctype": doc.doctype,
             "reference_name": doc.name,
-            "content": f"Discount override allowed by {doc._discount_override_by}"
+            "content": f"Discount/margin override allowed by {override_user}"
         }).insert(ignore_permissions=True)
+    except Exception:
+        frappe.logger().warning("Failed to insert discount override comment in log_discount_override", exc_info=True)
+    # ALWAYS clear the flag so we don't duplicate comments
+    doc._discount_override_by = None
 
 def set_company(doc, method=None):
     # 1. Decide target company / tax template
@@ -129,14 +95,13 @@ def set_company(doc, method=None):
 
     default_cc = frappe.get_value("Company", target_company, "cost_center")
 
-    # ---------- NEW: realign every cost-centre ----------
+    # realign cost center on parent + rows
     if getattr(doc, "cost_center", None) and doc.cost_center != default_cc:
         doc.cost_center = default_cc
 
     for row in doc.items:
         if getattr(row, "cost_center", None) != default_cc:
             row.cost_center = default_cc
-    # ----------------------------------------------------
 
     # 3. Reset taxes & pull fresh rows
     doc.taxes_and_charges = target_taxes
