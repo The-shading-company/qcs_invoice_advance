@@ -134,15 +134,15 @@ doc_events = {
             "qcs_invoice_advance.controller.quotation.set_company",
         ],
         "after_insert": [
-            "qcs_invoice_advance.controller.item.add_quote_link",
-            "qcs_invoice_advance.controller.item.update_service_call",
+            # "qcs_invoice_advance.controller.item.add_quote_link",
+            # "qcs_invoice_advance.controller.item.update_service_call",
             "qcs_invoice_advance.controller.quotation.update_related_links"
         ],
     },
 
     "Sales Order": {
         "after_insert": [
-            "qcs_invoice_advance.controller.item.update_service_call_sales_order",
+            # "qcs_invoice_advance.controller.item.update_service_call_sales_order",
             "qcs_invoice_advance.controller.sales_order.update_payment_link"
         ],
         "validate": [

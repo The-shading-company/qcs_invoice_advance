@@ -506,31 +506,32 @@ def tsc_custom_accounts(self, event):
 
 # These fields add to a custom field in each of the docs. 
 
-def add_quote_link(self, event):
-	if self.custom_tsc_site_visit:
-		sv = frappe.get_doc("TSC Site Visit", self.custom_tsc_site_visit)
-		sv.quotation = self.name
-		sv.status = "Quoting"
-		sv.save(ignore_permissions=True)
+# def add_quote_link(self, event):
+# 	if self.custom_tsc_site_visit:
+# 		sv = frappe.get_doc("TSC Site Visit", self.custom_tsc_site_visit)
+# 		sv.quotation = self.name
+# 		sv.status = "Quoting"
+# 		sv.save(ignore_permissions=True)
   
-def update_service_call(self, event):
-	if self.custom_tsc_service_call:
-		doc = frappe.get_doc("TSC Service Call", self.custom_tsc_service_call)
-		doc.quote = self.name
-		doc.status = "Quoting"
-		doc.save(ignore_permissions=True)
+# def update_service_call(self, event):
+# 	if self.custom_tsc_service_call:
+# 		doc = frappe.get_doc("TSC Service Call", self.custom_tsc_service_call)
+# 		doc.quote = self.name
+# 		doc.status = "Quoting"
+# 		doc.save(ignore_permissions=True)
+#not required as the create quotation is already linking the sales order
   
-def update_service_call_sales_order(self, event):
-	if self.custom_tsc_service_call:
-		doc = frappe.get_doc("TSC Service Call", self.custom_tsc_service_call)
-		doc.sales_order = self.name
-		doc.save(ignore_permissions=True)
+# def update_service_call_sales_order(self, event):
+# 	if self.custom_tsc_service_call:
+# 		doc = frappe.get_doc("TSC Service Call", self.custom_tsc_service_call)
+# 		doc.sales_order = self.name
+# 		doc.save(ignore_permissions=True)
   
-def update_purchase_to_sales(self, event):
-	if self.custom_sales_order:
-		doc = frappe.get_doc("Sales Order", self.custom_sales_order)
-		doc.custom_purchase_order = self.name
-		doc.save(ignore_permissions=True)
+# def update_purchase_to_sales(self, event):
+# 	if self.custom_sales_order:
+# 		doc = frappe.get_doc("Sales Order", self.custom_sales_order)
+# 		doc.custom_purchase_order = self.name
+# 		doc.save(ignore_permissions=True)
 
 
 @frappe.whitelist()
