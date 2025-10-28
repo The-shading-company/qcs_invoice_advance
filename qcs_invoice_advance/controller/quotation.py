@@ -2,64 +2,69 @@ from frappe import _
 import frappe
 from frappe.utils import flt
 
-def update_service_call(self, event):
-    if self.custom_tsc_service_call:
-        doc = frappe.get_doc("TSC Service Call", self.custom_tsc_service_call)
-        doc.quote = self.name
-        doc.save(ignore_permissions=True)
+# def update_service_call(self, event):
+#     if self.custom_tsc_service_call:
+#         doc = frappe.get_doc("TSC Service Call", self.custom_tsc_service_call)
+#         doc.quote = self.name
+#         doc.save(ignore_permissions=True)
+
 
 def update_related_links(doc, event=None):
-    # Ensure the script runs only when a Quotation is being amended
-    if doc.amended_from:
-        old_quotation = frappe.get_doc("Quotation", doc.amended_from)
+    """When a Quotation is amended, re-point all linked doctypes to the new Quotation."""
+    if not doc.amended_from:
+        return
 
-        # Preserve the Payment Link (custom_tsc_payment_link)
-        if old_quotation.custom_tsc_payment_link:
-            doc.custom_tsc_payment_link = old_quotation.custom_tsc_payment_link
+    old_quotation = frappe.get_doc("Quotation", doc.amended_from)
 
-        def column_exists(doctype, column_name):
-            try:
-                return column_name in [field.fieldname for field in frappe.get_meta(doctype).fields]
-            except Exception as e:
-                frappe.log_error(f"Error checking column {column_name} in {doctype}: {str(e)}")
-                return False
+    # Preserve the Payment Link (custom_tsc_payment_link)
+    if old_quotation.custom_tsc_payment_link:
+        doc.custom_tsc_payment_link = old_quotation.custom_tsc_payment_link
 
-        linked_doctypes = {
-            "TSC Service Call": "quote",
-            "TSC Site Visit": "quotation",
-            "TSC Logo Costing": "quotation",
-            "TSC Commission": "quotation",
-            "TSC Local Costing": "quotation",
-            "TSC Import Costing": "quotation",
-            "TSC Drawings": "quotation"
-        }
-
-        for doctype, quotation_field in linked_doctypes.items():
-            if not column_exists(doctype, quotation_field):
-                frappe.log_error(f"Field '{quotation_field}' does not exist in {doctype}. Skipping.")
-                continue
-
-            linked_docs = frappe.get_all(
-                doctype,
-                filters={quotation_field: doc.amended_from},
-                fields=["name"]
+    def column_exists(doctype, column_name):
+        try:
+            return column_name in [f.fieldname for f in frappe.get_meta(doctype).fields]
+        except Exception as e:
+            frappe.logger("quotation_links").error(
+                f"Error checking column {column_name} in {doctype}: {e}"
             )
+            return False
 
-            if not linked_docs:
-                frappe.log_error(f"No records found in {doctype} linked to {doc.amended_from}")
-                continue
+    linked_doctypes = {
+        "TSC Service Call": "quote",
+        "TSC Site Visit": "quotation",
+        "TSC Logo Costing": "quotation",
+        "TSC Commission": "quotation",
+        "TSC Local Costing": "quotation",
+        "TSC Import Costing": "quotation",
+        "TSC Drawings": "quotation",
+    }
 
-            for linked_doc in linked_docs:
-                # Remove the old reference
-                frappe.db.set_value(doctype, linked_doc.name, quotation_field, None)
-                # Add the new reference
-                frappe.db.set_value(doctype, linked_doc.name, quotation_field, doc.name)
+    logger = frappe.logger("quotation_links")  # dedicated log channel
 
-                frappe.log_error(
-                    f"Updated {doctype}: {linked_doc.name} -> Old Quotation Removed, New Quotation: {doc.name}"
-                )
+    for doctype, quotation_field in linked_doctypes.items():
+        if not column_exists(doctype, quotation_field):
+            logger.warning(f"Field '{quotation_field}' does not exist in {doctype}. Skipping.")
+            continue
 
-# apps/qcs_invoice_advance/qcs_invoice_advance/controller/quotation.py
+        linked_docs = frappe.get_all(
+            doctype,
+            filters={quotation_field: doc.amended_from},
+            fields=["name"],
+        )
+
+        if not linked_docs:
+            logger.info(f"No records in {doctype} linked to {doc.amended_from}.")
+            continue
+
+        for linked_doc in linked_docs:
+            # Swap the old reference for the new quotation
+            frappe.db.set_value(doctype, linked_doc.name, quotation_field, None)
+            frappe.db.set_value(doctype, linked_doc.name, quotation_field, doc.name)
+
+            logger.info(
+                f"Updated {doctype}: {linked_doc.name} | "
+                f"{doc.amended_from} → {doc.name}"
+            )
 
 def log_discount_override(doc, event=None):
     override_user = getattr(doc, "_discount_override_by", None)
