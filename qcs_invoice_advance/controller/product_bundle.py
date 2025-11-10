@@ -28,9 +28,27 @@ def cron_update_product_bundle():
             total_cost += row.custom_item_total_cost
 
         doc.custom_item_total_cost = total_cost
+
+        # Also update Retail price and margin on the Product Bundle based on Item Price of the linked new_item_code
+        retail_price = None
+        if getattr(doc, "new_item_code", None):
+            retail_price = frappe.db.get_value(
+                "Item Price",
+                {"price_list": "Retail", "item_code": doc.new_item_code},
+                "price_list_rate",
+            )
+
+        if retail_price:
+            cost = float(doc.custom_item_total_cost or 0)
+            margin = ((float(retail_price) - cost) / cost * 100) if cost > 0 else 0
+            doc.custom_retail_price_list = float(retail_price)
+            doc.custom_retail_margin = round(margin, 2)
+
         doc.save(ignore_permissions=True)
 
-        frappe.logger().info(f"[Bundle] Updated: {doc.name} — total cost: {total_cost}")
+        frappe.logger().info(
+            f"[Bundle] Updated: {doc.name} — total cost: {total_cost}, retail: {retail_price}, margin: {getattr(doc, 'custom_retail_margin', None)}"
+        )
 
 
 def get_item_stock(item_code):
