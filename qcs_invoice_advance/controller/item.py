@@ -14,6 +14,201 @@ import certifi
 from frappe.utils import get_system_timezone
 from pytz import timezone
 
+#This creates a bom for awf variants
+def create_bom_for_awf_item(doc, method=None):
+    """
+    Auto-create a BOM for AWF-* items after Item insert.
+    Parses item_code for canopy/fabric/flap details, fetches minutes/qty from TSC Stitching Cost,
+    creates BOM; submits if minutes > 0 and a matching row was found, else leaves as Draft.
+    """
+    item_code = (doc.item_code or "").strip()
+    if not item_code.startswith("AWF"):
+        return
+
+    # Avoid duplicate default BOMs
+    existing_bom = frappe.db.get_value(
+        "BOM",
+        {"item": doc.name, "is_active": 1, "is_default": 1, "docstatus": ["!=", 2]},
+        "name",
+    )
+    if existing_bom:
+        return
+
+    # -------- Parse item code --------
+    parts = item_code.split("-")
+    if len(parts) < 5:
+        frappe.log_error(f"AWF parse failed (too few parts): {item_code}", "AWF BOM")
+        return
+
+    canopy_type = parts[1]          # e.g., UMB or AWN
+    canopy_size = parts[2]          # e.g., 3x3 (or diameter token)
+    fabric_code_token = parts[3]    # start of fabric code
+
+    flap_size = None
+    flap_type = None
+
+    # Fabric code can be like "R-196" or "2124-03"
+    # If parts[4] contains 'cm', it's a flap size, otherwise it's part of the fabric code suffix.
+    if len(parts) > 4 and "cm" in parts[4]:
+        fabric_code = fabric_code_token
+        flap_size = parts[4]
+        flap_type = parts[5] if len(parts) > 5 else None
+    else:
+        # combine fabric code token + next token
+        fabric_code = f"{fabric_code_token}-{parts[4]}" if len(parts) > 4 else fabric_code_token
+        flap_size = parts[5] if len(parts) > 5 else None
+        flap_type = parts[6] if len(parts) > 6 else None
+
+    # Verify fabric item exists
+    if not frappe.db.exists("Item", fabric_code):
+        frappe.log_error(f"Fabric item not found: {fabric_code} (from {item_code})", "AWF BOM")
+        return
+
+    # -------- Fetch stitching data --------
+    stitch_minutes = None
+    fabric_qty = None
+    stitching_found = False
+
+    try:
+        sc = frappe.get_doc("TSC Stitching Cost", "TSCS-0020")
+        for row in sc.get("cost_table_tab", []):
+            if row.canopy_type == canopy_type and row.canopy_size == canopy_size:
+                fabric_qty = flt(row.custom_flap_fab_qty)
+                if (flap_type or "").upper() == "STR":
+                    stitch_minutes = flt(row.custom_flap_str_min)
+                elif (flap_type or "").upper() in {"SCAL", "SCALL", "SCALLOP", "SCALLOPED"}:
+                    # tolerate variants of 'SCALL'
+                    stitch_minutes = flt(row.custom_flap_sca_min)
+                else:
+                    # unknown flap type → fall back to 0 minutes
+                    stitch_minutes = 0.0
+                stitching_found = True
+                break
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "AWF BOM: Stitching Cost Fetch Error")
+
+    # Defaults if not found
+    if fabric_qty is None:
+        fabric_qty = 1.0
+    if stitch_minutes is None:
+        stitch_minutes = 0.0
+
+    # Optional: ensure routing exists before assigning
+    routing_name = "stitching" if frappe.db.exists("Routing", "stitching") else None
+
+    # -------- Create BOM --------
+    try:
+        bom_dict = {
+            "doctype": "BOM",
+            "item": doc.name,
+            "is_active": 1,
+            "is_default": 1,
+            "allow_alternative_item": 1,
+            "set_rate_of_sub_assembly_item_based_on_bom": 0,
+            "with_operations": 1,
+            # If you use meters for fabric, set uom to "Meter" and qty accordingly
+            "items": [{
+                "item_code": fabric_code,
+                "qty": fabric_qty,
+                "uom": "Nos",   # change to "Meter" if that’s your store unit for fabric
+            }],
+            "operations": [{
+                "operation": "Stitching",
+                "workstation": "Stitching Station",
+                "workstation_type": "Stitching",
+                "time_in_mins": stitch_minutes,
+            }],
+        }
+        if routing_name:
+            bom_dict["routing"] = routing_name
+
+        bom = frappe.get_doc(bom_dict)
+        bom.insert(ignore_permissions=True)
+
+        # Submit only when we have a matched row and minutes > 0
+        if stitching_found and stitch_minutes > 0:
+            bom.submit()
+            frappe.log_error(f"Submitted BOM {bom.name} for {item_code} (fabric {fabric_code}, flap {flap_size}/{flap_type})", "AWF BOM")
+        else:
+            frappe.log_error(f"Draft BOM {bom.name} for {item_code} (awaiting approval / minutes={stitch_minutes})", "AWF BOM")
+
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "AWF BOM Creation Error")
+
+
+#this creates a bom for rep variants
+def create_bom_for_rep_variant(doc, method=None):
+    """Auto-create & submit a BOM for REP-* items right after Item insert."""
+    try:
+        item_code = (doc.item_code or "").strip()
+        if not item_code.startswith("REP-"):
+            return
+
+        # Skip if a default, submitted BOM already exists
+        existing_bom = frappe.db.get_value(
+            "BOM",
+            {"item": doc.name, "is_active": 1, "is_default": 1, "docstatus": 1},
+            "name",
+        )
+        if existing_bom:
+            return
+
+        parts = item_code.split("-")
+        # Valid formats:
+        #  - REP-<FabricCode>-<Meters>-<Minutes>        (len=4)
+        #  - REP-<FabricPrefix>-<FabricCode>-<M>-<Min>  (len=5)
+        if not (4 <= len(parts) <= 5):
+            frappe.log_error(f"Invalid REP code format: {item_code}", "REP BOM")
+            return
+
+        fabric_code = f"{parts[1]}-{parts[2]}" if len(parts) == 5 else parts[1]
+
+        try:
+            meters = flt(parts[-2])
+            minutes = flt(parts[-1])
+        except Exception:
+            frappe.log_error(f"Non-numeric meters/minutes in: {item_code}", "REP BOM")
+            return
+
+        if meters <= 0 or minutes <= 0:
+            frappe.log_error(f"Meters/Minutes must be > 0: {item_code}", "REP BOM")
+            return
+
+        # Ensure fabric item exists
+        if not frappe.db.exists("Item", fabric_code):
+            frappe.log_error(f"Fabric item not found: {fabric_code} (from {item_code})", "REP BOM")
+            return
+
+        # Optional routing if present
+        routing_name = "stitching" if frappe.db.exists("Routing", "stitching") else None
+
+        bom_dict = {
+            "doctype": "BOM",
+            "item": doc.name,
+            "is_active": 1,
+            "is_default": 1,
+            "quantity": 1,
+            "with_operations": 1,
+            "items": [{"item_code": fabric_code, "qty": meters}],
+            "operations": [{
+                "operation": "Stitching",
+                "workstation": "Stitching Station",
+                "workstation_type": "Stitching",
+                "time_in_mins": minutes
+            }],
+        }
+        if routing_name:
+            bom_dict["routing"] = routing_name
+
+        bom = frappe.get_doc(bom_dict)
+        bom.insert(ignore_permissions=True)
+        bom.submit()
+
+        # Quiet audit log
+        frappe.log_error(f"Created BOM {bom.name} for {item_code}", "REP BOM")
+
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "REP BOM Creation Error")
 
 #this creates a canopy on item creation for Canopies Awn Bli and Umbrellas . Uses parsing rather than getting from item attributes
 def create_canopy_bom(self, event):

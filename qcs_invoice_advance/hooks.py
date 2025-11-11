@@ -112,7 +112,9 @@ doc_events = {
     "Item": {
         "after_insert": [
             "qcs_invoice_advance.controller.item.create_canopy_bom",
-            "qcs_invoice_advance.controller.item.add_image"
+            "qcs_invoice_advance.controller.item.add_image",
+            "qcs_invoice_advance.controller.item.create_bom_for_rep_variant",
+            "qcs_invoice_advance.controller.item.create_bom_for_awf_item"
         ],
         "on_update": "qcs_invoice_advance.controller.item.update_canopy_bom",
         "on_trash": "qcs_invoice_advance.controller.item.delete_bom",
