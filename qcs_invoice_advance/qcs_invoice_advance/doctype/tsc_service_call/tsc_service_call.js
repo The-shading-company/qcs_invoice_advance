@@ -1,16 +1,5 @@
 frappe.ui.form.on('TSC Service Call', {
     refresh: function(frm) {
-        // Adding a button to the 'Create' menu
-        frm.add_custom_button(__('Quotation'), function() {
-            // Action to be performed on button click
-            create_quotation(frm);
-        }, 'Create');
-        
-        frm.add_custom_button(__('Warranty Claim'), function() {
-            // Action to be performed on button click
-            create_warranty(frm);
-        }, 'Create');
-        
     },
     
     validate: function(frm){
@@ -69,21 +58,10 @@ frappe.ui.form.on('TSC Service Call', {
 //}
 
 
-function create_warranty(frm) {
-    // You can fetch data from the Issue and use it in the Quotation
-    var customer = frm.doc.customer;
-    var issue_details = frm.doc.description;
-
-    // Create a new Quotation document
-    frappe.model.open_mapped_doc({
-        method: "qcs_invoice_advance.controller.item.make_warranty_claim",
-        frm: frm
-    });
-}
 
 
 
-
+// calculates the total in the repair table
 frappe.ui.form.on('TSC Service Call Info', {
 
         item_code: function(frm, cdt, cdn) 
