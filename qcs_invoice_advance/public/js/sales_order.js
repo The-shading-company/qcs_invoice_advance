@@ -773,7 +773,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 									if(r.message) {
 										frappe.msgprint({
 											message: __('Work Orders Created: {0}', [r.message.map(function(d) {
-													return repl('<a href="/app/work-order/%(name)s">%(name)s</a>', {name:d})
+													return repl('<a href="' + frappe.utils.get_form_link('Work Order', '%(name)s') + '">%(name)s</a>', {name:d})
 												}).join(', ')]),
 											indicator: 'green'
 										})
@@ -883,7 +883,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 					callback: function(r) {
 						if(r.message) {
 							frappe.msgprint(__('Material Request {0} submitted.',
-							['<a href="/app/material-request/'+r.message.name+'">' + r.message.name+ '</a>']));
+							['<a href="' + frappe.utils.get_form_link('Material Request', r.message.name) + '">' + r.message.name+ '</a>']));
 						}
 						d.hide();
 						me.frm.reload_doc();
