@@ -1,130 +1,126 @@
 import frappe
-from urllib.parse import urlencode
 import requests
+
+def _get_woocommerce_settings():
+    """Get and validate WooCommerce settings."""
+    woo_settings = frappe.get_doc("Woocommerce API Settings")
+    required_fields = ["url", "consumer_key", "consumer_secret", "price_list"]
+    
+    if not all(getattr(woo_settings, field) for field in required_fields):
+        frappe.throw(
+            "Missing required fields in Woocommerce API Settings. "
+            "Please check URL, Consumer Key, Consumer Secret, and Price List."
+        )
+    
+    return woo_settings
+
+
+def _get_item_price(item_code, price_list):
+    """Get item price from price list."""
+    item_price = frappe.get_all(
+        "Item Price",
+        filters={"item_code": item_code, "price_list": price_list},
+        fields=["price_list_rate"],
+        limit=1
+    )
+    return item_price[0].price_list_rate if item_price else 0
+
+
+def _get_stock_quantity(item_code):
+    """Calculate stock quantity for item (bundle or regular)."""
+    # Check if it's a bundle
+    bundle_item = frappe.get_all(
+        "Product Bundle",
+        filters={"name": item_code},
+        fields=["name"]
+    )
+    
+    if bundle_item:
+        min_stock_ratio = float('inf')
+        for bundle in bundle_item:
+            bundle_doc = frappe.get_doc("Product Bundle", bundle.name)
+            for item in bundle_doc.items:
+                try:
+                    custom_stock = float(item.custom_in_stock or 0)
+                    qty = float(item.qty or 1)
+                    if qty > 0:
+                        stock_ratio = custom_stock / qty
+                        min_stock_ratio = min(min_stock_ratio, stock_ratio)
+                except (ValueError, TypeError):
+                    continue
+        
+        return min_stock_ratio if min_stock_ratio != float('inf') else 0
+    else:
+        # Regular item - get total projected quantity
+        bin_result = frappe.db.sql("""
+            SELECT COALESCE(SUM(projected_qty), 0) as total_qty
+            FROM `tabBin`
+            WHERE item_code = %s
+        """, item_code, as_dict=True)
+
+        return bin_result[0].total_qty if bin_result else 0
+
+
+def _update_woocommerce_product(
+    wooid, item_code, is_variant=False, variation_id=None
+):
+    """Core function to update WooCommerce product."""
+    woo_settings = _get_woocommerce_settings()
+    
+    # Build URL
+    if is_variant and variation_id:
+        base_url = f"{woo_settings.url}/wp-json/wc/v3/products/{wooid}"
+        url = f"{base_url}/variations/{variation_id}"
+    else:
+        url = f"{woo_settings.url}/wp-json/wc/v3/products/{wooid}"
+    
+    # Get price and stock
+    price = _get_item_price(item_code, woo_settings.price_list)
+    stock_quantity = _get_stock_quantity(item_code)
+    
+    data = {
+        "regular_price": str(price),
+        "stock_quantity": stock_quantity
+    }
+
+    try:
+        response = requests.put(
+            url,
+            auth=(woo_settings.consumer_key, woo_settings.consumer_secret),
+            json=data,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            frappe.msgprint("Product updated successfully.")
+        else:
+            error_msg = (
+                f"Failed to update product. "
+                f"Status code: {response.status_code}. "
+                "Check Woocommerce API Error Log"
+            )
+            frappe.msgprint(error_msg)
+            
+            # Log error
+            error_doc = frappe.new_doc("Woocommerce API Error Log")
+            error_doc.update({
+                "item_code": item_code,
+                "response_status_code": response.status_code,
+                "error_log": response.text
+            })
+            error_doc.save(ignore_permissions=True)
+            
+    except requests.RequestException as e:
+        frappe.msgprint(f"Request failed: {str(e)}")
+
 
 @frappe.whitelist()
 def woo_update_normal_item(wooid, item_code):
-    woo_settings = frappe.get_doc("Woocommerce API Settings")
-    if (woo_settings.url and woo_settings.consumer_key and woo_settings.consumer_secret and woo_settings.price_list):
-    
-        url = woo_settings.url+"/wp-json/wc/v3/products/"+wooid
-        
-        consumer_key = woo_settings.consumer_key
-        consumer_secret = woo_settings.consumer_secret
-        
-        up_item_price = []
-        item_price = frappe.get_all("Item Price", filters={"item_code":item_code, "price_list": woo_settings.price_list}, fields=["name", "price_list_rate"])
-        if item_price:
-            for i in item_price:
-                up_item_price.append(i.get("price_list_rate"))
-        else:
-            up_item_price.append(0)
-        
-        up_bin_qty = []
-        bundle_item = frappe.get_all("Product Bundle", filters={"name": item_code}, fields=["name"])
-        if bundle_item:
-            min_custom_in_stock = float('inf')  # Initialize to a large number
-            for b in bundle_item:
-                bundle_doc = frappe.get_doc("Product Bundle", b.get("name"))
-                b_tab = bundle_doc.items
-                for b1 in b_tab:
-                    custom_in_stock = b1.get("custom_in_stock")
-                    custom_in_stock1 = float(custom_in_stock)/b1.get("qty")
-                    if custom_in_stock1 is not None:
-                        min_custom_in_stock = min(min_custom_in_stock, custom_in_stock1)
-            frappe.errprint(min_custom_in_stock)
-            up_bin_qty.append(min_custom_in_stock)
-        else:
-            bin_doc = frappe.get_all("Bin", filters={"item_code": item_code}, fields=["name", "projected_qty"])
-            if bin_doc:
-                for j in bin_doc:
-                    up_bin_qty.append(j.get("projected_qty"))
-            else:
-                up_bin_qty.append(0)
-            
-        
-        data = {
-            "regular_price": str(up_item_price[0]),
-            "stock_quantity": sum(up_bin_qty)
-        }
+    """Update normal WooCommerce product."""
+    return _update_woocommerce_product(wooid, item_code)
 
-        response = requests.put(url, auth=(consumer_key, consumer_secret), json=data)
 
-        if response.status_code == 200:
-            frappe.msgprint("Product updated successfully.")
-        else:
-            frappe.msgprint(f"Failed to update product. Status code: {response.status_code}. Check Woocommerce API Error Log")
-            error_doc = frappe.new_doc("Woocommerce API Error Log")
-            error_doc.update({
-               "item_code": item_code,
-               "response_status_code": response.status_code,
-               "error_log": response.text
-            })
-            error_doc.save(ignore_permissions=True)
-        
-    else:
-        frappe.throw("Something Missing in Woocommerce API Settings. Please Check")
-        
-        
-        
 @frappe.whitelist()
 def woo_update_variant_item(wooid, item_code, woovariationid):
-    woo_settings = frappe.get_doc("Woocommerce API Settings")
-    if (woo_settings.url and woo_settings.consumer_key and woo_settings.consumer_secret and woo_settings.price_list):
-    
-        url = woo_settings.url+"/wp-json/wc/v3/products/"+wooid+"/variations/"+woovariationid
-        
-        consumer_key = woo_settings.consumer_key
-        consumer_secret = woo_settings.consumer_secret
-        
-        up_item_price = []
-        item_price = frappe.get_all("Item Price", filters={"item_code":item_code, "price_list": woo_settings.price_list}, fields=["name", "price_list_rate"])
-        if item_price:
-            for i in item_price:
-                up_item_price.append(i.get("price_list_rate"))
-        else:
-            up_item_price.append(0)
-        
-        up_bin_qty = []
-        bundle_item = frappe.get_all("Product Bundle", filters={"name": item_code}, fields=["name"])
-        if bundle_item:
-            min_custom_in_stock = float('inf')  # Initialize to a large number
-            for b in bundle_item:
-                bundle_doc = frappe.get_doc("Product Bundle", b.get("name"))
-                b_tab = bundle_doc.items
-                for b1 in b_tab:
-                    custom_in_stock = b1.get("custom_in_stock")
-                    custom_in_stock1 = float(custom_in_stock)/b1.get("qty")
-                    if custom_in_stock1 is not None:
-                        min_custom_in_stock = min(min_custom_in_stock, custom_in_stock1)
-            frappe.errprint(min_custom_in_stock)
-            up_bin_qty.append(min_custom_in_stock)
-        else:
-            bin_doc = frappe.get_all("Bin", filters={"item_code": item_code}, fields=["name", "projected_qty"])
-            if bin_doc:
-                for j in bin_doc:
-                    up_bin_qty.append(j.get("projected_qty"))
-            else:
-                up_bin_qty.append(0)
-            
-        data = {
-            "regular_price": str(up_item_price[0]),
-            "stock_quantity": sum(up_bin_qty)
-        }
-
-        response = requests.put(url, auth=(consumer_key, consumer_secret), json=data)
-
-        if response.status_code == 200:
-            frappe.msgprint("Product updated successfully.")
-        else:
-            frappe.msgprint(f"Failed to update product. Status code: {response.status_code}. Check Woocommerce API Error Log")
-            error_doc = frappe.new_doc("Woocommerce API Error Log")
-            error_doc.update({
-               "item_code": item_code,
-               "response_status_code": response.status_code,
-               "error_log": response.text
-            })
-            error_doc.save(ignore_permissions=True)
-        
-    else:
-        frappe.throw("Something Missing in Woocommerce API Settings. Please Check")
+    """Update WooCommerce product variant."""
+    return _update_woocommerce_product(wooid, item_code, True, woovariationid)
