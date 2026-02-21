@@ -30,7 +30,6 @@ app_license = "MIT"
 # include js in doctype views
 doctype_js = {"Sales Order": "public/js/sales_order.js",
               "Sales Invoice": "public/js/sales_invoice.js",
-              "Product Bundle": "public/js/product_bundle.js",
                "Item Price": "public/js/item_price_list.js",
                "Material Request": "public/js/material_request.js",
               "Item Group": "public/js/item_group.js",
@@ -156,10 +155,6 @@ doc_events = {
         "validate": "qcs_invoice_advance.controller.work_order.check_transferred_qty"
     },
 
-    "Product Bundle": {
-        "validate": "qcs_invoice_advance.controller.product_bundle.cal_cost"
-    },
-
     "Warranty Claim": {
         "validate": "qcs_invoice_advance.controller.item.warrenty_claim_sales_order"
     },
@@ -234,7 +229,6 @@ scheduler_events = {
         "qcs_invoice_advance.controller.item.run_retail_update",
         "qcs_invoice_advance.controller.item.cron_update_item_average_rate",
         "qcs_invoice_advance.controller.item_price_list.cron_update_item_price",
-        "qcs_invoice_advance.controller.product_bundle.cron_update_product_bundle",
     ]
 }
 
