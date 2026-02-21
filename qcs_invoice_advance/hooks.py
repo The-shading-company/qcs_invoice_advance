@@ -151,10 +151,6 @@ doc_events = {
         ],
     },
 
-    "Stock Entry": {
-        "validate": "qcs_invoice_advance.controller.work_order.check_transferred_qty"
-    },
-
     "Warranty Claim": {
         "validate": "qcs_invoice_advance.controller.item.warrenty_claim_sales_order"
     },
