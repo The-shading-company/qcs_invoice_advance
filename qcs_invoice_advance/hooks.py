@@ -31,7 +31,6 @@ app_license = "MIT"
 doctype_js = {"Sales Order": "public/js/sales_order.js",
               "Sales Invoice": "public/js/sales_invoice.js",
                "Item Price": "public/js/item_price_list.js",
-               "Material Request": "public/js/material_request.js",
               "Item Group": "public/js/item_group.js",
               "TSC Logo Costing": "public/js/tsc_logo_costing.js"
                }
