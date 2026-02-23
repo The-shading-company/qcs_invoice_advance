@@ -16,7 +16,7 @@ frappe.ui.form.on('TSC Service Call', {
     customer: function(frm){
         if (frm.doc.customer) {
             frappe.call({
-                method: "qcs_invoice_advance.controller.item.get_contact_query",
+                method: "tsc_inventory.api.item.item.get_contact_query",
                 args: {
                     "customer": frm.doc.customer,
                 },
