@@ -28,12 +28,7 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {"Sales Order": "public/js/sales_order.js",
-              "Sales Invoice": "public/js/sales_invoice.js",
-               "Item Price": "public/js/item_price_list.js",
-              "Item Group": "public/js/item_group.js",
-              "TSC Logo Costing": "public/js/tsc_logo_costing.js"
-               }
+# doctype_js = {"Sales Invoice": "public/js/sales_invoice.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -106,58 +101,33 @@ doctype_js = {"Sales Order": "public/js/sales_order.js",
 # ---------------
 # Hook on document methods and events
 
-doc_events = {
-    "Item": {
-        "after_insert": [
-            "qcs_invoice_advance.controller.item.create_canopy_bom",
-            "qcs_invoice_advance.controller.item.add_image",
-            "qcs_invoice_advance.controller.item.create_bom_for_rep_variant",
-            "qcs_invoice_advance.controller.item.create_bom_for_awf_item"
-        ],
-        "on_update": "qcs_invoice_advance.controller.item.update_canopy_bom",
-        "on_trash": "qcs_invoice_advance.controller.item.delete_bom",
-        "before_save": "qcs_invoice_advance.controller.item.set_dynamic_item_description",
-    },
+# doc_events = {
+#     "Item": {
+#         "after_insert": [
+#             "qcs_invoice_advance.controller.item.create_canopy_bom",
+#             "qcs_invoice_advance.controller.item.add_image",
+#            "qcs_invoice_advance.controller.item.create_bom_for_rep_variant",
+#             "qcs_invoice_advance.controller.item.create_bom_for_awf_item"
+#         ],
+#         "on_update": "qcs_invoice_advance.controller.item.update_canopy_bom",
+#         "on_trash": "qcs_invoice_advance.controller.item.delete_bom",
+#         "before_save": "qcs_invoice_advance.controller.item.set_dynamic_item_description",
+#     },
 
-    "BOM": {
-        "on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
-        "on_update_after_submit": "qcs_invoice_advance.controller.item.add_sale_price"
-    },
+#     "BOM": {
+#         "on_submit": "qcs_invoice_advance.controller.item.add_sale_price",
+#         "on_update_after_submit": "qcs_invoice_advance.controller.item.add_sale_price"
+#     },
 
-    "Sales Invoice": {
-        "validate": "qcs_invoice_advance.controller.item.tsc_custom_accounts"
-    },
+#     "Sales Invoice": {
+#         "validate": "qcs_invoice_advance.controller.item.tsc_custom_accounts"
+#     },
 
-    "Quotation": {
-        # Keep only qcs-specific steps here
-        "before_validate": [
-            "qcs_invoice_advance.controller.quotation.set_company",
-        ],
-        "after_insert": [
-            # "qcs_invoice_advance.controller.item.add_quote_link",
-            # "qcs_invoice_advance.controller.item.update_service_call",
-            "qcs_invoice_advance.controller.quotation.update_related_links"
-        ],
-    },
+#     "Warranty Claim": {
+#         "validate": "qcs_invoice_advance.controller.item.warrenty_claim_sales_order"
+#     },
 
-    "Sales Order": {
-        "after_insert": [
-            # "qcs_invoice_advance.controller.item.update_service_call_sales_order",
-            "qcs_invoice_advance.controller.sales_order.update_payment_link"
-        ],
-        "validate": [
-            "qcs_invoice_advance.controller.sales_order.auto_set_pd_status"
-        ],
-    },
-
-    "Warranty Claim": {
-        "validate": "qcs_invoice_advance.controller.item.warrenty_claim_sales_order"
-    },
-
-    "TSC Logo Costing": {
-        "validate": "qcs_invoice_advance.controller.logo_costing.sync_logo_costs"
-    }
-}
+# }
 
 
 
@@ -215,17 +185,16 @@ doc_events = {
 
 # Scheduled Tasks
 # ---------------
-# daily run
-scheduler_events = {
-#	"all": [
-#		"qcs_invoice_advance.tasks.all"
-#	],
-    "daily": [
-        "qcs_invoice_advance.controller.item.run_retail_update",
-        "qcs_invoice_advance.controller.item.cron_update_item_average_rate",
-        "qcs_invoice_advance.controller.item_price_list.cron_update_item_price",
-    ]
-}
+# # daily run
+# scheduler_events = {
+# #	"all": [
+# #		"qcs_invoice_advance.tasks.all"
+# #	],
+#     "daily": [
+#         "qcs_invoice_advance.controller.item.run_retail_update",
+#         "qcs_invoice_advance.controller.item.cron_update_item_average_rate",
+#     ]
+# }
 
 # Testing
 # -------
